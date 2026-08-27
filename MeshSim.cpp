@@ -154,16 +154,23 @@ SimulationResult run_simulation(
       const int pp = j.pp;
       const int dir = j.dir;
 
+      uint8_t& pcell = primary_at(p, pp);
+      const int id = idx_level(f, p, dir);
+
+      // Buffer to primary
+      if (pcell == 0 && buffer_levels[id] > 0) {
+        pcell = 1;
+        buffer_levels[id] -= 1;
+      }
+
       // From feeder to primary or buffer
       int& fcell = feeder_at(f, fp);
       if (fcell == (p + 1)) {
-        uint8_t& pcell = primary_at(p, pp);
         if (pcell == 0) {
           fcell = 0;
           pcell = 1;
         } else {
           const int cap = cap_at(buffer_capacity, dir, f);
-          const int id = idx_level(f, p, dir);
           if (cap > 0 && buffer_levels[id] < cap) {
             buffer_levels[id] += 1;
             fcell = 0;
@@ -172,14 +179,6 @@ SimulationResult run_simulation(
                       << ") blocked at t=" << t << " (buffer=" << buffer_levels[id] << ")\n";
           }
         }
-      }
-
-      // Buffer to primary
-      uint8_t& pcell2 = primary_at(p, pp);
-      const int id2 = idx_level(f, p, dir);
-      if (pcell2 == 0 && buffer_levels[id2] > 0) {
-        pcell2 = 1;
-        buffer_levels[id2] -= 1;
       }
     }
 
