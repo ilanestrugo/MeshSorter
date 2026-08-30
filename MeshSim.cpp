@@ -1,4 +1,3 @@
-
 #include "MeshSim.hpp"
 
 #include <algorithm>
@@ -7,6 +6,8 @@
 #include <numeric>
 #include <random>
 #include <stdexcept>
+#include <fstream>
+#include <sstream>
 
 namespace meshsim {
 
@@ -47,7 +48,8 @@ SimulationResult run_simulation(
     int seed,
     bool Verbal,
     int block_size,
-    bool collect_buffer_stats) {
+    bool collect_buffer_stats,
+    std::string arrival_sequence_csv) {
 
   if (NumberOfFeeders <= 0 || NumberOfPrimary <= 0) {
     throw std::invalid_argument("NumberOfFeeders and NumberOfPrimary must be positive.");
@@ -60,6 +62,37 @@ SimulationResult run_simulation(
   const int PrimaryLength = 4 * m;
   const int FeederLength  = 4 * n + 8;
   const int dirs = BiDirectional ? 2 : 1;
+
+  std::vector<int> empirical_sequence;
+  int seq_idx = 0;
+  if (!arrival_sequence_csv.empty()) {
+    std::ifstream fs(arrival_sequence_csv);
+    if (!fs.is_open()) {
+        throw std::runtime_error("Cannot open arrival sequence file: " + arrival_sequence_csv);
+    }
+    std::string line;
+    std::getline(fs, line); // header
+    while (std::getline(fs, line)) {
+        if (line.empty()) continue;
+        std::stringstream ss(line);
+        std::string token;
+        int col = 0;
+        int belt_val = -1;
+        while (std::getline(ss, token, ',')) {
+            if (col == 8) { // belt is 9th column
+                belt_val = std::stoi(token);
+                break;
+            }
+            col++;
+        }
+        if (belt_val != -1) {
+            empirical_sequence.push_back(belt_val);
+        }
+    }
+    if (empirical_sequence.empty()) {
+        throw std::runtime_error("No valid arrivals found in " + arrival_sequence_csv);
+    }
+  }
 
   std::mt19937 rng(static_cast<uint32_t>(seed));
   std::uniform_int_distribution<int> dest_dist(1, n);
@@ -137,7 +170,12 @@ SimulationResult run_simulation(
     for (int f = 0; f < m; ++f) {
       int& cell0 = feeder_at(f, 0);
       if (cell0 == 0) {
-        cell0 = dest_dist(rng);
+        if (!empirical_sequence.empty()) {
+          cell0 = empirical_sequence[seq_idx];
+          seq_idx = (seq_idx + 1) % empirical_sequence.size();
+        } else {
+          cell0 = dest_dist(rng);
+        }
         total_entered += 1;
         inblock += 1;
         feeder_primary_curblock[f] += 1;

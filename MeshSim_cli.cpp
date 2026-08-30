@@ -349,6 +349,7 @@ int main(int argc, char** argv) {
     bool ci_level_set = false;
     std::string run_mode = "both";
     std::string output_csv = "MeshSim_results.csv";
+    std::string arrival_sequence_csv = "";
     std::string buffer_capacity_str;
 
     // Minimal argument parser
@@ -382,6 +383,8 @@ int main(int argc, char** argv) {
         run_mode = to_lower(need(a));
       } else if (a == "--output_csv") {
         output_csv = need(a);
+      } else if (a == "--arrival_sequence_csv") {
+        arrival_sequence_csv = need(a);
       } else if (a == "--Verbal") {
         Verbal = true;
       } else if (a == "--ci_enable") {
@@ -450,7 +453,8 @@ int main(int argc, char** argv) {
         seed,
         Verbal,
         block_size,
-        collect_buffer_stats
+        collect_buffer_stats,
+        arrival_sequence_csv
       );
 
       warmup_blocks = meshsim::detect_warmup_from_blocks(sim.block_counts, sim.block_sizes, /*strict=*/true);
