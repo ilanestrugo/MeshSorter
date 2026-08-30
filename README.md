@@ -12,6 +12,7 @@ The software accompanies the manuscript *MeshSorter: A Two-Layer Conveyor Archit
 | `MeshSim_cli.cpp` | Command-line interface for simulation and approximation runs |
 | `buffer_hypothesis_certify_3phases_iut.cpp` | Three-phase buffer-allocation certification experiment |
 | `CMakeLists.txt` | Portable CMake build configuration |
+| `olist_orders_ForRun.csv` | CSV file containing the processed Olist destination sequence |
 
 The build produces two executables:
 
