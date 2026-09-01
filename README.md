@@ -11,6 +11,7 @@ The software accompanies the manuscript *MeshSorter: A Two-Layer Conveyor Archit
 | `MeshSim.hpp`, `MeshSim.cpp` | C++ simulation library and analytical approximation |
 | `MeshSim_cli.cpp` | Command-line interface for simulation and approximation runs |
 | `buffer_hypothesis_certify_3phases_iut.cpp` | Three-phase buffer-allocation certification experiment |
+| `recheck_candidates.cpp` | High-precision re-simulation of the leading Phase-3 competitors |
 | `CMakeLists.txt` | Portable CMake build configuration |
 | `olist_orders_ForRun.csv` | CSV file containing the processed Olist destination sequence |
 
@@ -18,6 +19,7 @@ The build produces two executables:
 
 - `meshsim_cli`: runs the simulator, the analytical approximation, or both.
 - `buffer_certify`: enumerates buffer allocations and evaluates a specified structured subset.
+- `recheck_candidates`: re-simulates the strongest competitors from a certification run at a long common horizon.
 
 ## Requirements
 
@@ -50,7 +52,7 @@ cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build --parallel
 ```
 
-The executables will be created as `build/meshsim_cli` and `build/buffer_certify`.
+The executables will be created as `build/meshsim_cli`, `build/buffer_certify`, and `build/recheck_candidates`.
 
 Either executable can be excluded from the build:
 
@@ -193,7 +195,8 @@ Additional options are:
 
 | Option | Meaning | Default |
 | --- | --- | --- |
-| `--Num_of_blocks <int>` | Initial number of simulation batches | `150` |
+| `--Num_of_blocks <int>` | Phase-1 batches per allocation in the structured set `S`; also the length of each Phase-2 extension run of the reference allocation | `150` |
+| `--Num_of_blocks_C <int>` | Phase-1 batches per competitor in `C`. The competitor pilot only plans that competitor's Phase-3 effort, so it may be much shorter than the horizon used for `S` | same as `--Num_of_blocks` |
 | `--block_size <int>` | Time steps per batch | `200` |
 | `--alpha <float>` | One-sided significance level | `0.01` |
 | `--eps <float>` | Target relative indifference-zone gap | `0.001` |
@@ -206,6 +209,47 @@ Additional options are:
 | `--best_summary_csv <path>` | Optional append-only run-summary CSV | none |
 
 Each run overwrites `<log_prefix>_phase1_S_detail.csv` and `<log_prefix>_phase3_detail.csv`. If requested, `--best_summary_csv` appends a summary row and creates its parent directory.
+
+## Re-checking the leading competitors
+
+`epsilon_hat` reported by `buffer_certify` is a maximum over every competitor, and most
+competitors are validated with a short run (often the minimum budget `--min_blocks_C`).
+The maximum of many noisy estimates is biased upward, so a large `epsilon_hat` does not by
+itself show that any allocation outside the structured set is genuinely better.
+
+`recheck_candidates` re-simulates the leading competitors, together with the reference
+allocation, at a long common horizon on an independent seed range, and reports for each one
+whether its throughput exceeds that of the reference allocation, whether it exceeds
+`(1+eps)` times it (a genuine counterexample to the conjecture), and the value of `eps_c`
+implied by the precise estimates. Candidates are the union of the top `--top` rows by
+`eps_i` and the top `--top` rows by mean in the Phase-3 detail CSV. Allocations are
+simulated in parallel across `--threads` threads.
+
+```bash
+./build/recheck_candidates \
+  --phase3_csv    out/m5_n4_B10_twoway_phase3_detail.csv \
+  --phase1_S_csv  out/m5_n4_B10_twoway_phase1_S_detail.csv \
+  --m 5 --n 4 --bidirectional true \
+  --top 50 --blocks 250000 --block_size 250 \
+  --alpha 0.01 --eps 0.001 --threads 0 \
+  --out out/m5_n4_B10_twoway_recheck.csv
+```
+
+| Option | Meaning | Default |
+| --- | --- | --- |
+| `--phase3_csv <path>` | Phase-3 detail CSV written by `buffer_certify` | required |
+| `--phase1_S_csv <path>` | Phase-1 detail CSV; the row with the largest mean supplies the reference allocation | required unless `--s_forward` is given |
+| `--s_forward <vec>`, `--s_backward <vec>` | Reference allocation given directly, e.g. `"0,1,1,3,5"` | from `--phase1_S_csv` |
+| `--m <int>`, `--n <int>` | Feeder and primary belt counts | required |
+| `--bidirectional <bool>` | Dual-drop operation | `false` |
+| `--top <int>` | Candidates taken from each ranking | `50` |
+| `--blocks <int>` | Batches per allocation | `250000` |
+| `--block_size <int>` | Time steps per batch | `250` |
+| `--alpha <float>` | One-sided significance level | `0.01` |
+| `--eps <float>` | Indifference-zone parameter used for the counterexample test | `0.001` |
+| `--seed0 <int>` | Base seed; disjoint from the seeds `buffer_certify` consumes | `20000000` |
+| `--threads <int>` | Worker threads; `0` uses all available cores | `0` |
+| `--out <path>` | Results CSV | `recheck_results.csv` |
 
 ## Model scope and reproducibility
 
@@ -245,7 +289,8 @@ cd ..
 mkdir -p results
 ./build/meshsim_cli --NumberOfFeeders 4 --NumberOfPrimary 4 --BiDirectional true --buffer_capacity '[[0,0,0,0],[0,0,0,0]]' --T 250000 --seed 123 --block_size 250 --run_mode both --output_csv results/smoke_test.csv
 `
-This should execute rapidly and append a single line to results/smoke_test.csv without throwing errors.
+This should execute rapidly and append a single line to 
+esults/smoke_test.csv without throwing errors.
 
 ## Citation
 

@@ -11,6 +11,12 @@
   Run (example):
     ./buffer_certify --m 6 --n 8 --B 12 --subset one_way_monotone --Num_of_blocks 150 --block_size 200 --eps 0.001 --alpha 0.01 --log_prefix run
 
+  Phase-1 pilot horizons:
+    --Num_of_blocks    blocks per Phase-1 pilot run for the structured set S (also the
+                       length of each Phase-2 extension run of x_S).
+    --Num_of_blocks_C  blocks per Phase-1 pilot run for the competitors C.
+                       Defaults to --Num_of_blocks (i.e. the symmetric design).
+
   Notes:
   - This translation preserves the algorithmic structure. If the Python is slow because the number of
     configurations explodes combinatorially (especially for --bidirectional true), C++ will help
@@ -117,6 +123,44 @@ double normal_inv_cdf(double p) {
   r = q * q;
   return (((((a1*r + a2)*r + a3)*r + a4)*r + a5)*r + a6) * q /
          (((((b1*r + b2)*r + b3)*r + b4)*r + b5)*r + 1.0);
+}
+
+// ----- smallest epsilon satisfying the one-sided validation inequality -----
+// Smallest eps >= 0 such that
+//   mu_S * (1 + eps) - mu_C >= z * sqrt( (1+eps)^2 * var_S/m_S + var_C/m_C ).
+// Epsilon appears on both sides, so the root is obtained numerically. The gap
+// function is continuous and increasing in eps whenever mu_S > z*sqrt(var_S/m_S),
+// so we bracket it by doubling and then bisect. Returns +infinity when no finite
+// eps satisfies the inequality.
+double smallest_eps_one_sided(double muS, double varS, int mS,
+                              double muC, double varC, int mC,
+                              double z) {
+  const double inf = std::numeric_limits<double>::infinity();
+  if (!(muS > 0.0)) return inf;
+
+  const double aS = varS / static_cast<double>(std::max(1, mS));
+  const double aC = varC / static_cast<double>(std::max(1, mC));
+
+  auto gap = [&](double e) {
+    const double one_plus_e = 1.0 + e;
+    return muS * one_plus_e - muC - z * std::sqrt(one_plus_e * one_plus_e * aS + aC);
+  };
+
+  if (gap(0.0) >= 0.0) return 0.0;
+
+  double hi = 1e-6;
+  for (int i = 0; gap(hi) < 0.0; ++i) {
+    hi *= 2.0;
+    if (i > 200 || !std::isfinite(hi)) return inf;
+  }
+
+  double lo = 0.0;
+  for (int i = 0; i < 200; ++i) {
+    const double mid = 0.5 * (lo + hi);
+    if (gap(mid) >= 0.0) hi = mid; else lo = mid;
+    if (hi - lo <= 1e-15 * std::max(1.0, hi)) break;
+  }
+  return hi;
 }
 
 // ----- compositions / allocation enumerators -----
@@ -380,7 +424,8 @@ ThreePhaseResult three_phase_iut_epsilon(
     const std::string& log_csv_prefix,
     double var_fallback = 0.25,
     double m_mult = 1.0,
-    int min_blocks_C = 500) {
+    int min_blocks_C = 500,
+    int Num_of_blocks_C = 0) {
 
   ThreePhaseResult res;
 
@@ -407,6 +452,14 @@ ThreePhaseResult three_phase_iut_epsilon(
   if (base_blocks <= 0) throw std::invalid_argument("Num_of_blocks must be positive.");
   const int T_base = base_blocks * block_size;
 
+  // Phase-1 pilot horizon for the competitors. The reference set S keeps the long
+  // horizon (it selects x_S and feeds the sampling plan); C may be piloted much more
+  // cheaply, since its pilot only plans m(c) and is superseded by the Phase-3 run.
+  const int base_blocks_C = (Num_of_blocks_C > 0) ? Num_of_blocks_C : base_blocks;
+  const int T_base_C = base_blocks_C * block_size;
+  std::cout << "[Phase 1] pilot horizons: S=" << base_blocks
+            << " blocks, C=" << base_blocks_C << " blocks (block_size=" << block_size << ")\n";
+
   // Phase 1: pilot runs
   int next_seed = seed0;
 
@@ -419,9 +472,11 @@ ThreePhaseResult three_phase_iut_epsilon(
     double last_block_var = std::numeric_limits<double>::quiet_NaN();
     int last_m_eff = 0;
 
+    const int T_pilot = (S_set.find(k) != S_set.end()) ? T_base : T_base_C;
+
     for (int r = 0; r < n0; ++r) {
       const int seed = next_seed++;
-      const auto u_post = simulate_blocks_series(m, n, bidirectional, T_base, seed, arm_configs[k], block_size, fast_mode);
+      const auto u_post = simulate_blocks_series(m, n, bidirectional, T_pilot, seed, arm_configs[k], block_size, fast_mode);
       double mu = 0.0;
       double v = var_fallback;
       int m_eff = 0;
@@ -521,10 +576,12 @@ ThreePhaseResult three_phase_iut_epsilon(
       var_j = std::max(0.0, std::min(var_fallback, var_j));
 
       const double Delta = muS * (1.0 + eps_target) - mu_j;
-      const double denom = std::pow(Delta / z, 2.0) - (varS / static_cast<double>(M_S_eff));
+      const double one_plus_eps2 = (1.0 + eps_target) * (1.0 + eps_target);
+      const double denom = std::pow(Delta / z, 2.0) - one_plus_eps2 * (varS / static_cast<double>(M_S_eff));
 
       int m_req = 1;
-      if (Delta <= 0.0 || denom <= 0.0) {
+      const bool infeasible_j = (Delta <= 0.0 || denom <= 0.0);
+      if (infeasible_j) {
         infeasible.push_back(j);
         m_req = M_S_blocks;
       } else {
@@ -537,6 +594,12 @@ ThreePhaseResult three_phase_iut_epsilon(
       }
 
       m_req = std::max(min_blocks_C, m_req);
+
+      // The planned effort for an infeasible competitor is capped at m(x_S). Applying
+      // that cap before the m_mult inflation would leave m_req = m_mult * M_S_blocks,
+      // which the extension loop below can never satisfy: each round raises M_S_blocks
+      // and the requirement rises with it. Re-apply the cap after inflation.
+      if (infeasible_j) m_req = std::min(m_req, M_S_blocks);
 
       m_blocks[j] = m_req;
       if (m_req > max_m) max_m = m_req;
@@ -627,12 +690,8 @@ ThreePhaseResult three_phase_iut_epsilon(
         m_j_eff = 1;
       }
 
-      const double rad = z * std::sqrt((varS3 / static_cast<double>(std::max(1, M_S_eff3))) +
-                                       (varj  / static_cast<double>(std::max(1, m_j_eff))));
-      double eps_req = std::numeric_limits<double>::infinity();
-      if (muS3 > 0.0) {
-        eps_req = std::max(0.0, (muj + rad) / muS3 - 1.0);
-      }
+      const double eps_req = smallest_eps_one_sided(muS3, varS3, M_S_eff3,
+                                                    muj, varj, m_j_eff, z);
 
       if (eps_req > worst_eps) {
         worst_eps = eps_req;
@@ -760,6 +819,7 @@ int main(int argc, char** argv) {
     const int B = as_int(args, "B");
 
     const int Num_of_blocks = as_int(args, "Num_of_blocks", 150);
+    const int Num_of_blocks_C = as_int(args, "Num_of_blocks_C", Num_of_blocks);
     const int block_size = as_int(args, "block_size", 200);
     const bool bidirectional = as_bool(as_string(args, "bidirectional", std::string("false")));
 
@@ -810,7 +870,8 @@ int main(int argc, char** argv) {
         log_prefix,
         /*var_fallback=*/0.25,
         m_mult,
-        min_blocks_C
+        min_blocks_C,
+        Num_of_blocks_C
     );
 
     auto t1 = std::chrono::steady_clock::now();

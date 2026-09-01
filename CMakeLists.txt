@@ -4,6 +4,7 @@ project(MeshSimProject LANGUAGES CXX)
 # Options
 option(BUILD_MESHSIM_CLI "Build the meshsim_cli executable" ON)
 option(BUILD_BUFFER_CERTIFY "Build the buffer_certify tool (separate from MeshSim)" ON)
+option(BUILD_RECHECK "Build the recheck_candidates tool" ON)
 
 # C++ standard
 set(CMAKE_CXX_STANDARD 17)
@@ -41,6 +42,16 @@ if(BUILD_BUFFER_CERTIFY)
   target_link_libraries(buffer_certify PRIVATE meshsim)
 endif()
 
+# -------- recheck_candidates tool --------
+# Re-simulates the leading Phase-3 competitors at a long common horizon.
+if(BUILD_RECHECK)
+  find_package(Threads REQUIRED)
+  add_executable(recheck_candidates
+    recheck_candidates.cpp
+  )
+  target_link_libraries(recheck_candidates PRIVATE meshsim Threads::Threads)
+endif()
+
 # -------- Compiler warnings (optional, safe) --------
 if(MSVC)
   target_compile_options(meshsim PRIVATE /W3)
@@ -50,6 +61,9 @@ if(MSVC)
   if(BUILD_BUFFER_CERTIFY)
     target_compile_options(buffer_certify PRIVATE /W3)
   endif()
+  if(BUILD_RECHECK)
+    target_compile_options(recheck_candidates PRIVATE /W3)
+  endif()
 else()
   target_compile_options(meshsim PRIVATE -Wall -Wextra -Wpedantic)
   if(BUILD_MESHSIM_CLI)
@@ -57,5 +71,8 @@ else()
   endif()
   if(BUILD_BUFFER_CERTIFY)
     target_compile_options(buffer_certify PRIVATE -Wall -Wextra -Wpedantic)
+  endif()
+  if(BUILD_RECHECK)
+    target_compile_options(recheck_candidates PRIVATE -Wall -Wextra -Wpedantic)
   endif()
 endif()
