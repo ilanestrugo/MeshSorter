@@ -245,8 +245,7 @@ cd ..
 mkdir -p results
 ./build/meshsim_cli --NumberOfFeeders 4 --NumberOfPrimary 4 --BiDirectional true --buffer_capacity '[[0,0,0,0],[0,0,0,0]]' --T 250000 --seed 123 --block_size 250 --run_mode both --output_csv results/smoke_test.csv
 `
-This should execute rapidly and append a single line to 
-esults/smoke_test.csv without throwing errors.
+This should execute rapidly and append a single line to results/smoke_test.csv without throwing errors.
 
 ## Citation
 
