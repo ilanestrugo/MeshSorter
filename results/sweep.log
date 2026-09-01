@@ -1,0 +1,138 @@
+nohup: ignoring input
+grid: m in [3 4 5] x B in [10 9 8 7 6 5 4 3 2 1] x [oneway twoway], n=4
+pilot: S=250000 blocks, C=1000 blocks, block_size=250
+plan : alpha=0.01 eps=0.001 kappa=3 min_blocks_C=5000 seed0=123
+jobs : 12 in parallel -> out
+
+[start] m3_n4_B9_twoway  2026-09-01T16:47:47+03:00
+[start] m3_n4_B10_oneway  2026-09-01T16:47:47+03:00
+[start] m3_n4_B6_oneway  2026-09-01T16:47:47+03:00
+[start] m3_n4_B10_twoway  2026-09-01T16:47:47+03:00
+[start] m3_n4_B5_oneway  2026-09-01T16:47:47+03:00
+[start] m3_n4_B7_oneway  2026-09-01T16:47:47+03:00
+[start] m3_n4_B5_twoway  2026-09-01T16:47:47+03:00
+[start] m3_n4_B6_twoway  2026-09-01T16:47:47+03:00
+[start] m3_n4_B7_twoway  2026-09-01T16:47:47+03:00
+[start] m3_n4_B8_oneway  2026-09-01T16:47:47+03:00
+[start] m3_n4_B8_twoway  2026-09-01T16:47:47+03:00
+[start] m3_n4_B9_oneway  2026-09-01T16:47:47+03:00
+[done ] m3_n4_B5_oneway  rc=0  44s  epsilon_hat=0.000000
+[start] m3_n4_B4_oneway  2026-09-01T16:48:31+03:00
+[done ] m3_n4_B6_oneway  rc=0  52s  epsilon_hat=0.000000
+[start] m3_n4_B4_twoway  2026-09-01T16:48:40+03:00
+[done ] m3_n4_B7_oneway  rc=0  53s  epsilon_hat=0.000000
+[start] m3_n4_B3_oneway  2026-09-01T16:48:40+03:00
+[done ] m3_n4_B8_oneway  rc=0  61s  epsilon_hat=0.000000
+[done ] m3_n4_B9_oneway  rc=0  61s  epsilon_hat=0.000000
+[start] m3_n4_B3_twoway  2026-09-01T16:48:49+03:00
+[start] m3_n4_B2_oneway  2026-09-01T16:48:49+03:00
+[done ] m3_n4_B10_oneway  rc=0  70s  epsilon_hat=0.000000
+[start] m3_n4_B2_twoway  2026-09-01T16:48:58+03:00
+[done ] m3_n4_B5_twoway  rc=0  86s  epsilon_hat=0.000084
+[start] m3_n4_B1_oneway  2026-09-01T16:49:14+03:00
+[done ] m3_n4_B4_oneway  rc=0  44s  epsilon_hat=0.000000
+[start] m3_n4_B1_twoway  2026-09-01T16:49:15+03:00
+[done ] m3_n4_B3_oneway  rc=0  36s  epsilon_hat=0.000000
+[start] m4_n4_B10_oneway  2026-09-01T16:49:16+03:00
+[done ] m3_n4_B2_oneway  rc=0  35s  epsilon_hat=0.000000
+[start] m4_n4_B10_twoway  2026-09-01T16:49:24+03:00
+[done ] m3_n4_B6_twoway  rc=0  109s  epsilon_hat=0.000037
+[start] m4_n4_B9_oneway  2026-09-01T16:49:36+03:00
+[done ] m3_n4_B1_oneway  rc=0  26s  epsilon_hat=0.000000
+[start] m4_n4_B9_twoway  2026-09-01T16:49:40+03:00
+[done ] m3_n4_B7_twoway  rc=0  121s  epsilon_hat=0.000029
+[start] m4_n4_B8_oneway  2026-09-01T16:49:48+03:00
+[done ] m3_n4_B3_twoway  rc=0  61s  epsilon_hat=0.000000
+[start] m4_n4_B8_twoway  2026-09-01T16:49:50+03:00
+[done ] m3_n4_B2_twoway  rc=0  58s  epsilon_hat=0.000000
+[start] m4_n4_B7_oneway  2026-09-01T16:49:56+03:00
+[done ] m3_n4_B1_twoway  rc=0  43s  epsilon_hat=0.000000
+[start] m4_n4_B7_twoway  2026-09-01T16:49:58+03:00
+[done ] m3_n4_B4_twoway  rc=0  79s  epsilon_hat=0.000000
+[start] m4_n4_B6_oneway  2026-09-01T16:50:00+03:00
+[done ] m3_n4_B8_twoway  rc=0  149s  epsilon_hat=0.000033
+[start] m4_n4_B6_twoway  2026-09-01T16:50:16+03:00
+[done ] m3_n4_B9_twoway  rc=0  168s  epsilon_hat=0.000028
+[start] m4_n4_B5_oneway  2026-09-01T16:50:35+03:00
+[done ] m3_n4_B10_twoway  rc=0  203s  epsilon_hat=0.000037
+[start] m4_n4_B5_twoway  2026-09-01T16:51:10+03:00
+[done ] m4_n4_B6_oneway  rc=0  115s  epsilon_hat=0.000000
+[start] m4_n4_B4_oneway  2026-09-01T16:51:55+03:00
+[done ] m4_n4_B5_oneway  rc=0  90s  epsilon_hat=0.000000
+[start] m4_n4_B4_twoway  2026-09-01T16:52:05+03:00
+[done ] m4_n4_B7_oneway  rc=0  129s  epsilon_hat=0.000000
+[start] m4_n4_B3_oneway  2026-09-01T16:52:06+03:00
+[done ] m4_n4_B8_oneway  rc=0  156s  epsilon_hat=0.000000
+[start] m4_n4_B3_twoway  2026-09-01T16:52:24+03:00
+[done ] m4_n4_B9_oneway  rc=0  182s  epsilon_hat=0.000000
+[start] m4_n4_B2_oneway  2026-09-01T16:52:38+03:00
+[done ] m4_n4_B10_oneway  rc=0  209s  epsilon_hat=0.000000
+[start] m4_n4_B2_twoway  2026-09-01T16:52:45+03:00
+[done ] m4_n4_B3_oneway  rc=0  62s  epsilon_hat=0.000000
+[start] m4_n4_B1_oneway  2026-09-01T16:53:08+03:00
+[done ] m4_n4_B4_oneway  rc=0  76s  epsilon_hat=0.000000
+[start] m4_n4_B1_twoway  2026-09-01T16:53:12+03:00
+[done ] m4_n4_B2_oneway  rc=0  50s  epsilon_hat=0.000000
+[start] m5_n4_B10_oneway  2026-09-01T16:53:28+03:00
+[done ] m4_n4_B1_oneway  rc=0  37s  epsilon_hat=0.000000
+[start] m5_n4_B10_twoway  2026-09-01T16:53:45+03:00
+[done ] m4_n4_B2_twoway  rc=0  86s  epsilon_hat=0.000000
+[start] m5_n4_B9_oneway  2026-09-01T16:54:11+03:00
+[done ] m4_n4_B1_twoway  rc=0  60s  epsilon_hat=0.000000
+[start] m5_n4_B9_twoway  2026-09-01T16:54:12+03:00
+[done ] m4_n4_B3_twoway  rc=0  121s  epsilon_hat=0.000000
+[start] m5_n4_B8_oneway  2026-09-01T16:54:25+03:00
+[done ] m4_n4_B4_twoway  rc=0  175s  epsilon_hat=0.000205
+[start] m5_n4_B8_twoway  2026-09-01T16:55:00+03:00
+[done ] m4_n4_B5_twoway  rc=0  247s  epsilon_hat=0.000496
+[start] m5_n4_B7_oneway  2026-09-01T16:55:17+03:00
+[done ] m4_n4_B6_twoway  rc=0  399s  epsilon_hat=0.000378
+[start] m5_n4_B7_twoway  2026-09-01T16:56:55+03:00
+[done ] m4_n4_B7_twoway  rc=0  550s  epsilon_hat=0.000693
+[start] m5_n4_B6_oneway  2026-09-01T16:59:08+03:00
+[done ] m5_n4_B7_oneway  rc=0  232s  epsilon_hat=0.000000
+[start] m5_n4_B6_twoway  2026-09-01T16:59:10+03:00
+[done ] m5_n4_B8_oneway  rc=0  306s  epsilon_hat=0.000000
+[start] m5_n4_B5_oneway  2026-09-01T16:59:31+03:00
+[done ] m5_n4_B9_oneway  rc=0  369s  epsilon_hat=0.000000
+[start] m5_n4_B5_twoway  2026-09-01T17:00:20+03:00
+[done ] m5_n4_B10_oneway  rc=0  463s  epsilon_hat=0.000359
+[start] m5_n4_B4_oneway  2026-09-01T17:01:11+03:00
+[done ] m5_n4_B5_oneway  rc=0  139s  epsilon_hat=0.000000
+[start] m5_n4_B4_twoway  2026-09-01T17:01:50+03:00
+[done ] m5_n4_B6_oneway  rc=0  191s  epsilon_hat=0.000000
+[start] m5_n4_B3_oneway  2026-09-01T17:02:20+03:00
+[done ] m5_n4_B4_oneway  rc=0  116s  epsilon_hat=0.000000
+[start] m5_n4_B3_twoway  2026-09-01T17:03:08+03:00
+[done ] m4_n4_B8_twoway  rc=0  810s  epsilon_hat=0.000847
+[start] m5_n4_B2_oneway  2026-09-01T17:03:20+03:00
+[done ] m5_n4_B3_oneway  rc=0  81s  epsilon_hat=0.000000
+[start] m5_n4_B2_twoway  2026-09-01T17:03:41+03:00
+[done ] m5_n4_B2_oneway  rc=0  64s  epsilon_hat=0.000000
+[start] m5_n4_B1_oneway  2026-09-01T17:04:24+03:00
+[done ] m5_n4_B1_oneway  rc=0  46s  epsilon_hat=0.000000
+[start] m5_n4_B1_twoway  2026-09-01T17:05:11+03:00
+[done ] m5_n4_B2_twoway  rc=0  115s  epsilon_hat=0.000000
+[done ] m5_n4_B3_twoway  rc=0  183s  epsilon_hat=0.000000
+[done ] m5_n4_B1_twoway  rc=0  76s  epsilon_hat=0.000000
+[done ] m5_n4_B4_twoway  rc=0  369s  epsilon_hat=0.001303
+[done ] m4_n4_B9_twoway  rc=0  1169s  epsilon_hat=0.001204
+[done ] m5_n4_B5_twoway  rc=0  694s  epsilon_hat=0.000859
+[done ] m4_n4_B10_twoway  rc=0  1671s  epsilon_hat=0.000837
+[done ] m5_n4_B6_twoway  rc=0  1353s  epsilon_hat=0.001026
+[done ] m5_n4_B7_twoway  rc=0  2861s  epsilon_hat=0.001220
+[done ] m5_n4_B8_twoway  rc=0  5955s  epsilon_hat=0.001444
+[done ] m5_n4_B9_twoway  rc=0  10074s  epsilon_hat=0.001251
+[done ] m5_n4_B10_twoway  rc=0  18531s  epsilon_hat=0.001441
+
+B=0 rows via ./build/meshsim_cli (T = 62500000 time steps)
+[done ] m3_n4_B0_oneway
+[done ] m3_n4_B0_twoway
+[done ] m4_n4_B0_oneway
+[done ] m4_n4_B0_twoway
+[done ] m5_n4_B0_oneway
+[done ] m5_n4_B0_twoway
+B=0 throughputs appended to out/b0_rows.csv (column Throughput; epsilon_hat = 0)
+
+sweep complete. combined summary: out/summary_all_runs.csv  (60 instances)
+per-instance logs and phase CSVs are in out/
