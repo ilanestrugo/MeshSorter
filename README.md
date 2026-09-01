@@ -222,25 +222,6 @@ The simulator represents an idealized, synchronized system:
 
 To reproduce the exact experiments, tables, and figures reported in the manuscript, the commands and data are organized in the following directories. All runs used a base random seed of 123.
 
-#### 1. Loader Utilization Experiments
-- **Commands:** Found in Loader Utilization/meshsim_cli_n4_m4_B0-10.txt and Loader Utilization/meshsim_cli_n4_m4_B0-10_All.txt. 
-- **Configuration:** These scripts execute meshsim_cli for a 4x4 system, sweeping buffer capacities up to B=10, over a simulation horizon of T = 2500000 steps and a batch size of 250.
-- **Outputs & Plots:** The simulation outputs are saved to Loader Utilization/meshsim_result.csv. The output tables and plotted results from the manuscript (Figure 7) were generated directly from the aggregated Excel sheets meshsim_result_4X4_B0-10.xlsx and its variations within this directory. The exact data points used for the plot are captured in the .dat files (e.g., m4_n4_B10_OneWay_efficiency_front_data.dat).
-
-#### 2. Analytical Model vs. Simulation Comparison
-- **Commands:** Found in Sim-Model Compare/ (e.g., meshsim_cli_oneway_n15_m10_B10-15-20.txt, meshsim_cli_twoway_n15_m10_B10-15-20.txt, etc.).
-- **Configuration:** These sweeps test larger system scales (=15$, =10..15$) across budgets up to =20$, using a horizon of T = 2500000.
-- **Outputs:** The consolidated results that power the manuscript's correlation and accuracy tables are available in Sim-Model Compare/Correlation Compare.xlsx and meshsim_result.xlsx.
-
-#### 3. Buffer-Allocation Hypothesis Certification
-- **Commands:** Found in Hypothesis files/ (e.g., Hypothesis_3Phase_m4_n4_oneway_CPP.txt).
-- **Configuration:** These scripts invoke uffer_certify for Phase 1-3 statistical testing to evaluate structural hypotheses. They run with T = 250000 (Num_of_blocks 250000, lock_size 250), lpha = 0.01, eps = 0.001, and seed0 = 123.
-- **Outputs:** The certifications are logged in the CSV/XLSX summaries within the same directory, specifically summary_all_runs.csv and summary_all_runs.xlsx.
-
-#### 4. Empirical Ordered Destination Sequence (Table 4)
-- **Configuration:** These runs replicate the $4 \times 4$ dual-drop baseline using the Olist dataset to compare independent uniform random performance against an empirical chronological sequence. They sweep over the exact same buffer allocations as in Table 4.
-- **Commands:** Run the C++ simulator by explicitly appending `--arrival_sequence_csv "olist_orders_ForRun.csv"`. This instructs the C++ simulator to bypass the uniform random number generator and instead parse and recirculate the `belt` assignments (9th column) directly from the CSV sequence.
-- **Outputs:** The generated CSV results correspond precisely to the `TH Empirical` column in Table 4.
 
 ## Environment and Dependencies
 
@@ -255,7 +236,7 @@ To successfully compile and reproduce the runs, ensure your environment meets th
 
 To quickly validate that your environment is set up correctly and the simulator compiles properly, run the following smoke test from the root directory:
 
-`ash
+`Bash
 mkdir -p build && cd build
 cmake .. -DCMAKE_BUILD_TYPE=Release
 cmake --build . --parallel
