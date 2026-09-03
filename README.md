@@ -141,6 +141,9 @@ Flag names are case-sensitive.
 | `--NumberOfPrimary <int>` | Number of primary belts, `n` | required |
 | `--T <int>` | Simulation horizon in time steps | required |
 | `--BiDirectional <bool>` | `true` for dual-drop operation; `false` for single-drop | `true` |
+| `--delta_f <int>` | Spacing between primary belts on the feeder | `4` |
+| `--delta_p <int>` | Injection spacing parameter | `2` |
+| `--delta_L <int>` | Asymmetry (feeder length difference) | `0` |
 | `--buffer_capacity <str>` | Forward/backward buffer vectors | all zero |
 | `--seed <int>` | Mersenne Twister seed | `0` |
 | `--block_size <int>` | Batch size in time steps | `100` |
@@ -220,7 +223,7 @@ itself show that any allocation outside the structured set is genuinely better.
 `recheck_candidates` re-simulates the leading competitors, together with the reference
 allocation, at a long common horizon on an independent seed range, and reports for each one
 whether its throughput exceeds that of the reference allocation, whether it exceeds
-`(1+eps)` times it (a genuine counterexample to the conjecture), and the value of `eps_c`
+`(1+eps)` times it (a genuine counterexample to the empirical design rule), and the value of `eps_c`
 implied by the precise estimates. Candidates are the union of the top `--top` rows by
 `eps_i` and the top `--top` rows by mean in the Phase-3 detail CSV. Allocations are
 simulated in parallel across `--threads` threads.

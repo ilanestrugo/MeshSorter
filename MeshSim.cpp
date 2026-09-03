@@ -49,7 +49,10 @@ SimulationResult run_simulation(
     bool Verbal,
     int block_size,
     bool collect_buffer_stats,
-    std::string arrival_sequence_csv) {
+    std::string arrival_sequence_csv,
+    int delta_f,
+    int delta_p,
+    int delta_L) {
 
   if (NumberOfFeeders <= 0 || NumberOfPrimary <= 0) {
     throw std::invalid_argument("NumberOfFeeders and NumberOfPrimary must be positive.");
@@ -59,8 +62,10 @@ SimulationResult run_simulation(
 
   const int m = NumberOfFeeders;
   const int n = NumberOfPrimary;
-  const int PrimaryLength = 4 * m;
-  const int FeederLength  = 4 * n + 8;
+  const int PrimaryLength = delta_f * m;
+  auto get_feeder_length = [&](int f) {
+    return 2 * n * delta_p + 4 * delta_p + f * delta_L;
+  };
   const int dirs = BiDirectional ? 2 : 1;
 
   std::vector<int> empirical_sequence;
@@ -101,7 +106,10 @@ SimulationResult run_simulation(
   std::vector<std::vector<uint8_t>> primary_belts(n, std::vector<uint8_t>(PrimaryLength, 0));
   std::vector<int> primary_head(n, 0);
 
-  std::vector<std::vector<int>> feeder_belts(m, std::vector<int>(FeederLength, 0));
+  std::vector<std::vector<int>> feeder_belts(m);
+  for (int i = 0; i < m; ++i) {
+      feeder_belts[i].resize(get_feeder_length(i), 0);
+  }
   std::vector<int> feeder_head(m, 0);
 
   // buffer_levels: [m][n][dirs] flattened
@@ -145,15 +153,15 @@ SimulationResult run_simulation(
 
   for (int i = 0; i < m; ++i) {
     for (int j = 0; j < n; ++j) {
-      junction.push_back(Junction{i, 1 + 2 * j, j, 4 * i, 0});
+      junction.push_back(Junction{i, 1 + delta_p * j, j, delta_f * i, 0});
       if (BiDirectional) {
-        junction.push_back(Junction{i, FeederLength - (3 + 2 * j), j, 2 + 4 * i, 1});
+        junction.push_back(Junction{i, get_feeder_length(i) - ((2 * delta_p - 1) + delta_p * j), j, delta_f * i + 2, 1});
       }
     }
   }
 
   auto feeder_at = [&](int f, int logical_pos) -> int& {
-    const int phys = (feeder_head[f] + logical_pos) % FeederLength;
+    const int phys = (feeder_head[f] + logical_pos) % get_feeder_length(f);
     return feeder_belts[f][phys];
   };
   auto primary_at = [&](int p, int logical_pos) -> uint8_t& {
@@ -228,7 +236,7 @@ SimulationResult run_simulation(
 
     // Advance feeder belts: circular roll
     for (int f = 0; f < m; ++f) {
-      feeder_head[f] = mod_pos(feeder_head[f] - 1, FeederLength);
+      feeder_head[f] = mod_pos(feeder_head[f] - 1, get_feeder_length(f));
     }
 
     // Block collection

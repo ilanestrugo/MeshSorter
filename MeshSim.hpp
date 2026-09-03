@@ -57,7 +57,10 @@ SimulationResult run_simulation(
     bool Verbal,
     int block_size,
     bool collect_buffer_stats,
-    std::string arrival_sequence_csv = "");
+    std::string arrival_sequence_csv = "",
+    int delta_f = 4,
+    int delta_p = 2,
+    int delta_L = 0);
 
 // Helpers (translated from Python)
 std::vector<double> autocorr(const std::vector<int>& blocks, int max_lag = 10);

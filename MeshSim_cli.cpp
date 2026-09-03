@@ -350,6 +350,9 @@ int main(int argc, char** argv) {
     std::string run_mode = "both";
     std::string output_csv = "MeshSim_results.csv";
     std::string arrival_sequence_csv = "";
+    int delta_f = 4;
+    int delta_p = 2;
+    int delta_L = 0;
     std::string buffer_capacity_str;
 
     // Minimal argument parser
@@ -385,6 +388,12 @@ int main(int argc, char** argv) {
         output_csv = need(a);
       } else if (a == "--arrival_sequence_csv") {
         arrival_sequence_csv = need(a);
+      } else if (a == "--delta_f") {
+        delta_f = std::stoi(need(a));
+      } else if (a == "--delta_p") {
+        delta_p = std::stoi(need(a));
+      } else if (a == "--delta_L") {
+        delta_L = std::stoi(need(a));
       } else if (a == "--Verbal") {
         Verbal = true;
       } else if (a == "--ci_enable") {
@@ -454,7 +463,10 @@ int main(int argc, char** argv) {
         Verbal,
         block_size,
         collect_buffer_stats,
-        arrival_sequence_csv
+        arrival_sequence_csv,
+        delta_f,
+        delta_p,
+        delta_L
       );
 
       warmup_blocks = meshsim::detect_warmup_from_blocks(sim.block_counts, sim.block_sizes, /*strict=*/true);
