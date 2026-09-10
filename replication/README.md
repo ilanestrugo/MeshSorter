@@ -51,7 +51,8 @@ library.
 ```
 
 runs the unbuffered dual-drop system with 4 primary belts and 4 feeder loops
-under the manuscript's defaults, and prints
+under the manuscript's defaults, and prints (the worker count shown is what a
+machine with 32 hardware threads chooses)
 
 ```
 MeshSorter, dual-drop, n = 4 primary belts, m = 4 feeder loops
@@ -60,10 +61,11 @@ MeshSorter, dual-drop, n = 4 primary belts, m = 4 feeder loops
                          backward, feeder 1 21 19 17 15
   crossings on a belt    s^f 0 4 8 12   s^b 2 6 10 14
   buffers                none (largest capacity 0)
-  design                 10 replications of 4000000 steps, warm-up 20000 each, seed 20260901
+  design                 30 replications of 1330000 steps, warm-up 20000 each, seed 20260901
+                         30 worker threads
 
-  throughput   3.02785   95% half-width 0.00021   [3.02764, 3.02806]
-  replications  3.02797 3.02766 ...
+  throughput   3.02762   95% half-width 0.00020   [3.02742, 3.02782]
+  replications  3.02699 3.02742 3.02749 3.02733 3.02809 ...
 ```
 
 `--json` prints the same result as one JSON object, which is what the table
@@ -185,6 +187,22 @@ first `-w` time steps and averages the throughput over the next `-T` steps. With
 Ybar  +-  t_{R-1,0.975} * s / sqrt(R)
 ```
 
+The defaults are 30 replications of 1,330,000 steps. Only the product of the two
+fixes the width of the interval, so this is the same simulation effort as 10
+replications of 4,000,000 steps, but the variance estimate carries 29 degrees of
+freedom rather than 9. That narrows the interval a little, since `t` falls from
+2.262 to 2.045, and, more usefully, makes the half-width itself a stable
+quantity instead of one that varies by a quarter from configuration to
+configuration.
+
+The replications are handed out from a shared counter, so a worker that finishes
+early takes the next one rather than waiting for the rest of its wave.
+`--threads` defaults to two fewer than the hardware threads the machine reports,
+capped at the number of replications: 30 workers on a machine with 32 hardware
+threads, which runs the default 30 replications in a single pass and leaves two
+threads for everything else. Replication `r` always draws the same stream, so
+the number of workers changes the wall clock and nothing else.
+
 The default warm-up is the rule of Supplement S1,
 
 ```
@@ -202,10 +220,9 @@ paper, and the estimates are insensitive to the choice: deleting nothing at all
 moves them by less than 0.0006 items per step, and deleting 10,000 rather than
 1,000,000 moves them by less than 0.0002.
 
-Each `(replication, feeder)` pair draws from its own stream. The stream seed is
-derived from `--seed` and the two indices, so the result does not depend on how
-the replications are distributed over threads, and `--threads` changes only the
-wall clock. Rerunning with the same `--seed` reproduces every number exactly.
+Each `(replication, feeder)` pair draws from its own stream, seeded from
+`--seed` and the two indices, so rerunning with the same `--seed` reproduces
+every number exactly.
 
 ## Reproducing the tables
 
@@ -222,8 +239,20 @@ python3 table2.py
 
 Each script carries its parameters at the top of the file, written out in full,
 and prints the figures a caption needs: the largest half-width over the panel,
-the warm-up actually used, and for Table 1 the pairwise-separation count. The
-LaTeX bodies are written to `results/table1.tex` and `results/table2.tex`.
+the warm-up actually used, and for Table 1 the pairwise-separation count.
+
+Three kinds of output are written:
+
+* `results/table1.tex`, `results/table2.tex`, the LaTeX bodies of the panels,
+  ready to paste into the manuscript;
+* `results/table1.csv`, `results/table2.csv`, one row per cell with the
+  estimate, its half-width and standard deviation, the gain over the reference
+  panel where there is one, and the design and geometry that produced it;
+* `results/raw/`, described below.
+
+The CSVs are plain comma-separated text rather than a spreadsheet format, so the
+scripts need nothing beyond the Python standard library; every spreadsheet
+program opens them directly.
 
 The raw numbers behind every published figure are kept under `results/raw`, and
 are committed with the rest, so a reader can check a table without rerunning
@@ -244,9 +273,17 @@ change the answer, so rerunning a table costs nothing and the two tables share
 the panel they have in common. That directory is a cache and is not committed;
 delete it, or set `MESHSORTER_NOCACHE=1`, to force a fresh run.
 
-On two cores the full set takes about forty minutes. `--quick` runs the same
+The full set is 144 configurations at about 4 x 10^7 simulated steps each. On
+two cores that took a couple of hours; on a machine that can run all 30
+replications at once it is a small fraction of that. `--quick` runs the same
 grids at low precision in a few minutes, which is enough to check that
 everything is wired up.
+
+The results committed here were produced before the defaults changed, with 10
+replications of 4,000,000 steps rather than 30 of 1,330,000. The two designs
+carry the same simulation effort and the same protocol, and every raw file
+records the `steps` and `replications` that produced it, so the provenance of a
+number is never in doubt. The next full run replaces them.
 
 `MESHSORTER_THREADS` sets the worker threads per cell, and defaults to the
 number of cores. `MESHSORTER_BIN` points at the binary if it is not beside the
@@ -290,12 +327,13 @@ BUFFERS
   -b, --buffers SPEC     1, M, or 2*M*N capacities                    (default 0)
 
 EXPERIMENT
-  -T, --steps T          measured steps per replication         (default 4000000)
-  -R, --reps R           independent replications                     (default 10)
+  -T, --steps T          measured steps per replication          (default 1330000)
+  -R, --reps R           independent replications                     (default 30)
   -w, --warmup W         steps discarded per replication
                                        (default max(20000, 10*(c+1)*L))
       --seed S           base seed                             (default 20260901)
-  -t, --threads K        worker threads                               (default R)
+  -t, --threads K        worker threads      (default: hardware threads - 2,
+                                             capped at R)
 
 OUTPUT
       --json             machine-readable output

@@ -28,14 +28,14 @@ DF      = 4
 WIDTH   = 2                       # base loop length is 4n + 8
 STAGGER_STEP = 1                  # L_1 = L_2 = L, L_j = L + (j-2) for j >= 3
 BUFFERS = None                    # unbuffered
-STEPS   = 4_000_000
-REPS    = 10
+STEPS   = 1_330_000
+REPS    = 30
 WARMUP  = None                    # None = the rule of Supplement S1
 SEED    = 20260901
 # ---------------------------------------------------------------------------
 
 if "--quick" in sys.argv:
-    STEPS, REPS = 200_000, 4
+    STEPS, REPS = 100_000, 8
 
 common.require_binary()
 geo = dict(steps=STEPS, reps=REPS, warmup=WARMUP, seed=SEED,
@@ -61,6 +61,14 @@ common.save_raw("table2a_single_staggered", A)
 common.save_raw("table2b_dual_staggered_return", B)
 common.save_raw("table2c_dual_staggered_turnaround", C)
 
+common.write_table_csv("results/table2.csv",
+                       [("table2a_single_staggered", A, EXACT),
+                        ("table2b_dual_staggered_return", B,
+                         {k: REF[k]["throughput"] for k in REF}),
+                        ("table2c_dual_staggered_turnaround", C,
+                         {k: REF[k]["throughput"] for k in REF}),
+                        ("table1b_dual_identical_reference", REF, None)])
+
 body = []
 body.append("%% panel (a), single-drop, gain over the exact identical-length values\n"
             + common.latex_rows(BELTS, FEEDERS,
@@ -80,7 +88,7 @@ print(f"warm-up used: {next(iter(A.values()))['warmup']} steps")
 
 worse = [(n, m) for n in BELTS for m in FEEDERS
          if C[(n, m)]["throughput"] <= B[(n, m)]["throughput"]]
-tcrit = 2.262 if REPS == 10 else 2.0
+tcrit = {10: 2.262, 20: 2.093, 30: 2.045, 40: 2.023}.get(REPS, 2.0)
 notsig = [(n, m) for n in BELTS for m in FEEDERS
           if C[(n, m)]["throughput"] - B[(n, m)]["throughput"] <=
              math.sqrt((C[(n,m)]["halfwidth"])**2 + (B[(n,m)]["halfwidth"])**2)]

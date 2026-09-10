@@ -18,8 +18,8 @@ CELLS = [(4, 4), (4, 9), (6, 6), (9, 4), (9, 9)]
 if "--full" in sys.argv:
     CELLS = [(n, m) for n in range(4, 10) for m in range(4, 10)]
 
-STEPS, REPS, SEED = 4_000_000, 10, 20260901
-TCRIT = 2.262                      # t_{9, 0.975}
+STEPS, REPS, SEED = 1_330_000, 30, 20260901
+TCRIT = 2.045                      # t_{29, 0.975}
 
 common.require_binary()
 print(f"{'n':>3} {'m':>3} {'exact':>12} {'simulated':>12} {'half-width':>11} "

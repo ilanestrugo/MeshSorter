@@ -114,6 +114,36 @@ def save_raw(tag, results, extra=None):
     print(f"wrote results/raw/{tag}.csv and {len(results)} JSON files", file=sys.stderr)
 
 
+def write_table_csv(path, panels):
+    """One tidy CSV for a whole table.
+
+    `panels` is a list of (panel name, results dict, reference dict or None).
+    One row per cell: the estimate, its half-width and standard deviation, the
+    design that produced it, and the gain over the reference when there is one.
+    CSV rather than a spreadsheet format so that the scripts need nothing
+    beyond the Python standard library; every spreadsheet program opens it.
+    """
+    rows = ["panel,n,m,throughput,halfwidth,sd,gain_percent,replications,"
+            "steps,warmup,seed,dual,loops"]
+    for name, res, ref in panels:
+        for (n, m) in sorted(res):
+            r = res[(n, m)]
+            if isinstance(r, dict):
+                gain = "" if ref is None else f"{100*(r['throughput']/ref[(n,m)]-1):.4f}"
+                loops = " ".join(str(x) for x in r["loops"])
+                rows.append(f'{name},{n},{m},{r["throughput"]:.9f},'
+                            f'{r["halfwidth"]:.9f},{r["sd"]:.9f},{gain},'
+                            f'{r["reps"]},{r["steps"]},{r["warmup"]},{r["seed"]},'
+                            f'{str(r["dual"]).lower()},"{loops}"')
+            else:                       # an exactly computed panel
+                rows.append(f'{name},{n},{m},{r:.9f},,,,,,,,,')
+    p = os.path.join(HERE, path)
+    os.makedirs(os.path.dirname(p), exist_ok=True)
+    with open(p, "w") as f:
+        f.write("\n".join(rows) + "\n")
+    print(f"wrote {path}", file=sys.stderr)
+
+
 def write(path, text):
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "w") as f:

@@ -26,14 +26,14 @@ DF      = 4                       # feeder spacing along a primary belt
 WIDTH   = 2                       # forward-to-backward distance on a belt
                                   # loop length is therefore 4n + 8
 BUFFERS = None                    # unbuffered
-STEPS   = 4_000_000               # measured steps per replication
-REPS    = 10                      # independent replications
+STEPS   = 1_330_000               # measured steps per replication
+REPS    = 30                      # independent replications
 WARMUP  = None                    # None = the rule of Supplement S1
 SEED    = 20260901
 # ---------------------------------------------------------------------------
 
 if "--quick" in sys.argv:
-    STEPS, REPS = 200_000, 4
+    STEPS, REPS = 100_000, 8
 
 common.require_binary()
 
@@ -51,6 +51,9 @@ hw = common.max_halfwidth(B)
 warm = next(iter(B.values()))["warmup"]
 
 common.save_raw("table1b_dual_identical", B)
+common.write_table_csv("results/table1.csv",
+                       [("table1a_single_exact", A, None),
+                        ("table1b_dual_identical", B, None)])
 common.write("results/table1.tex",
              "%% panel (a), single-drop, exact\n" + body_a +
              "\n%% panel (b), dual-drop, simulated\n" + body_b + "\n")
@@ -61,15 +64,15 @@ print(f"warm-up used: {warm} steps, {REPS} replications of {STEPS} steps")
 
 keys = list(B)
 P = len(keys) * (len(keys) - 1) // 2
-tcrit = 2.262 if REPS == 10 else None
+tcrit = {10: 2.262, 20: 2.093, 30: 2.045, 40: 2.023}.get(REPS)
 zbonf = 3.95                       # two-sided normal quantile for 0.05/630
 fails_pc = fails_bf = 0
 closest = None
 for a, b in itertools.combinations(keys, 2):
-    sa = B[a]["halfwidth"] / (tcrit or 1) ; sb = B[b]["halfwidth"] / (tcrit or 1)
+    sa = B[a]["sd"] / math.sqrt(REPS); sb = B[b]["sd"] / math.sqrt(REPS)
     se = math.sqrt(sa * sa + sb * sb)
     d = abs(B[a]["throughput"] - B[b]["throughput"])
-    if d <= (tcrit or 2) * se: fails_pc += 1
+    if d <= (tcrit or 2.0) * se: fails_pc += 1
     if d <= zbonf * se:        fails_bf += 1
     if closest is None or d < closest[0]: closest = (d, a, b, zbonf * se)
 print(f"pairwise differences in panel (b): {P} pairs, "

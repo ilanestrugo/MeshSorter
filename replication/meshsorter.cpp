@@ -124,6 +124,12 @@
 //
 //        Ybar +- t_{R-1,0.975} * s / sqrt(R) .
 //
+//  The defaults are R = 30 replications of T = 1,330,000 steps.  Only the
+//  product R*T fixes the width of the interval, so this is the same simulation
+//  effort as 10 replications of 4,000,000 steps, but it leaves 29 degrees of
+//  freedom in the variance estimate rather than 9, which both narrows the
+//  interval slightly and makes the half-width itself a stable quantity.
+//
 //  The default warm-up is the rule of Supplement S1,
 //
 //        W = max( 20000 , 10 * (c_max + 1) * L_max ) ,
@@ -140,6 +146,7 @@
 #include <string>
 #include <vector>
 #include <thread>
+#include <atomic>
 #include <algorithm>
 #include <stdexcept>
 #include <sstream>
@@ -196,10 +203,10 @@ struct Config {
 
     std::vector<int> bufF, bufB;   // capacity per crossing, indexed [j*n + i]
 
-    long long steps = 4000000;     // measured steps per replication
+    long long steps = 1330000;     // measured steps per replication
     long long warmup = -1;         // -1 = the rule of Supplement S1
-    int  reps = 10;
-    int  threads = 0;              // 0 = one per replication
+    int  reps = 30;
+    int  threads = 0;              // 0 = choose from the hardware
     uint64_t seed = 20260901ULL;
     bool json = false;
     bool perFeeder = false;
@@ -493,15 +500,17 @@ BUFFERS
                          1..N then backward crossings 1..N            (default 0)
 
 EXPERIMENT
-  -T, --steps T          measured time steps per replication          (default 4000000)
-  -R, --reps R           independent replications                     (default 10)
+  -T, --steps T          measured time steps per replication          (default 1330000)
+  -R, --reps R           independent replications                     (default 30)
   -w, --warmup W         time steps discarded from each replication
                          (default max(20000, 10*(c+1)*L), the rule of
                          Supplement S1, where c is the largest buffer
                          capacity and L the longest feeder loop)
       --seed S           base seed                                    (default 20260901)
-  -t, --threads K        worker threads; the result does not depend
-                         on this                                      (default R)
+  -t, --threads K        worker threads; the result does not depend on
+                         this, only the wall clock does
+                         (default: two fewer than the hardware
+                          threads this machine reports, capped at R)
 
 OUTPUT
       --json             machine-readable output
@@ -590,27 +599,39 @@ int main(int argc, char **argv) {
 
         if (cfg.warmup < 0)
             cfg.warmup = std::max(20000LL, 10LL * (ly.cmax + 1) * ly.Lmax);
-        if (cfg.threads <= 0) cfg.threads = cfg.reps;
+        if (cfg.threads <= 0) {
+            // Leave two hardware threads for the operating system and for
+            // whatever else the machine is doing, and never start more workers
+            // than there are replications to run.
+            const unsigned hw = std::thread::hardware_concurrency();
+            const int avail = (hw > 3u) ? (int)hw - 2 : 1;
+            cfg.threads = std::min(cfg.reps, avail);
+        }
 
-        // ---- run the replications, one worker thread at a time ------------
+        // ---- run the replications ------------------------------------------
+        // The workers pull replications from a shared counter, so a worker that
+        // finishes early picks up the next one instead of idling until the rest
+        // of its wave is done.  Replication r always uses the same stream, so
+        // the result does not depend on how many workers there are.
         std::vector<double> Y((size_t)cfg.reps, 0.0);
         std::vector<std::vector<long long>> perFeeder((size_t)cfg.reps);
-        int done = 0;
-        while (done < cfg.reps) {
-            const int batch = std::min(cfg.threads, cfg.reps - done);
+        std::atomic<int> nextRep{0};
+        {
             std::vector<std::thread> pool;
-            pool.reserve(batch);
-            for (int b = 0; b < batch; b++) {
-                const int r = done + b;
-                pool.emplace_back([&, r]() {
-                    uint64_t s = cfg.seed + 0x1000193ULL * (uint64_t)(r + 1);
-                    Replication rep(ly, cfg.warmup, cfg.steps, splitmix64(s));
-                    Y[(size_t)r] = rep.run();
-                    perFeeder[(size_t)r] = rep.admissions;
+            pool.reserve((size_t)cfg.threads);
+            for (int w = 0; w < cfg.threads; w++) {
+                pool.emplace_back([&]() {
+                    for (;;) {
+                        const int r = nextRep.fetch_add(1);
+                        if (r >= cfg.reps) return;
+                        uint64_t s = cfg.seed + 0x1000193ULL * (uint64_t)(r + 1);
+                        Replication rep(ly, cfg.warmup, cfg.steps, splitmix64(s));
+                        Y[(size_t)r] = rep.run();
+                        perFeeder[(size_t)r] = rep.admissions;
+                    }
                 });
             }
             for (auto &th : pool) th.join();
-            done += batch;
         }
 
         // ---- statistics ----------------------------------------------------
@@ -635,10 +656,10 @@ int main(int argc, char **argv) {
                         cfg.dual ? "true" : "false");
             for (int j = 0; j < cfg.m; j++) std::printf("%s%lld", j ? "," : "", ly.L[j]);
             std::printf("],\"buffer_max\":%d,\"reps\":%d,\"steps\":%lld,\"warmup\":%lld,"
-                        "\"seed\":%llu,\"throughput\":%.9f,\"halfwidth\":%.9f,\"sd\":%.9f,"
-                        "\"replications\":[",
+                        "\"seed\":%llu,\"threads\":%d,\"throughput\":%.9f,"
+                        "\"halfwidth\":%.9f,\"sd\":%.9f,\"replications\":[",
                         ly.cmax, R, cfg.steps, cfg.warmup,
-                        (unsigned long long)cfg.seed, mean, hw, sd);
+                        (unsigned long long)cfg.seed, cfg.threads, mean, hw, sd);
             for (int r = 0; r < R; r++) std::printf("%s%.9f", r ? "," : "", Y[(size_t)r]);
             std::printf("]");
             if (cfg.perFeeder) {
@@ -672,8 +693,10 @@ int main(int argc, char **argv) {
             std::printf("\n  buffers                %s (largest capacity %d)\n",
                         ly.cmax ? "yes" : "none", ly.cmax);
             std::printf("  design                 %d replications of %lld steps, "
-                        "warm-up %lld each, seed %llu\n",
-                        R, cfg.steps, cfg.warmup, (unsigned long long)cfg.seed);
+                        "warm-up %lld each, seed %llu\n"
+                        "                         %d worker thread%s\n",
+                        R, cfg.steps, cfg.warmup, (unsigned long long)cfg.seed,
+                        cfg.threads, cfg.threads == 1 ? "" : "s");
             std::printf("\n  throughput   %.5f   95%% half-width %.5f   [%.5f, %.5f]\n",
                         mean, hw, mean - hw, mean + hw);
             std::printf("  replications ");
