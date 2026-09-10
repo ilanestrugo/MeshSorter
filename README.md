@@ -14,12 +14,14 @@ The software accompanies the manuscript *MeshSorter: A Two-Layer Conveyor Archit
 | `recheck_candidates.cpp` | High-precision re-simulation of the leading Phase-3 competitors |
 | `CMakeLists.txt` | Portable CMake build configuration |
 | `olist_orders_ForRun.csv` | CSV file containing the processed Olist destination sequence |
+| `replication/` | Standalone replication-based simulator and the scripts that reproduce Tables 1 and 2. See [`replication/README.md`](replication/README.md) |
 
-The build produces two executables:
+The build produces four executables:
 
 - `meshsim_cli`: runs the simulator, the analytical approximation, or both.
 - `buffer_certify`: enumerates buffer allocations and evaluates a specified structured subset.
 - `recheck_candidates`: re-simulates the strongest competitors from a certification run at a long common horizon.
+- `meshsorter`: the standalone replication-based simulator described in `replication/README.md`. It estimates the throughput of one configuration from independent replications run in parallel, rather than from batch means taken along a single long run, which is the output-analysis protocol of Supplement S1. It is the program that reproduces Tables 1 and 2.
 
 ## Requirements
 

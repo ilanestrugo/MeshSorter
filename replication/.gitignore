@@ -1,0 +1,5 @@
+# build product
+meshsorter
+# generated results: the .tex bodies and logs are committed, the cache is not
+results/cache/
+__pycache__/

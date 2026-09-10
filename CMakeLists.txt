@@ -5,6 +5,7 @@ project(MeshSimProject LANGUAGES CXX)
 option(BUILD_MESHSIM_CLI "Build the meshsim_cli executable" ON)
 option(BUILD_BUFFER_CERTIFY "Build the buffer_certify tool (separate from MeshSim)" ON)
 option(BUILD_RECHECK "Build the recheck_candidates tool" ON)
+option(BUILD_MESHSORTER "Build the standalone replication-based simulator" ON)
 
 # C++ standard
 set(CMAKE_CXX_STANDARD 17)
@@ -52,6 +53,17 @@ if(BUILD_RECHECK)
   target_link_libraries(recheck_candidates PRIVATE meshsim Threads::Threads)
 endif()
 
+# -------- meshsorter: standalone replication-based simulator --------
+# Self-contained C++17, no dependency on the MeshSim library.  See
+# replication/README.md.
+if(BUILD_MESHSORTER)
+  find_package(Threads REQUIRED)
+  add_executable(meshsorter
+    replication/meshsorter.cpp
+  )
+  target_link_libraries(meshsorter PRIVATE Threads::Threads)
+endif()
+
 # -------- Compiler warnings (optional, safe) --------
 if(MSVC)
   target_compile_options(meshsim PRIVATE /W3)
@@ -64,6 +76,9 @@ if(MSVC)
   if(BUILD_RECHECK)
     target_compile_options(recheck_candidates PRIVATE /W3)
   endif()
+  if(BUILD_MESHSORTER)
+    target_compile_options(meshsorter PRIVATE /W3)
+  endif()
 else()
   target_compile_options(meshsim PRIVATE -Wall -Wextra -Wpedantic)
   if(BUILD_MESHSIM_CLI)
@@ -74,5 +89,8 @@ else()
   endif()
   if(BUILD_RECHECK)
     target_compile_options(recheck_candidates PRIVATE -Wall -Wextra -Wpedantic)
+  endif()
+  if(BUILD_MESHSORTER)
+    target_compile_options(meshsorter PRIVATE -Wall -Wextra -Wpedantic)
   endif()
 endif()
