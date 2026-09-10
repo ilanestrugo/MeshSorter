@@ -285,9 +285,10 @@ carry the same simulation effort and the same protocol, and every raw file
 records the `steps` and `replications` that produced it, so the provenance of a
 number is never in doubt. The next full run replaces them.
 
-`MESHSORTER_THREADS` sets the worker threads per cell, and defaults to the
-number of cores. `MESHSORTER_BIN` points at the binary if it is not beside the
-scripts.
+`MESHSORTER_THREADS` sets the worker threads per cell; left unset, the simulator
+applies its own rule, two fewer than the machine's hardware threads, capped at
+the number of replications. `MESHSORTER_BIN` points at the binary if it is not
+beside the scripts.
 
 ## The exact single-drop values
 

@@ -9,9 +9,11 @@ import json, os, subprocess, sys, hashlib
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 BIN  = os.environ.get("MESHSORTER_BIN", os.path.join(HERE, "meshsorter"))
-# Worker threads per cell.  The result never depends on this; only the wall
-# clock does.  Override with MESHSORTER_THREADS.
-THREADS = int(os.environ.get("MESHSORTER_THREADS", os.cpu_count() or 2))
+# Worker threads per cell.  Left unset, the simulator picks two fewer than the
+# hardware threads the machine reports, capped at the number of replications.
+# MESHSORTER_THREADS overrides that.  The result never depends on it; only the
+# wall clock does.
+THREADS = os.environ.get("MESHSORTER_THREADS")
 
 
 def require_binary():
@@ -28,8 +30,8 @@ def run(n, m, dual=True, stagger=False, extra="turnaround", buffers=None,
            "--dual" if dual else "--single",
            "-T", str(steps), "-R", str(reps), "--seed", str(seed),
            "--dp", str(dp), "--turn", str(turn), "--df", str(df),
-           "--width", str(width),
-           "-t", str(THREADS), "--json"]
+           "--width", str(width), "--json"]
+    if THREADS: cmd += ["-t", str(THREADS)]
     if loop     is not None: cmd += ["-L", str(loop)]
     if loops    is not None: cmd += ["--loops", ",".join(map(str, loops))]
     if stagger:              cmd += ["--stagger", "--extra", extra]
@@ -40,7 +42,9 @@ def run(n, m, dual=True, stagger=False, extra="turnaround", buffers=None,
     # running two tables that share a panel, costs nothing.  The key covers
     # every argument that can change the answer.  Delete the directory, or set
     # MESHSORTER_NOCACHE=1, to force a fresh run.
-    key = hashlib.sha1(" ".join(cmd[1:]).replace(f"-t {THREADS}", "").encode()).hexdigest()[:16]
+    key_cmd = " ".join(cmd[1:])
+    if THREADS: key_cmd = key_cmd.replace(f"-t {THREADS}", "")
+    key = hashlib.sha1(key_cmd.encode()).hexdigest()[:16]
     cache = os.path.join(HERE, "results", "cache", key + ".json")
     if not os.environ.get("MESHSORTER_NOCACHE") and os.path.exists(cache):
         with open(cache) as f:
