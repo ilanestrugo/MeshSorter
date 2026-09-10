@@ -6,6 +6,7 @@ option(BUILD_MESHSIM_CLI "Build the meshsim_cli executable" ON)
 option(BUILD_BUFFER_CERTIFY "Build the buffer_certify tool (separate from MeshSim)" ON)
 option(BUILD_RECHECK "Build the recheck_candidates tool" ON)
 option(BUILD_MESHSORTER "Build the standalone replication-based simulator" ON)
+option(BUILD_CERTIFY_REP "Build the replication-based certification program" ON)
 
 # C++ standard
 set(CMAKE_CXX_STANDARD 17)
@@ -62,6 +63,15 @@ if(BUILD_MESHSORTER)
     replication/meshsorter.cpp
   )
   target_link_libraries(meshsorter PRIVATE Threads::Threads)
+endif()
+
+# -------- certify_rep: replication-based buffer-allocation certification -----
+if(BUILD_CERTIFY_REP)
+  find_package(Threads REQUIRED)
+  add_executable(certify_rep
+    replication/certify_rep.cpp
+  )
+  target_link_libraries(certify_rep PRIVATE Threads::Threads)
 endif()
 
 # -------- Compiler warnings (optional, safe) --------

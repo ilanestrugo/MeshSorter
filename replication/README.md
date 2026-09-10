@@ -19,7 +19,10 @@ Supplement S1 of the manuscript.
 
 | File | Purpose |
 | --- | --- |
-| `meshsorter.cpp` | the simulator, one self-contained C++17 file |
+| `meshsorter_core.hpp` | the model, the geometry and one replication |
+| `meshsorter.cpp` | the command-line simulator |
+| `certify_rep.cpp` | replication-based certification of a structured buffer-allocation class (Supplement S2) |
+| `certify_all.py` | reproduces Table 5, the certification grid |
 | `exact_single_drop.py` | exact throughput of the unbuffered single-drop system, in rational arithmetic |
 | `common.py` | helpers shared by the table scripts: run one configuration, cache the result, format LaTeX |
 | `table1.py` | reproduces Table 1, panels (a) and (b) |
@@ -33,6 +36,7 @@ Supplement S1 of the manuscript.
 
 ```bash
 c++ -O2 -std=c++17 -pthread -o meshsorter meshsorter.cpp
+c++ -O2 -std=c++17 -pthread -o certify_rep certify_rep.cpp
 ```
 
 Any C++17 compiler will do. The parent `CMakeLists.txt` also builds it, as the
@@ -293,6 +297,35 @@ number is never in doubt. The next full run replaces them.
 applies its own rule, two fewer than the machine's hardware threads, capped at
 the number of replications. `MESHSORTER_BIN` points at the binary if it is not
 beside the scripts.
+
+## Certifying a buffer-allocation class
+
+`certify_rep` answers a different question from the simulator: given a
+per-primary-belt budget, does the structured class of allocations defined by the
+manuscript's design rules contain the best allocation? It enumerates every
+feasible allocation, pilots each one for ten replications, plans how many further
+replications each competitor needs to be separated from the structured reference,
+and validates the whole comparison on a disjoint set of random number streams.
+What it reports is the smallest relative gap the data support for any allocation
+outside the class.
+
+```bash
+./certify_rep -n 4 -m 4 -B 10 --dual        # one cell
+./certify_rep --help                        # the options
+python3 certify_all.py                      # the grid of Table 5
+```
+
+The earlier program `buffer_certify` in the parent directory answers the same
+question by batch means along a single long run. `certify_rep` replaces the batch
+by the replication, which is what removes the need to argue that successive
+observations are uncorrelated; the procedure is otherwise the same three phases,
+and is documented in Supplement S1 and S2.
+
+The grid is 54,120 allocations across both mechanisms, three feeder counts and
+eleven budgets, each piloted and then validated, so it is an overnight run on a
+machine with thirty usable threads. Cells are cached under `results/certify`,
+keyed on the whole design, so an interrupted run resumes and a `--quick` pass
+cannot contaminate a full one.
 
 ## The exact single-drop values
 

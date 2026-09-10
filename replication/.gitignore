@@ -1,5 +1,6 @@
-# build product
+# build products
 meshsorter
+certify_rep
 __pycache__/
 # results/cache is a keyed cache of the same runs that results/raw records in
 # readable form; the raw results and the LaTeX bodies are committed, the cache
