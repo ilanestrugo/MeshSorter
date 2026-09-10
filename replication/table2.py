@@ -56,6 +56,11 @@ B = common.grid(BELTS, FEEDERS, dual=True, stagger=True, extra="return", **geo)
 print("panel (c): dual-drop, staggered, slots at the turnaround", file=sys.stderr)
 C = common.grid(BELTS, FEEDERS, dual=True, stagger=True, extra="turnaround", **geo)
 
+common.save_raw("table1b_dual_identical", REF)
+common.save_raw("table2a_single_staggered", A)
+common.save_raw("table2b_dual_staggered_return", B)
+common.save_raw("table2c_dual_staggered_turnaround", C)
+
 body = []
 body.append("%% panel (a), single-drop, gain over the exact identical-length values\n"
             + common.latex_rows(BELTS, FEEDERS,

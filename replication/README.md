@@ -25,7 +25,7 @@ Supplement S1 of the manuscript.
 | `table1.py` | reproduces Table 1, panels (a) and (b) |
 | `table2.py` | reproduces Table 2, panels (a), (b) and (c) |
 | `run_all.sh` | builds the simulator and runs both table scripts |
-| `results/` | generated output; created on first run |
+| `results/` | generated output: the LaTeX bodies, the run logs, and the raw numbers |
 
 ## Build
 
@@ -225,10 +225,24 @@ and prints the figures a caption needs: the largest half-width over the panel,
 the warm-up actually used, and for Table 1 the pairwise-separation count. The
 LaTeX bodies are written to `results/table1.tex` and `results/table2.tex`.
 
-Results are cached under `results/cache`, keyed on every argument that can
+The raw numbers behind every published figure are kept under `results/raw`, and
+are committed with the rest, so a reader can check a table without rerunning
+anything:
+
+* `<panel>_n<N>_m<M>.json`, one file per cell, holding the ten replication
+  averages together with the geometry, the seed, the warm-up and the run length
+  that produced them;
+* `<panel>.csv`, one row per replication of that panel, with the same fields.
+
+The panels are named `table1b_dual_identical`, `table2a_single_staggered`,
+`table2b_dual_staggered_return` and `table2c_dual_staggered_turnaround`. The
+mean and half-width of a cell can be recomputed from its ten values with any
+tool at hand, which is the point of keeping them.
+
+Results are also cached under `results/cache`, keyed on every argument that can
 change the answer, so rerunning a table costs nothing and the two tables share
-the panel they have in common. Delete the directory, or set
-`MESHSORTER_NOCACHE=1`, to force a fresh run.
+the panel they have in common. That directory is a cache and is not committed;
+delete it, or set `MESHSORTER_NOCACHE=1`, to force a fresh run.
 
 On two cores the full set takes about forty minutes. `--quick` runs the same
 grids at low precision in a few minutes, which is enough to check that

@@ -1,5 +1,7 @@
 # build product
 meshsorter
-# generated results: the .tex bodies and logs are committed, the cache is not
-results/cache/
 __pycache__/
+# results/cache is a keyed cache of the same runs that results/raw records in
+# readable form; the raw results and the LaTeX bodies are committed, the cache
+# is not.
+results/cache/

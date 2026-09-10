@@ -50,6 +50,7 @@ body_b = common.latex_rows(BELTS, FEEDERS, lambda n, m: B[(n, m)]["throughput"])
 hw = common.max_halfwidth(B)
 warm = next(iter(B.values()))["warmup"]
 
+common.save_raw("table1b_dual_identical", B)
 common.write("results/table1.tex",
              "%% panel (a), single-drop, exact\n" + body_a +
              "\n%% panel (b), dual-drop, simulated\n" + body_b + "\n")

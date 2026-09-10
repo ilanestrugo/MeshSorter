@@ -85,6 +85,35 @@ def latex_rows(ns, ms, value, gain=None):
     return "\n".join(lines)
 
 
+def save_raw(tag, results, extra=None):
+    """Write the raw result of every cell of one panel.
+
+    Two forms are written, both under results/raw:  one JSON file per cell,
+    named after the panel and the cell, carrying the ten replication averages
+    together with the geometry, the seed and the warm-up that produced them;
+    and one CSV row per replication, appended to results/raw/<tag>.csv.  These
+    are the raw numbers behind the tables, kept so that every published figure
+    can be checked without rerunning anything.
+    """
+    d = os.path.join(HERE, "results", "raw")
+    os.makedirs(d, exist_ok=True)
+    rows = ["panel,n,m,replication,throughput,mean,halfwidth,warmup,steps,seed,loops"]
+    for (n, m) in sorted(results):
+        r = dict(results[(n, m)])
+        if extra: r.update(extra)
+        r["panel"] = tag
+        with open(os.path.join(d, f"{tag}_n{n}_m{m}.json"), "w") as f:
+            json.dump(r, f, indent=1)
+        loops = " ".join(str(x) for x in r["loops"])
+        for k, y in enumerate(r["replications"]):
+            rows.append(f'{tag},{n},{m},{k+1},{y:.9f},{r["throughput"]:.9f},'
+                        f'{r["halfwidth"]:.9f},{r["warmup"]},{r["steps"]},'
+                        f'{r["seed"]},"{loops}"')
+    with open(os.path.join(d, f"{tag}.csv"), "w") as f:
+        f.write("\n".join(rows) + "\n")
+    print(f"wrote results/raw/{tag}.csv and {len(results)} JSON files", file=sys.stderr)
+
+
 def write(path, text):
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "w") as f:
