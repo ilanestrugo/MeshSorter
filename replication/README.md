@@ -24,6 +24,8 @@ Supplement S1 of the manuscript.
 | `common.py` | helpers shared by the table scripts: run one configuration, cache the result, format LaTeX |
 | `table1.py` | reproduces Table 1, panels (a) and (b) |
 | `table2.py` | reproduces Table 2, panels (a), (b) and (c) |
+| `loops_buffered.py` | Table 5, how loop length and staggering act on a buffered system |
+| `feeder_returns.py` | Figure 4, the diminishing return of additional feeder loops |
 | `run_all.sh` | builds the simulator and runs both table scripts |
 | `results/` | generated output: the LaTeX bodies, the run logs, and the raw numbers |
 
@@ -235,6 +237,8 @@ or, one table at a time,
 ```bash
 python3 table1.py
 python3 table2.py
+python3 loops_buffered.py
+python3 feeder_returns.py
 ```
 
 Each script carries its parameters at the top of the file, written out in full,
