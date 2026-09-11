@@ -233,10 +233,34 @@ struct Runner {
             }
     }
 
-    //  Replications `from` .. `from+count-1` of one allocation.  The stream of a
-    //  replication depends only on (streamBase, index), never on the thread that
-    //  runs it or on how the work was split, so results are reproducible and
-    //  Phase 1 and Phase 3 draw from disjoint streams.
+    //  Replications `from` .. `from+count-1` of one allocation, run on the
+    //  calling thread.  Used when the caller is already spreading allocations
+    //  over the pool, which is the case in Phases 1 and 3: there are tens of
+    //  thousands of allocations and only ten replications each, so the
+    //  parallelism belongs on the outer loop.
+    std::vector<double> run_serial(const Alloc &a, uint64_t streamBase,
+                                   int from, int count) const {
+        Config cfg = base;
+        apply(cfg, a);
+        Layout ly = buildLayout(cfg);
+        long long warm = (base.warmup > 0)
+                       ? base.warmup
+                       : std::max(20000LL, 10LL * (ly.cmax + 1) * ly.Lmax);
+        std::vector<double> Y((size_t)count, 0.0);
+        for (int k = 0; k < count; k++) {
+            uint64_t s = streamBase + 0x1000193ULL * (uint64_t)(from + k + 1);
+            Replication rep(ly, warm, base.steps, splitmix64(s));
+            Y[(size_t)k] = rep.run();
+        }
+        return Y;
+    }
+
+    //  The same replications spread over the pool.  Used for the reference
+    //  allocation in Phase 2, where there is only one allocation to run.  The
+    //  stream of a replication depends only on (streamBase, index), never on
+    //  the thread that runs it or on how the work was split, so the two forms
+    //  return identical results and Phase 1 and Phase 3 draw from disjoint
+    //  streams.
     std::vector<double> run(const Alloc &a, uint64_t streamBase,
                             int from, int count) const {
         Config cfg = base;
@@ -272,6 +296,34 @@ static Est summarize(const std::vector<double> &y) {
     for (double v : y) e.var += (v - e.mean) * (v - e.mean);
     e.var /= (e.reps - 1);
     return e;
+}
+
+//  Run every allocation, spreading the allocations over the thread pool rather
+//  than the replications of any one of them.  Each worker takes the next
+//  allocation from a shared counter, so a cheap allocation does not leave a
+//  thread idle while an expensive one finishes.
+template <class Plan>
+static void sweep(const Runner &run, const std::vector<Alloc> &A,
+                  std::vector<Est> &out, uint64_t stream, Plan reps,
+                  int threads, const char *label) {
+    std::atomic<size_t> next{0};
+    std::atomic<size_t> done{0};
+    std::vector<std::thread> pool;
+    const int W = (int)std::max<size_t>(1, std::min<size_t>((size_t)threads, A.size()));
+    pool.reserve((size_t)W);
+    for (int w = 0; w < W; w++)
+        pool.emplace_back([&]() {
+            for (;;) {
+                const size_t i = next.fetch_add(1);
+                if (i >= A.size()) return;
+                out[i] = summarize(
+                    run.run_serial(A[i], stream + 1000003ULL * i, 0, (int)reps(i)));
+                const size_t d = done.fetch_add(1) + 1;
+                if (label && d % 500 == 0)
+                    std::fprintf(stderr, "  %s: %zu/%zu\n", label, d, A.size());
+            }
+        });
+    for (auto &t : pool) t.join();
 }
 
 //  The smallest eps >= 0 at which the reference is not beaten by this
@@ -419,11 +471,8 @@ int main(int argc, char **argv) {
         const uint64_t STREAM1 = cfg.seed;
         const uint64_t STREAM3 = cfg.seed ^ 0xD1B54A32D192ED03ULL;
         std::vector<Est> e1(A.size());
-        for (size_t i = 0; i < A.size(); i++) {
-            e1[i] = summarize(run.run(A[i], STREAM1 + 1000003ULL * i, 0, R0));
-            if (verbose && (i % 200 == 199))
-                std::fprintf(stderr, "  phase 1: %zu/%zu\n", i + 1, A.size());
-        }
+        sweep(run, A, e1, STREAM1, [&](size_t) { return R0; }, cfg.threads,
+              verbose ? "phase 1" : nullptr);
         size_t ref = 0; double best = -1.0;
         for (size_t i = 0; i < A.size(); i++)
             if (A[i].structured && e1[i].mean > best) { best = e1[i].mean; ref = i; }
@@ -470,11 +519,8 @@ int main(int argc, char **argv) {
 
         // ---------------- Phase 3: independent validation ------------------
         std::vector<Est> e3(A.size());
-        for (size_t i = 0; i < A.size(); i++) {
-            e3[i] = summarize(run.run(A[i], STREAM3 + 1000003ULL * i, 0, plan[i]));
-            if (verbose && (i % 200 == 199))
-                std::fprintf(stderr, "  phase 3: %zu/%zu\n", i + 1, A.size());
-        }
+        sweep(run, A, e3, STREAM3, [&](size_t i) { return plan[i]; }, cfg.threads,
+              verbose ? "phase 3" : nullptr);
         size_t refv = ref; double bestv = -1.0;
         for (size_t i = 0; i < A.size(); i++)
             if (A[i].structured && e3[i].mean > bestv) { bestv = e3[i].mean; refv = i; }

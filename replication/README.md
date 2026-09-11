@@ -321,6 +321,11 @@ by the replication, which is what removes the need to argue that successive
 observations are uncorrelated; the procedure is otherwise the same three phases,
 and is documented in Supplement S1 and S2.
 
+Work is spread over the allocations rather than over the replications of any one
+of them, which is what keeps every thread busy: there are tens of thousands of
+allocations and only ten replications each, so parallelizing the inner loop would
+cap the program at ten active threads whatever the machine offers.
+
 The grid is 54,120 allocations across both mechanisms, three feeder counts and
 eleven budgets, each piloted and then validated, so it is an overnight run on a
 machine with thirty usable threads. Cells are cached under `results/certify`,
