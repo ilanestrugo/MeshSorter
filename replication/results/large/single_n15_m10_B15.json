@@ -1,0 +1,21 @@
+{
+ "n": 15,
+ "m": 10,
+ "B": 15,
+ "dual": false,
+ "loop": 128,
+ "allocations": 157,
+ "reps": 15,
+ "steps": 1330000,
+ "best": "0,1,1,1,1,2,2,2,2,3",
+ "throughput": 9.959075,
+ "seconds": 266.8,
+ "design": {
+  "belts": 15,
+  "spacing": 4,
+  "turn": 4,
+  "steps": 1330000,
+  "reps": 15,
+  "seed": 20260901
+ }
+}

@@ -6,3 +6,4 @@ __pycache__/
 # readable form; the raw results and the LaTeX bodies are committed, the cache
 # is not.
 results/cache/
+sweep_rep

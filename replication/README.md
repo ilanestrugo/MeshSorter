@@ -22,14 +22,19 @@ Supplement S1 of the manuscript.
 | `meshsorter_core.hpp` | the model, the geometry and one replication |
 | `meshsorter.cpp` | the command-line simulator |
 | `certify_rep.cpp` | replication-based certification of a structured buffer-allocation class (Supplement S2) |
-| `certify_all.py` | reproduces Table 5, the certification grid |
+| `certify_all.py` | reproduces Table 4, the certification grid, and writes the per-allocation dumps |
+| `approx_model.py` | the analytical approximation model of Section 6, with its self-checks |
+| `approx_eval.py` | reproduces Table 7 and Figure 8, the accuracy of the approximation against the certified grid |
+| `sweep_rep.cpp` | evaluates a stated set of allocations by replications, for systems too large to enumerate |
+| `sweep_structured.py` | simulates the structured class: the four-belt grid of Table 7, and the fifteen-belt grid of Section S7 |
+| `sec7_numbers.py` | every number that appears in the prose of Section 7, taken from the data |
 | `exact_single_drop.py` | exact throughput of the unbuffered single-drop system, in rational arithmetic |
 | `common.py` | helpers shared by the table scripts: run one configuration, cache the result, format LaTeX |
 | `table1.py` | reproduces Table 1, panels (a) and (b) |
 | `table2.py` | reproduces Table 2, panels (a), (b) and (c) |
-| `loops_buffered.py` | Table 5, how loop length and staggering act on a buffered system |
+| `loops_buffered.py` | reproduces Table 5, how loop length and staggering act on a buffered system, at three per-primary-belt budgets |
 | `feeder_returns.py` | Figure 4, the diminishing return of additional feeder loops |
-| `run_all.sh` | builds the simulator and runs both table scripts |
+| `run_all.sh` | builds the simulator and runs all four scripts |
 | `results/` | generated output: the LaTeX bodies, the run logs, and the raw numbers |
 
 ## Build
@@ -251,8 +256,10 @@ the warm-up actually used, and for Table 1 the pairwise-separation count.
 
 Three kinds of output are written:
 
-* `results/table1.tex`, `results/table2.tex`, the LaTeX bodies of the panels,
-  ready to paste into the manuscript;
+* `results/table1.tex`, `results/table2.tex`, `results/loops_buffered.tex`, the
+  LaTeX bodies of the panels, ready to paste into the manuscript, and
+  `results/loops_buffered_table.tex`, the whole of Table 5 with its caption, the
+  allocations named and the largest half-width filled in;
 * `results/table1.csv`, `results/table2.csv`, one row per cell with the
   estimate, its half-width and standard deviation, the gain over the reference
   panel where there is one, and the design and geometry that produced it;
@@ -281,17 +288,16 @@ change the answer, so rerunning a table costs nothing and the two tables share
 the panel they have in common. That directory is a cache and is not committed;
 delete it, or set `MESHSORTER_NOCACHE=1`, to force a fresh run.
 
-The full set is 144 configurations at about 4 x 10^7 simulated steps each. On
-two cores that took a couple of hours; on a machine that can run all 30
-replications at once it is a small fraction of that. `--quick` runs the same
-grids at low precision in a few minutes, which is enough to check that
-everything is wired up.
+The full set is 240 configurations at about 4 x 10^7 simulated steps each. On
+two cores that took a few hours; on a machine that can run all 30 replications at
+once it is a small fraction of that. `--quick` runs the same grids at low
+precision in a few minutes, which is enough to check that everything is wired up.
 
-The results committed here were produced before the defaults changed, with 10
-replications of 4,000,000 steps rather than 30 of 1,330,000. The two designs
-carry the same simulation effort and the same protocol, and every raw file
-records the `steps` and `replications` that produced it, so the provenance of a
-number is never in doubt. The next full run replaces them.
+Every script sets the run length and the replication count explicitly at the top
+of the file, at the 30 replications of 1,330,000 steps that Supplement S1
+describes, so that none of them can inherit a different design from `common.py`
+by accident. Every raw file records the `steps` and `replications` that produced
+it, so the provenance of a number is never in doubt.
 
 `MESHSORTER_THREADS` sets the worker threads per cell; left unset, the simulator
 applies its own rule, two fewer than the machine's hardware threads, capped at
@@ -331,6 +337,126 @@ eleven budgets, each piloted and then validated, so it is an overnight run on a
 machine with thirty usable threads. Cells are cached under `results/certify`,
 keyed on the whole design, so an interrupted run resumes and a `--quick` pass
 cannot contaminate a full one.
+
+Every cell also writes `results/certify/<cell>_allocs.csv`, one row per
+allocation, holding the capacities, whether the allocation belongs to the
+structured class, and the mean and standard deviation of both passes over it.
+Phases 1 and 3 draw from disjoint streams, so each row carries two independent
+estimates of the same throughput and their difference measures the simulation
+noise at no extra cost. These files are what the approximation-model evaluation
+below consumes, which is why that evaluation and the certification cannot drift
+apart: they are the same run. A cell is reused from cache only when both its
+JSON and its CSV are present, so a grid certified before the dump existed is
+recomputed once.
+
+`CERTIFY_OUT` redirects the results directory, which is convenient for a trial
+run that should not disturb a finished grid.
+
+## Evaluating the approximation model
+
+Section 6 replaces the simulation by a recursion along the feeders, in which
+every buffer is a Geo/Geo/1/c queue whose birth and death probabilities are read
+off the belt utilization upstream of it. `approx_model.py` is that recursion,
+transcribed equation by equation, and Section 7 asks how much is lost by using
+it in place of the simulation.
+
+```bash
+python3 approx_model.py        # the self-checks
+python3 sweep_structured.py    # simulate the structured class, a couple of minutes
+python3 approx_eval.py         # the evaluation
+```
+
+The comparison is confined to the structured class, the allocations the design
+rules of Section 5.1 admit. That is the set a designer searches, since the
+certification of that section establishes that it contains an allocation optimal
+up to the indifference zone, and it is what makes the question tractable at
+scale. Only the class has to be simulated, which is 388 allocations over both drop
+mechanisms rather than the 54,120 the certification enumerates, so
+`sweep_structured.py` produces it in a couple of minutes and the certification
+does not have to be run again. `approx_eval.py` also reads the certification's
+own dumps if you have them, with `--dir results/certify`, and `--all` then
+includes the allocations outside the class.
+
+For each class, that is each combination of drop mechanism, feeder count and
+budget, it reports
+
+* the relative gap of every allocation, by its mean and its maximum;
+* where the allocation the model prefers stands in the simulated ordering, and
+  the throughput given up by building it;
+* the Spearman correlation of the two orderings, reported only where a class
+  holds at least ten allocations, since a rank correlation over fewer says
+  nothing.
+
+At four primary belts the structured class is small, between one and 23
+allocations per class, so the ranking evidence comes from the fifteen-belt grid
+below.
+
+Output lands in `results/`: `approx_eval.csv` with one row per class,
+`approx_eval.tex` with the LaTeX body of the table, `approx_eval.json` with
+everything, and `approx_scatter_<mechanism>_B<budget>.dat` with the data behind
+the scatter panels. The scatter files are thinned by a fixed stride so that the
+figure stays a reasonable size, but the extreme gaps and the two selected
+allocations of every panel are always kept, so the picture cannot hide its own
+worst case.
+
+The unbuffered system is left out of the tables. It holds a single allocation,
+so nothing in it can be ranked or selected, and Section 4 solves it exactly, so
+the approximation is never used there. Its numbers stay in `approx_eval.csv`.
+
+`--scatter` chooses the budgets whose allocations are written out for the
+figure; the default is 5 and 10, and the fifteen-belt grid uses 15.
+
+`sec7_numbers.py` prints every number that appears in the prose of Section 7,
+and `sec7_numbers.py --map` prints them as a JSON mapping from the placeholders
+the manuscript uses, so a rerun of the grid regenerates the sentences instead of
+inviting a hand edit.
+
+### A caution about the build products in a synced folder
+
+`meshsorter`, `certify_rep` and `sweep_rep` are git-ignored, but if the clone
+lives in a folder that syncs between machines, the binaries travel anyway and a
+macOS build lands on the Linux box as a Mach-O file that will not execute. Build
+on each machine before running, or keep the binaries outside the synced tree and
+point `CERTIFY_BIN` and `SWEEP_BIN` at them.
+
+### Systems too large to enumerate
+
+The comparison above is exhaustive, which confines it to a four-belt system:
+fifteen feeder loops with a budget of twenty admit about 1.1 billion
+allocations. `sweep_rep` evaluates a stated set of allocations instead, by
+default the structured class, which is what a designer following the design
+rules would search. It writes the same CSV as `certify_rep --dump`, so the same
+analysis reads either.
+
+```bash
+./sweep_rep -n 15 -m 15 -B 15 --dual --dump out.csv
+python3 sweep_structured.py --grid large
+python3 approx_eval.py --dir results/large --tag large --scatter 15
+```
+
+The reported grid is fifteen primary belts, ten and fifteen feeder loops, a
+budget of fifteen, and both drop mechanisms: 664 allocations, about an hour on
+thirty threads. `--wide` adds budgets of ten and twenty, about three hours. The
+run length, replication count, seeds and stream families are those of the
+certification, so the two experiments share one protocol and one warm-up rule.
+
+`approx_model.py` implements all four buffer placements, including the two the
+design rules reject, although nothing reported in the paper needs them: the
+structured class places buffers at backward drop points only. It verifies itself
+against three things: the closed form
+`1 - (1 - 1/n)^m` for the unbuffered single-drop system; the identity that the
+loader utilizations sum to `n * u_m`, which is flow conservation and must hold
+exactly in every one of the four buffer placements; and the monotonicity the
+design rules assert. One correction to the equations of the manuscript is
+applied, in a case the manuscript keeps commented out and the paper never uses.
+Where a feeder carries buffers at both of its drop points, the drop probability
+of the backward point must carry the same factor `pi_c` of the forward buffer
+that its own birth probability carries, since an item reaches the backward point
+only if the forward buffer could not absorb it. Without that factor flow
+conservation fails by as much as half an item per time step, and the prediction
+is about three percentage points off against simulation. `MeshSim.cpp` in the
+parent directory has the same error, and is likewise never exercised on that
+case.
 
 ## The exact single-drop values
 

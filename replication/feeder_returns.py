@@ -8,13 +8,29 @@ import sys, json
 import common
 from exact_single_drop import exact
 
-N = 4
-MS = list(range(1, 11))
+# ---------------------------------------------------------------- parameters
+N       = 4                       # primary belts
+MS      = list(range(1, 11))      # feeder loops
+DP      = 4                       # loop slots per primary belt
+TURN    = 4                       # loop slots per end of the loop
+DF      = 4                       # feeder spacing along a primary belt
+WIDTH   = 2                       # forward-to-backward distance on a belt
+STEPS   = 1_330_000               # measured steps per replication
+REPS    = 30                      # independent replications
+WARMUP  = None                    # None = the rule of Supplement S1
+SEED    = 20260901
+# ---------------------------------------------------------------------------
+
+if "--quick" in sys.argv:
+    STEPS, REPS = 100_000, 8
+
 common.require_binary()
 rows = []
 for dual in (False, True):
     for m in MS:
-        r = common.run(N, m, dual=dual, stagger=True, extra="turnaround")
+        r = common.run(N, m, dual=dual, stagger=True, extra="turnaround",
+                       steps=STEPS, reps=REPS, warmup=WARMUP, seed=SEED,
+                       dp=DP, turn=TURN, df=DF, width=WIDTH)
         rows.append(dict(dual=dual, m=m, mu=r["throughput"], hw=r["halfwidth"]))
         print(f"{'dual' if dual else 'single':6s} m={m:2d}  {r['throughput']:.5f} "
               f"+-{r['halfwidth']:.5f}", file=sys.stderr, flush=True)

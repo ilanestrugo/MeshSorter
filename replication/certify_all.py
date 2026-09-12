@@ -3,22 +3,39 @@
 
 Runs certify_rep for both drop mechanisms, m = 3, 4 and 5 feeder loops, and
 per-primary-belt budgets B = 0 to 10, and writes the LaTeX body of Table 5 along
-with the raw JSON of every cell.
+with the raw JSON of every cell and, next to it, a CSV of every allocation the
+cell evaluated.  Those CSV files are the input of approx_eval.py, which is what
+Section 7 rests on, so the certification and the approximation-model evaluation
+come from one run and cannot drift apart.
 
     python3 certify_all.py                 the full grid
     python3 certify_all.py --quick         a cheap pass, to check the wiring
     python3 certify_all.py --only dual     one mechanism
+    python3 certify_all.py --feeders 3,4   a subset of the feeder counts
+    python3 certify_all.py --budgets 0-5   a subset of the budgets
+
+The last two select which cells to run; they do not change how a cell is
+computed, so a cell produced under them is interchangeable with the same cell
+from a full grid.
 
 The full grid is 54,120 allocations, each piloted for R0 replications and
 validated again on fresh streams, so expect several hours on a machine with
 thirty usable threads.  Results are cached per cell, so an interrupted run
 resumes where it stopped.
+
+Every cell also writes a CSV of every allocation it evaluated, as raw material
+for anyone who wants it.  Section 7 does not read these: it needs only the
+structured class, which sweep_structured.py evaluates on its own in a couple of
+minutes, so there is no reason to run this grid again for it.
+
+CERTIFY_OUT redirects the results directory, which is useful for a trial run
+that should not disturb a finished grid.
 """
 import json, os, subprocess, sys, time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 BIN  = os.environ.get("CERTIFY_BIN", os.path.join(HERE, "certify_rep"))
-OUT  = os.path.join(HERE, "results", "certify")
+OUT  = os.environ.get("CERTIFY_OUT", os.path.join(HERE, "results", "certify"))
 
 # ---------------------------------------------------------------- parameters
 BELTS    = 4
@@ -39,6 +56,13 @@ if "--quick" in sys.argv:
 ONLY = None
 if "--only" in sys.argv:
     ONLY = sys.argv[sys.argv.index("--only") + 1]
+SUBSET = "--feeders" in sys.argv or "--budgets" in sys.argv
+if "--feeders" in sys.argv:
+    FEEDERS = [int(x) for x in sys.argv[sys.argv.index("--feeders") + 1].split(",")]
+if "--budgets" in sys.argv:
+    spec = sys.argv[sys.argv.index("--budgets") + 1]
+    BUDGETS = (list(range(int(spec.split("-")[0]), int(spec.split("-")[1]) + 1))
+               if "-" in spec else [int(x) for x in spec.split(",")])
 
 if not os.path.exists(BIN):
     sys.exit(f"{BIN} not found.  Build it first:\n"
@@ -56,6 +80,7 @@ def design():
 def cell(dual, m, B):
     tag = f"{'dual' if dual else 'single'}_n{BELTS}_m{m}_B{B}"
     path = os.path.join(OUT, tag + ".json")
+    dump = os.path.join(OUT, tag + "_allocs.csv")
     if os.path.exists(path):
         with open(path) as f:
             old = json.load(f)
@@ -68,7 +93,9 @@ def cell(dual, m, B):
            "--spacing", str(SPACING), "--turn", str(TURN),
            "-T", str(STEPS), "-R", str(R0), "--kappa", str(KAPPA),
            "--eps", str(EPS), "--alpha", str(ALPHA), "--seed", str(SEED),
-           "--json"]
+           "--dump", dump, "--json"]
+    if os.environ.get("MESHSORTER_THREADS"):
+        cmd += ["-t", os.environ["MESHSORTER_THREADS"]]
     t0 = time.time()
     p = subprocess.run(cmd, capture_output=True, text=True)
     if p.returncode != 0:
@@ -102,9 +129,10 @@ for m in FEEDERS:
                      f"{d['eps_hat']:.5f} \\\\")
     lines.append(r"\hline")
 body = "\n".join(lines) + "\n"
-with open(os.path.join(HERE, "results", "table5.tex"), "w") as f:
-    f.write(body)
-print(body)
+if ONLY is None and not SUBSET:       # a partial pass cannot fill the table
+    with open(os.path.join(HERE, "results", "table5.tex"), "w") as f:
+        f.write(body)
+    print(body)
 
 vals = [r for r in res.values()]
 if vals:

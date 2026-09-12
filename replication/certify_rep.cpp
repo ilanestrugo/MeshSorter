@@ -63,6 +63,8 @@
 
 #include "meshsorter_core.hpp"
 #include <atomic>
+#include <fstream>
+#include <iomanip>
 #include <mutex>
 #include <numeric>
 
@@ -391,6 +393,9 @@ DESIGN
                          for one allocation, as a guard                (default 4000)
 
 OUTPUT
+      --dump FILE        write every allocation, with its Phase 1 and Phase 3
+                         estimates, to FILE as CSV; this is the raw material
+                         for the approximation-model evaluation of Section 7
       --json             machine-readable summary
       --verbose          report progress as the phases run
   -h, --help             this text
@@ -405,6 +410,7 @@ int main(int argc, char **argv) {
     int B = -1, R0 = 10, kappa = 3, maxReps = 4000;
     double eps = 0.001, alpha = 0.01;
     bool json = false, verbose = false;
+    std::string dumpPath;
     try {
         for (int a = 1; a < argc; a++) {
             std::string k = argv[a];
@@ -432,6 +438,7 @@ int main(int argc, char **argv) {
             else if (k == "--seed")                  cfg.seed = std::stoull(need());
             else if (k == "-t" || k == "--threads")  cfg.threads = std::stoi(need());
             else if (k == "--max-reps")              maxReps = std::stoi(need());
+            else if (k == "--dump")                  dumpPath = need();
             else if (k == "--json")                  json = true;
             else if (k == "--verbose")               verbose = true;
             else throw std::runtime_error("unknown option " + k);
@@ -533,6 +540,43 @@ int main(int argc, char **argv) {
         }
         const double hw = t_quantile(0.025, Rs - 1)
                         * std::sqrt(e3[ref].var / Rs);
+
+        // ---------------- optional: dump every allocation ------------------
+        //
+        //  Phases 1 and 3 each estimate every allocation, from disjoint
+        //  streams, so each row carries two independent estimates of the same
+        //  quantity.  Phase 3 is the validation pass and is the one to use as
+        //  ground truth; the difference between the two columns measures the
+        //  simulation noise that any comparison against the row has to clear.
+        //  Capacities are written as the full per-feeder vector, feeder 1
+        //  first, so that a reader never has to know which convention the
+        //  printed form of an allocation used.
+        if (!dumpPath.empty()) {
+            std::ofstream out(dumpPath);
+            if (!out) throw std::runtime_error("cannot write " + dumpPath);
+            out << "n,m,B,dual,c_forward,c_backward,structured,"
+                   "r1,mean1,sd1,r3,mean3,sd3\n";
+            out.setf(std::ios::fixed);
+            for (size_t i = 0; i < A.size(); i++) {
+                out << cfg.n << ',' << cfg.m << ',' << B << ','
+                    << (cfg.dual ? 1 : 0) << ',';
+                for (int j = 0; j < cfg.m; j++)
+                    out << (j ? "|" : "")
+                        << (cfg.dual ? A[i].c[(size_t)2 * j] : A[i].c[(size_t)j]);
+                out << ',';
+                if (cfg.dual)
+                    for (int j = 0; j < cfg.m; j++)
+                        out << (j ? "|" : "") << A[i].c[(size_t)2 * j + 1];
+                out << ',' << (A[i].structured ? 1 : 0) << ','
+                    << e1[i].reps << ','
+                    << std::setprecision(6) << e1[i].mean << ','
+                    << std::setprecision(6) << std::sqrt(e1[i].var) << ','
+                    << e3[i].reps << ','
+                    << std::setprecision(6) << e3[i].mean << ','
+                    << std::setprecision(6) << std::sqrt(e3[i].var) << '\n';
+            }
+            if (!out) throw std::runtime_error("error while writing " + dumpPath);
+        }
 
         if (json) {
             std::printf("{\"n\":%d,\"m\":%d,\"B\":%d,\"dual\":%s,\"loop\":%lld,"
