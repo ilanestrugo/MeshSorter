@@ -1,0 +1,24 @@
+# The certified allocations for the four-by-four dual-drop system, B = 0 to 10,
+# one per line.  These are the cumulative sums of the addition order that
+# certify_all.py reports and Table 4 prints, namely 4 3 4 4 2 4 3 4 4 4.
+#
+# They are kept here so that the two-minute path through table6.py reproduces
+# the published table without rerunning the several-hour certification grid.
+# Running "python3 certify_all.py --only dual --feeders 4" and then table6.py
+# regenerates them from scratch and takes precedence over this file.
+#
+# The structured-class sweep agrees at every budget except B = 7, where it
+# prefers 0,1,1,5.  The two are separated by 0.0004 items per time step, well
+# inside the half-width of either estimate, and they agree to three decimals in
+# both columns of the table, so the choice does not move a printed figure.
+0,0,0,0
+0,0,0,1
+0,0,1,1
+0,0,1,2
+0,0,1,3
+0,1,1,3
+0,1,1,4
+0,1,2,4
+0,1,2,5
+0,1,2,6
+0,1,2,7

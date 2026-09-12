@@ -340,6 +340,14 @@ struct Replication {
     std::vector<Rng> rng;
     std::vector<long long> admissions;   // per feeder, during the window only
 
+    //  Optional order-derived destination sequence (Supplement S4): labels in
+    //  1..n, consumed cyclically by the feeders in index order.  When it is set
+    //  the loading step reads from it instead of drawing, so the run is
+    //  deterministic given the starting position, and replications differ only
+    //  in where in the cycle they begin.
+    const std::vector<int> *seq = nullptr;
+    size_t spos = 0;
+
     Replication(const Layout &L, long long w, long long t, uint64_t sd)
         : ly(L), warmup(w), steps(t), seed(sd) {}
 
@@ -403,6 +411,10 @@ struct Replication {
             uint64_t s = seed ^ (0x9E3779B97F4A7C15ULL * (uint64_t)(j + 1));
             rng.emplace_back(splitmix64(s));
         }
+        if (seq && !seq->empty()) {
+            Rng off(seed ^ 0xA24BAED4963EE407ULL);
+            spos = (size_t)(off.next() % (uint64_t)seq->size());
+        }
 
         const long long total = warmup + steps;
         for (long long t = 0; t < total; t++) {
@@ -412,7 +424,12 @@ struct Replication {
             for (int j = 0; j < m; j++) {
                 const int fa = fidx(j, 0);
                 if (feeder[j][fa] == 0) {
-                    feeder[j][fa] = (int)rng[j].below((uint32_t)n) + 1;
+                    if (seq) {
+                        feeder[j][fa] = (*seq)[spos];
+                        if (++spos == seq->size()) spos = 0;
+                    } else {
+                        feeder[j][fa] = (int)rng[j].below((uint32_t)n) + 1;
+                    }
                     if (counting) admissions[j]++;
                 }
             }

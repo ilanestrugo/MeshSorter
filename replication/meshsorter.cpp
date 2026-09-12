@@ -4,6 +4,7 @@
 //
 //  Build:  c++ -O2 -std=c++17 -pthread -o meshsorter meshsorter.cpp
 // -----------------------------------------------------------------------------
+#include <fstream>
 #include "meshsorter_core.hpp"
 
 // --------------------------------------------------------------- parsing ----
@@ -67,6 +68,14 @@ EXPERIMENT
                          Supplement S1, where c is the largest buffer
                          capacity and L the longest feeder loop)
       --seed S           base seed                                    (default 20260901)
+      --sequence FILE    read destination labels from FILE instead of
+                         drawing them uniformly: one integer in 1..N per
+                         line, the order-derived sequence of Supplement
+                         S4.  The feeders consume it in index order and
+                         it repeats cyclically, and each replication
+                         starts at its own position in the cycle, so the
+                         replications differ in phase rather than in the
+                         labels they see
   -t, --threads K        worker threads; the result does not depend on
                          this, only the wall clock does
                          (default: two fewer than the hardware
@@ -84,11 +93,15 @@ EXAMPLES
       meshsorter -n 4 -m 9 --dual --stagger --extra turnaround
   A buffered system with three places at every crossing:
       meshsorter -n 4 -m 6 --dual -b 3
+  One row of Table 6, on the order-derived sequence:
+      meshsorter -n 4 -m 4 --dual --spacing 4 -b 0,0,1,2 \
+                 --sequence results/order_derived_sequence.txt
 )");
 }
 
 int main(int argc, char **argv) {
     Config cfg;
+    std::string seqFile;
     std::string bufSpec;
     try {
         for (int a = 1; a < argc; a++) {
@@ -122,6 +135,7 @@ int main(int argc, char **argv) {
             else if (k == "-R" || k == "--reps")         cfg.reps = std::stoi(need());
             else if (k == "-w" || k == "--warmup")       cfg.warmup = std::stoll(need());
             else if (k == "--seed")                      cfg.seed = std::stoull(need());
+            else if (k == "--sequence")                  seqFile = need();
             else if (k == "-t" || k == "--threads")      cfg.threads = std::stoi(need());
             else if (k == "--json")                      cfg.json = true;
             else if (k == "--per-feeder")                cfg.perFeeder = true;
@@ -158,6 +172,26 @@ int main(int argc, char **argv) {
 
         Layout ly = buildLayout(cfg);
 
+        //  Order-derived destination sequence, if one was named.  Labels are
+        //  1..n, one per line; blank lines and lines starting with # are
+        //  ignored, so the file can carry a provenance header.
+        std::vector<int> seq;
+        if (!seqFile.empty()) {
+            std::ifstream in(seqFile);
+            if (!in) throw std::runtime_error("cannot open " + seqFile);
+            std::string line;
+            while (std::getline(in, line)) {
+                size_t a = line.find_first_not_of(" \t\r");
+                if (a == std::string::npos || line[a] == '#') continue;
+                int v = std::stoi(line.substr(a));
+                if (v < 1 || v > cfg.n)
+                    throw std::runtime_error("destination label out of range in "
+                                             + seqFile + ": " + std::to_string(v));
+                seq.push_back(v);
+            }
+            if (seq.empty()) throw std::runtime_error("no labels in " + seqFile);
+        }
+
         if (cfg.warmup < 0)
             cfg.warmup = std::max(20000LL, 10LL * (ly.cmax + 1) * ly.Lmax);
         if (cfg.threads <= 0) {
@@ -187,6 +221,7 @@ int main(int argc, char **argv) {
                         if (r >= cfg.reps) return;
                         uint64_t s = cfg.seed + 0x1000193ULL * (uint64_t)(r + 1);
                         Replication rep(ly, cfg.warmup, cfg.steps, splitmix64(s));
+                        if (!seq.empty()) rep.seq = &seq;
                         Y[(size_t)r] = rep.run();
                         perFeeder[(size_t)r] = rep.admissions;
                     }

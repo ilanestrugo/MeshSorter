@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Table 5: certify the structured buffer-allocation class over the reported grid.
+"""Table 4: certify the structured buffer-allocation class over the reported grid.
 
 Runs certify_rep for both drop mechanisms, m = 3, 4 and 5 feeder loops, and
 per-primary-belt budgets B = 0 to 10, and writes the LaTeX body of Table 5 along

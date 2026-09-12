@@ -1,7 +1,7 @@
 #!/bin/sh
 # Build the simulator and reproduce every table and figure of the manuscript
-# that this package is responsible for: Tables 1, 2 and 5, and Figure 4, and,
-# when the certification grid has been run, Table 7 and Figure 8.
+# that this package is responsible for: Tables 1, 2, 5, 6 and 7, and Figures 4
+# and 8.
 #
 #   ./run_all.sh            the full grids
 #   ./run_all.sh --quick    the same grids at low precision, a few minutes
@@ -28,15 +28,23 @@ $CXX $CXXFLAGS -o sweep_rep   sweep_rep.cpp
 python3 table1.py "$@"
 python3 table2.py "$@"
 python3 loops_buffered.py "$@"
+python3 tables45.py "$@"
 python3 feeder_returns.py "$@"
 
 python3 approx_model.py
 python3 sweep_structured.py "$@"
 python3 approx_eval.py
+
+# Table 6 reads the certified allocation at each budget from results/certify if
+# that grid has been run and from results/structured otherwise, so it comes
+# after sweep_structured.py.
+python3 table6.py "$@"
 echo
 echo "LaTeX bodies   : results/table1.tex results/table2.tex results/loops_buffered.tex"
 echo "whole tables   : results/loops_buffered_table.tex"
 echo "cell-level CSV : results/table1.csv results/table2.csv"
 echo "raw results    : results/raw/"
 echo "approximation  : results/approx_eval.tex results/approx_eval.csv"
+echo "load balancing : results/table45_single.tex results/table45_dual.tex results/table45.csv"
+echo "order-derived  : results/table6.tex results/table6.csv"
 echo "scatter data   : results/approx_scatter_*.dat"

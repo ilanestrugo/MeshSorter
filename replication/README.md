@@ -33,6 +33,8 @@ Supplement S1 of the manuscript.
 | `table1.py` | reproduces Table 1, panels (a) and (b) |
 | `table2.py` | reproduces Table 2, panels (a), (b) and (c) |
 | `loops_buffered.py` | reproduces Table 5, how loop length and staggering act on a buffered system, at three per-primary-belt budgets |
+| `tables45.py` | reproduces Tables S4 and S5, throughput against load balancing over the structured class |
+| `table6.py` | reproduces Table 6, the order-derived destination-sequence robustness check |
 | `feeder_returns.py` | Figure 4, the diminishing return of additional feeder loops |
 | `run_all.sh` | builds the simulator and runs all four scripts |
 | `results/` | generated output: the LaTeX bodies, the run logs, and the raw numbers |
@@ -247,6 +249,8 @@ or, one table at a time,
 python3 table1.py
 python3 table2.py
 python3 loops_buffered.py
+python3 tables45.py
+python3 table6.py
 python3 feeder_returns.py
 ```
 
@@ -304,6 +308,126 @@ applies its own rule, two fewer than the machine's hardware threads, capped at
 the number of replications. `MESHSORTER_BIN` points at the binary if it is not
 beside the scripts.
 
+## Throughput against load balancing
+
+Tables S4 and S5 ask what a designer gives up by balancing the loaders instead
+of maximizing throughput. At each per-primary-belt budget two allocations are
+reported: `c`, the one with the largest minimum loader utilization, and `c'`,
+the one with the largest throughput, together with both objectives for each and
+the gap between them.
+
+```bash
+python3 tables45.py             # about ten minutes
+python3 tables45.py --quick     # a cheap pass, to check the wiring
+python3 tables45.py --only dual # one drop mechanism
+```
+
+**The search is confined to the structured class.** That is a deliberate
+restriction rather than an approximation of a wider search. Section 5.1 of the
+manuscript certifies the class as containing a near-optimal design, so it is
+what a designer following the design rules would consider; but the rules were
+derived for throughput, not for balance, and the best-balanced allocation in the
+whole space may well lie outside the class. What these tables report is the best
+balance available to someone who follows the rules.
+
+**Both design rules give the same set here.** With nothing on feeder 1 and
+capacities nondecreasing along the feeders, the class is the partitions of the
+budget into at most `m - 1` parts, whichever drop mechanism is in force. Under
+the dual-drop mechanism those are the capacities at the backward drop points,
+the forward ones being zero. The enumerator produces 1, 2, 3, 4, 5, 7, 8, 10,
+12 and 14 allocations at budgets 1 to 10, matching the class sizes behind
+Table 7.
+
+**Loader utilization** comes from `meshsorter --per-feeder`, which reports the
+fraction of rounds in which each feeder admits an item. The minimum is over all
+feeders; feeder 1 is never blocked, so it is always the downstream end that
+binds.
+
+**Ties.** Where one allocation is best on both objectives, the two columns name
+it once and both gaps are reported as zero rather than as a difference between
+two spellings of the same design. Ties within an objective break toward the
+allocation that is better on the other.
+
+**One protocol.** Every allocation is evaluated under the design of
+Supplement S1, the same geometry, run length, warm-up rule and thirty
+replications the certification and Section 7 use, so these tables are directly
+comparable with Table 4. The earlier version of Tables S4 and S5 was produced at
+the shorter loop length and is not comparable with it: its throughputs run up to
+0.034 items per time step low, and the gap widens with the budget.
+
+**Output.** `results/table45_single.tex` and `results/table45_dual.tex` are the
+nine-column bodies, and `results/table45.csv` carries the per-feeder loader
+utilizations behind every reported row. Results are cached per cell under
+`results/loadbalance/`, so an interrupted run resumes and a rerun is free.
+
+## The order-derived destination sequence
+
+Every other experiment in this package draws each item's destination uniformly
+and independently. Table 6 asks what happens when those draws are replaced by a
+single chronological sequence taken from a real order stream, and whether the
+buffering trends survive it.
+
+```bash
+python3 table6.py            # about two minutes
+python3 table6.py --quick    # a cheap pass, to check the wiring
+```
+
+**The sequence.** `olist_orders_ForRun.csv`, at the top of the repository, is the
+prepared order stream: one row per usable order, in chronological order, with the
+primary belt its destination is assigned to. Supplement S4 describes how the raw
+Brazilian e-commerce dataset was reduced to it, and the file is committed so the
+reduction does not have to be repeated. `table6.py` extracts its `belt` column
+into `results/order_derived_sequence.txt`, one label per line, which is what the
+simulator reads. There are 98,816 labels, close to balanced across the four
+belts, between 0.2494 and 0.2506 of the stream each.
+
+**How the simulator consumes it.** `meshsorter --sequence FILE` replaces the
+uniform draw at the loading step. The feeders consume the sequence in index
+order, so when several admit an item in the same time step they take consecutive
+labels, and the sequence repeats cyclically. That is the rule stated in
+Supplement S4.
+
+**What a replication means here.** The sequence is deterministic, so replications
+cannot differ in their draws. They differ in phase: each begins reading the cycle
+at its own position, fixed by its seed. A replication of the reported length
+consumes the 98,816 labels some fifty times over, so the spread across
+replications measures how much the answer depends on where in the order stream
+the day begins. It runs about a third of the spread of the corresponding uniform
+run. That is a property of the check rather than a weakness of the estimate:
+this is one sequence, and the manuscript says so.
+
+**One protocol for both columns.** The two columns of Table 6 use the same run
+length, warm-up rule, geometry, seed and replication count, the ones of
+Supplement S1 that the certification and Section 7 also use. An earlier version
+of the table compared a long uniform run with a shorter order-derived one and
+carried a caveat about horizons; this one does not need it. The uniform column
+now agrees with Table 4 at `B = 10`, which is a useful check that the two
+experiments really do share a protocol.
+
+**The allocations.** The allocation at each budget is the one the certification
+selects, not a free choice of the script. Three sources are tried in turn:
+
+| Source | What it is |
+| --- | --- |
+| `results/certify/` | the certification grid itself, if it has been run |
+| `results/table6_allocations.txt` | the same allocations, committed, so the short path reproduces the published table |
+| `results/structured/` | the best of the structured class, two minutes of work |
+
+The first two agree by construction: the committed file is the cumulative sum of
+the addition order Table 4 prints. The third agrees at every budget but `B = 7`,
+where it prefers `0,1,1,5` to the certification's `0,1,2,4`. Those two are
+separated by 0.0004 items per time step, inside the half-width of either
+estimate, and they agree to three decimals in both columns of the table, so the
+choice does not move a printed figure. Whichever source was used is printed and
+recorded in `results/table6.log`, so the table always says where its allocations
+came from. Passing `--allocs FILE` overrides all three, one allocation per line,
+lowest budget first.
+
+**Output.** `results/table6.tex` is the LaTeX body, `results/table6.csv` has one
+row per budget with both estimates and their half-widths, and
+`results/table6.log` records the geometry, the protocol, the allocation source
+and the largest gap.
+
 ## Certifying a buffer-allocation class
 
 `certify_rep` answers a different question from the simulator: given a
@@ -318,7 +442,7 @@ outside the class.
 ```bash
 ./certify_rep -n 4 -m 4 -B 10 --dual        # one cell
 ./certify_rep --help                        # the options
-python3 certify_all.py                      # the grid of Table 5
+python3 certify_all.py                      # the grid of Table 4
 ```
 
 The earlier program `buffer_certify` in the parent directory answers the same
@@ -494,6 +618,8 @@ GEOMETRY
 
 BUFFERS
   -b, --buffers SPEC     1, M, or 2*M*N capacities                    (default 0)
+      --sequence FILE    destination labels from FILE, one per line,
+                         instead of uniform draws
 
 EXPERIMENT
   -T, --steps T          measured steps per replication          (default 1330000)

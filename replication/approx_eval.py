@@ -19,6 +19,8 @@ Output
     results/approx_eval<tag>.csv        one row per class
     results/approx_eval<tag>.tex        LaTeX body, budgets collapsed
     results/approx_eval_full<tag>.tex   LaTeX body, class by class
+    results/approx_eval_full<tag>_single.tex, _dual.tex   the same, split by
+                                        drop mechanism and without that column
     results/approx_eval<tag>.json       everything, for further analysis
     results/approx_scatter<tag>_*.dat   pgfplots data
 
@@ -204,6 +206,10 @@ def main():
 
     # --------------------------------------------------------------- LaTeX --
     lines, full = [], []
+    #  The class-by-class body is also written one file per drop mechanism,
+    #  without the mechanism column, because the combined table runs past a
+    #  page and the supplement prints it as two.
+    split = {"single": [], "dual": []}
     for mech in ("single", "dual"):
         for m in sorted({c["m"] for c in classes if c["mech"] == mech}):
             sel = [c for c in classes if c["mech"] == mech and c["m"] == m
@@ -230,16 +236,23 @@ def main():
                 a = c["full"]
                 r = a["rho"]
                 rtx = "--" if r != r else f"{r:.4f}"
-                full.append(
-                    f"{mech.capitalize()} & {m} & {c['B']} & {a['count']} & "
-                    f"{a['gap_mean']:.4f} & {a['gap_max']:.4f} & {rtx} & "
-                    f"{a['rank']} & {a['loss']:.5f} " + r"\\")
+                body = (f"{m} & {c['B']} & {a['count']} & "
+                        f"{a['gap_mean']:.4f} & {a['gap_max']:.4f} & {rtx} & "
+                        f"{a['rank']} & {a['loss']:.5f} " + r"\\")
+                full.append(f"{mech.capitalize()} & " + body)
+                split[mech].append(body)
         lines.append(r"\hline")
         full.append(r"\hline")
+    for mech in ("single", "dual"):
+        split[mech].append(r"\hline")
     with open(os.path.join(OUT, f"approx_eval{suffix}.tex"), "w") as f:
         f.write("\n".join(lines) + "\n")
     with open(os.path.join(OUT, f"approx_eval_full{suffix}.tex"), "w") as f:
         f.write("\n".join(full) + "\n")
+    for mech in ("single", "dual"):
+        with open(os.path.join(OUT,
+                  f"approx_eval_full{suffix}_{mech}.tex"), "w") as f:
+            f.write("\n".join(split[mech]) + "\n")
 
     # ------------------------------------------------------------- scatter --
     for (dual, m, B), rows in sorted(cells.items()):
