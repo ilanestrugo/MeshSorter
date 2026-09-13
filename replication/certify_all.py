@@ -2,14 +2,16 @@
 """Table 4: certify the structured buffer-allocation class over the reported grid.
 
 Runs certify_rep for both drop mechanisms, m = 3, 4 and 5 feeder loops, and
-per-primary-belt budgets B = 0 to 10, and writes the LaTeX body of Table 5 along
+per-primary-belt budgets B = 1 to 10, and writes the LaTeX body of Table 5 along
 with the raw JSON of every cell and, next to it, a CSV of every allocation the
-cell evaluated.  Those CSV files are the input of approx_eval.py, which is what
-Section 7 rests on, so the certification and the approximation-model evaluation
-come from one run and cannot drift apart.
+cell evaluated.  Section 7 does NOT read those CSV files; it needs only the
+structured class, which sweep_structured.py evaluates separately.  Keep them
+anyway: each row carries both stages' mean and standard deviation for every
+allocation, which is what makes a cell re-analysable without rerunning it.
 
     python3 certify_all.py                 the full grid
     python3 certify_all.py --quick         a cheap pass, to check the wiring
+    python3 certify_all.py --verbose       per-phase progress from each cell
     python3 certify_all.py --only dual     one mechanism
     python3 certify_all.py --feeders 3,4   a subset of the feeder counts
     python3 certify_all.py --budgets 0-5   a subset of the budgets
@@ -40,17 +42,25 @@ OUT  = os.environ.get("CERTIFY_OUT", os.path.join(HERE, "results", "certify"))
 # ---------------------------------------------------------------- parameters
 BELTS    = 4
 FEEDERS  = [3, 4, 5]
-BUDGETS  = list(range(0, 11))
+BUDGETS  = list(range(1, 11))   # B = 0 has a single allocation and no
+                                # competitors, so there is nothing to certify
 SPACING  = 4              # slots between consecutive primary belts along a loop
 TURN     = 4              # slots in each end curve; loop length is 2*S*n + 2*E
 STEPS    = 1_330_000
-R0       = 10
+R0       = 10             # pilot replications for a competitor
+RS       = 30             # pilot replications for a structured allocation: the
+                          # reference is chosen from this class, and carries this
+                          # many replications into the validation stage
+RREF     = 500            # floor on the reference.  It enters every comparison,
+                          # so its precision is shared across the whole cell and
+                          # a precise reference makes each competitor cheaper
 KAPPA    = 3
 EPS      = 0.001
 ALPHA    = 0.01
 SEED     = 20260901
 # ---------------------------------------------------------------------------
 
+VERBOSE = "--verbose" in sys.argv
 if "--quick" in sys.argv:
     STEPS, R0, FEEDERS, BUDGETS = 100_000, 4, [3], [0, 1, 2]
 ONLY = None
@@ -74,7 +84,7 @@ def design():
     different design is ignored rather than reused, so a --quick pass cannot
     contaminate a full run."""
     return dict(belts=BELTS, spacing=SPACING, turn=TURN, steps=STEPS, R0=R0,
-                kappa=KAPPA, eps=EPS, alpha=ALPHA, seed=SEED)
+                kappa=KAPPA, eps=EPS, alpha=ALPHA, seed=SEED, RS=RS, RREF=RREF)
 
 
 def cell(dual, m, B):
@@ -91,15 +101,24 @@ def cell(dual, m, B):
     cmd = [BIN, "-n", str(BELTS), "-m", str(m), "-B", str(B),
            "--dual" if dual else "--single",
            "--spacing", str(SPACING), "--turn", str(TURN),
-           "-T", str(STEPS), "-R", str(R0), "--kappa", str(KAPPA),
+           "-T", str(STEPS), "-R", str(R0), "--reps-structured", str(RS),
+           "--reps-reference", str(RREF),
+           "--kappa", str(KAPPA),
            "--eps", str(EPS), "--alpha", str(ALPHA), "--seed", str(SEED),
            "--dump", dump, "--json"]
+    if VERBOSE:
+        cmd += ["--verbose"]
     if os.environ.get("MESHSORTER_THREADS"):
         cmd += ["-t", os.environ["MESHSORTER_THREADS"]]
+    if VERBOSE:
+        print(f"  {tag}: starting", file=sys.stderr, flush=True)
     t0 = time.time()
-    p = subprocess.run(cmd, capture_output=True, text=True)
+    #  stdout carries the JSON and must be captured; stderr is progress and is
+    #  let through to the terminal when --verbose is asked for
+    p = subprocess.run(cmd, stdout=subprocess.PIPE,
+                       stderr=(None if VERBOSE else subprocess.PIPE), text=True)
     if p.returncode != 0:
-        sys.exit(f"certify_rep failed on {tag}: {p.stderr.strip()}")
+        sys.exit(f"certify_rep failed on {tag}: {(p.stderr or chr(39)+chr(39)).strip()}")
     r = json.loads(p.stdout)
     r["seconds"] = round(time.time() - t0, 1)
     r["design"] = design()
@@ -140,6 +159,8 @@ if vals:
     within = sum(1 for r in vals if r["eps_hat"] <= EPS)
     print(f"{len(vals)} comparisons: eps_hat = 0 in {zero}, "
           f"eps_hat <= {EPS} in {within}, largest {max(r['eps_hat'] for r in vals):.5f}")
-    bad = [k for k, r in res.items() if not r["reference_confirmed"]]
-    print(f"cells where the validation did not confirm the Phase 1 reference: {bad}")
+    odd = [k for k, r in res.items()
+           if r.get("competitors_at_cap", 0) or r.get("reference_bound", 0)]
+    if odd:
+        print(f"cells where a competitor hit the replication cap: {odd}")
     print(f"total wall time {sum(r.get('seconds', 0) for r in vals)/3600:.1f} hours")

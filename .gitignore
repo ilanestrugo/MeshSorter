@@ -1,1 +1,8 @@
 .DS_Store
+
+# build artifacts and run logs
+replication/certify_rep
+replication/meshsorter
+replication/sweep_rep
+replication/certify.log
+*.log

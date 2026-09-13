@@ -21,19 +21,20 @@ Supplement S1 of the manuscript.
 | --- | --- |
 | `meshsorter_core.hpp` | the model, the geometry and one replication |
 | `meshsorter.cpp` | the command-line simulator |
-| `certify_rep.cpp` | replication-based certification of a structured buffer-allocation class (Supplement S2) |
-| `certify_all.py` | reproduces Table 4, the certification grid, and writes the per-allocation dumps |
+| `certify_rep.cpp` | replication-based certification of a structured buffer-allocation class (Supplement S3) |
+| `certify_all.py` | reproduces Table 4 and Table S3, the certification grid, and writes the per-allocation dumps |
 | `approx_model.py` | the analytical approximation model of Section 6, with its self-checks |
-| `approx_eval.py` | reproduces Table 7 and Figure 8, the accuracy of the approximation against the certified grid |
+| `approx_eval.py` | reproduces Table 7 and Figure 7, and Tables S6, S7 and S8, the accuracy of the approximation against the certified grid |
 | `sweep_rep.cpp` | evaluates a stated set of allocations by replications, for systems too large to enumerate |
-| `sweep_structured.py` | simulates the structured class: the four-belt grid of Table 7, and the fifteen-belt grid of Section S7 |
+| `sweep_structured.py` | simulates the structured class: the four-belt grid of Table 7, and the fifteen-belt grid of Section S8 |
 | `sec7_numbers.py` | every number that appears in the prose of Section 7, taken from the data |
 | `exact_single_drop.py` | exact throughput of the unbuffered single-drop system, in rational arithmetic |
 | `common.py` | helpers shared by the table scripts: run one configuration, cache the result, format LaTeX |
 | `table1.py` | reproduces Table 1, panels (a) and (b) |
 | `table2.py` | reproduces Table 2, panels (a), (b) and (c) |
 | `loops_buffered.py` | reproduces Table 5, how loop length and staggering act on a buffered system, at three per-primary-belt budgets |
-| `tables45.py` | reproduces Tables S4 and S5, throughput against load balancing over the structured class |
+| `tableS4S5.py` | reproduces Tables S4 and S5, throughput against load balancing over the structured class |
+| `frontier.py` | reproduces Figure 6, the efficient frontier of throughput against load balancing |
 | `table6.py` | reproduces Table 6, the order-derived destination-sequence robustness check |
 | `feeder_returns.py` | Figure 4, the diminishing return of additional feeder loops |
 | `run_all.sh` | builds the simulator and runs all four scripts |
@@ -249,7 +250,8 @@ or, one table at a time,
 python3 table1.py
 python3 table2.py
 python3 loops_buffered.py
-python3 tables45.py
+python3 tableS4S5.py
+python3 frontier.py
 python3 table6.py
 python3 feeder_returns.py
 ```
@@ -317,9 +319,9 @@ the one with the largest throughput, together with both objectives for each and
 the gap between them.
 
 ```bash
-python3 tables45.py             # about ten minutes
-python3 tables45.py --quick     # a cheap pass, to check the wiring
-python3 tables45.py --only dual # one drop mechanism
+python3 tableS4S5.py             # about ten minutes
+python3 tableS4S5.py --quick     # a cheap pass, to check the wiring
+python3 tableS4S5.py --only dual # one drop mechanism
 ```
 
 **The search is confined to the structured class.** That is a deliberate
@@ -355,8 +357,8 @@ comparable with Table 4. The earlier version of Tables S4 and S5 was produced at
 the shorter loop length and is not comparable with it: its throughputs run up to
 0.034 items per time step low, and the gap widens with the budget.
 
-**Output.** `results/table45_single.tex` and `results/table45_dual.tex` are the
-nine-column bodies, and `results/table45.csv` carries the per-feeder loader
+**Output.** `results/tableS4.tex` and `results/tableS5.tex` are the
+nine-column bodies, and `results/tableS4S5.csv` carries the per-feeder loader
 utilizations behind every reported row. Results are cached per cell under
 `results/loadbalance/`, so an interrupted run resumes and a rerun is free.
 
@@ -374,7 +376,7 @@ python3 table6.py --quick    # a cheap pass, to check the wiring
 
 **The sequence.** `olist_orders_ForRun.csv`, at the top of the repository, is the
 prepared order stream: one row per usable order, in chronological order, with the
-primary belt its destination is assigned to. Supplement S4 describes how the raw
+primary belt its destination is assigned to. Supplement S5 describes how the raw
 Brazilian e-commerce dataset was reduced to it, and the file is committed so the
 reduction does not have to be repeated. `table6.py` extracts its `belt` column
 into `results/order_derived_sequence.txt`, one label per line, which is what the
@@ -385,7 +387,7 @@ belts, between 0.2494 and 0.2506 of the stream each.
 uniform draw at the loading step. The feeders consume the sequence in index
 order, so when several admit an item in the same time step they take consecutive
 labels, and the sequence repeats cyclically. That is the rule stated in
-Supplement S4.
+Supplement S5.
 
 **What a replication means here.** The sequence is deterministic, so replications
 cannot differ in their draws. They differ in phase: each begins reading the cycle
@@ -433,17 +435,40 @@ and the largest gap.
 `certify_rep` answers a different question from the simulator: given a
 per-primary-belt budget, does the structured class of allocations defined by the
 manuscript's design rules contain the best allocation? It enumerates every
-feasible allocation, pilots each one for ten replications, plans how many further
-replications each competitor needs to be separated from the structured reference,
-and validates the whole comparison on a disjoint set of random number streams.
-What it reports is the smallest relative gap the data support for any allocation
-outside the class.
+feasible allocation and splits effort three ways. A competitor is only being
+screened, so it gets ten pilot replications. A member of the structured class is a
+candidate for the reference, so it gets thirty. The reference itself gets at least
+five hundred, because it enters every comparison in the cell and so is the one
+place where precision is shared rather than spent once. Each competitor is then
+sized against that reference, and the whole comparison is revalidated on a
+disjoint family of random number streams. What it reports is the smallest relative
+gap the data support for any allocation outside the class.
+
+A competitor whose throughput sits at the very edge of the indifference zone needs
+a reference of size proportional to the inverse square of its margin, which
+diverges. No ceiling can accommodate it, so the program leaves such a competitor
+at the pilot count and lets it enlarge the reported gap, which is the honest
+outcome rather than a failure.
 
 ```bash
 ./certify_rep -n 4 -m 4 -B 10 --dual        # one cell
 ./certify_rep --help                        # the options
 python3 certify_all.py                      # the grid of Table 4
+python3 certify_all.py --verbose            # per-phase progress from each cell
+python3 certify_all.py --feeders 3          # one feeder count, to split across machines
 ```
+
+Three replication counts, each sized by how much work it does:
+
+| flag | default | what it sets |
+|---|---|---|
+| `-R`, `--reps` | 10 | pilot replications for a competitor |
+| `--reps-structured` | 30 | pilot replications for a structured allocation |
+| `--reps-reference` | 500 | floor on the reference, which enters every comparison |
+
+`--plan-only` runs the pilot and the planner, prints what validation would cost,
+and exits. Use it to price a cell before committing to it. `--verbose` reports
+each phase as it runs, at a granularity that adapts to the size of the cell.
 
 The earlier program `buffer_certify` in the parent directory answers the same
 question by batch means along a single long run. `certify_rep` replaces the batch
@@ -454,10 +479,14 @@ and is documented in Supplement S1 and S2.
 Work is spread over the allocations rather than over the replications of any one
 of them, which is what keeps every thread busy: there are tens of thousands of
 allocations and only ten replications each, so parallelizing the inner loop would
-cap the program at ten active threads whatever the machine offers.
+cap the program at ten active threads whatever the machine offers. The reference
+is the exception. It carries hundreds of replications rather than ten, so it is
+run through the pooled form instead; left in the sweep it would execute on a
+single thread and become the critical path of every cell.
 
-The grid is 54,120 allocations across both mechanisms, three feeder counts and
-eleven budgets, each piloted and then validated, so it is an overnight run on a
+The grid is 54,114 allocations across both mechanisms, three feeder counts and
+ten budgets, B = 1 to 10. A budget of zero admits a single allocation and leaves
+no competitors, so there is nothing to certify and it is not run. each piloted and then validated, so it is an overnight run on a
 machine with thirty usable threads. Cells are cached under `results/certify`,
 keyed on the whole design, so an interrupted run resumes and a `--quick` pass
 cannot contaminate a full one.

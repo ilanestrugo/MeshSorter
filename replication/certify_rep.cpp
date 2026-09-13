@@ -3,7 +3,7 @@
 //  allocation?
 //
 //  This is the replication-based form of the three-phase certification
-//  procedure of Supplement S2.  The earlier version measured simulation effort
+//  procedure of Supplement S3.  The earlier version measured simulation effort
 //  in batches of a single long run and had to argue that successive batches were
 //  approximately uncorrelated.  Here the unit of effort is an independent
 //  replication, so the observations entering every variance estimate and every
@@ -293,6 +293,8 @@ struct Runner {
 
 static Est summarize(const std::vector<double> &y) {
     Est e; e.reps = (int)y.size();
+    if (e.reps == 0) return e;                  // not revalidated; see phase 3
+    if (e.reps == 1) { e.mean = y[0]; return e; }
     for (double v : y) e.mean += v;
     e.mean /= e.reps;
     for (double v : y) e.var += (v - e.mean) * (v - e.mean);
@@ -318,10 +320,15 @@ static void sweep(const Runner &run, const std::vector<Alloc> &A,
             for (;;) {
                 const size_t i = next.fetch_add(1);
                 if (i >= A.size()) return;
-                out[i] = summarize(
-                    run.run_serial(A[i], stream + 1000003ULL * i, 0, (int)reps(i)));
+                const int r = (int)reps(i);
+                if (r > 0)
+                    out[i] = summarize(
+                        run.run_serial(A[i], stream + 1000003ULL * i, 0, r));
                 const size_t d = done.fetch_add(1) + 1;
-                if (label && d % 500 == 0)
+                //  About twenty lines per phase whatever the cell size: a fixed
+                //  interval of 500 prints nothing at all for the smaller cells.
+                const size_t step = std::max<size_t>(1, A.size() / 20);
+                if (label && (d % step == 0 || d == A.size()))
                     std::fprintf(stderr, "  %s: %zu/%zu\n", label, d, A.size());
             }
         });
@@ -352,7 +359,7 @@ static double implied_gap(const Est &S, const Est &c, double alpha) {
 
 static void usage() {
     std::printf(R"(certify_rep - replication-based certification of a structured
-                buffer-allocation class (Supplement S2)
+                buffer-allocation class (Supplement S3)
 
 USAGE
   certify_rep -n BELTS -m FEEDERS -B BUDGET [options]
@@ -390,6 +397,11 @@ DESIGN
                          stream ranges derived from it            (default 20260901)
   -t, --threads K        worker threads                    (default hardware - 2)
       --max-reps R       refuse to plan more than this many replications
+      --plan-only        stop after planning; report the cost of phase 3 and exit
+      --reps-structured N  replications for the structured class in phase 1,
+                         which is where the reference is chosen        (default 30)
+      --reps-reference N   floor on the reference, which enters every
+                         comparison and so is the cheapest precision   (default 500)
                          for one allocation, as a guard                (default 4000)
 
 OUTPUT
@@ -407,7 +419,8 @@ int main(int argc, char **argv) {
     cfg.steps = 1330000;
     cfg.dp = 8;                    // spacing 4 between consecutive primary belts
     cfg.turn = 4;
-    int B = -1, R0 = 10, kappa = 3, maxReps = 4000;
+    int B = -1, R0 = 10, kappa = 3, maxReps = 4000, RS = 30, RREF = 500;
+    bool planOnly = false;
     double eps = 0.001, alpha = 0.01;
     bool json = false, verbose = false;
     std::string dumpPath;
@@ -438,6 +451,9 @@ int main(int argc, char **argv) {
             else if (k == "--seed")                  cfg.seed = std::stoull(need());
             else if (k == "-t" || k == "--threads")  cfg.threads = std::stoi(need());
             else if (k == "--max-reps")              maxReps = std::stoi(need());
+            else if (k == "--plan-only")             planOnly = true;
+            else if (k == "--reps-structured")       RS = std::stoi(need());
+            else if (k == "--reps-reference")        RREF = std::stoi(need());
             else if (k == "--dump")                  dumpPath = need();
             else if (k == "--json")                  json = true;
             else if (k == "--verbose")               verbose = true;
@@ -478,7 +494,11 @@ int main(int argc, char **argv) {
         const uint64_t STREAM1 = cfg.seed;
         const uint64_t STREAM3 = cfg.seed ^ 0xD1B54A32D192ED03ULL;
         std::vector<Est> e1(A.size());
-        sweep(run, A, e1, STREAM1, [&](size_t) { return R0; }, cfg.threads,
+        if (verbose)
+            std::fprintf(stderr, "  phase 1: %zu allocations (%zu structured x%d, %zu competitors x%d)\n",
+                         A.size(), nS, RS, A.size() - nS, R0);
+        sweep(run, A, e1, STREAM1,
+              [&](size_t i) { return A[i].structured ? RS : R0; }, cfg.threads,
               verbose ? "phase 1" : nullptr);
         size_t ref = 0; double best = -1.0;
         for (size_t i = 0; i < A.size(); i++)
@@ -487,59 +507,121 @@ int main(int argc, char **argv) {
             std::printf("phase 1: reference allocation %s, pilot mean %.6f\n",
                         alloc_str(A[ref], cfg.m, cfg.dual).c_str(), e1[ref].mean);
 
-        // ---------------- Phase 2: plan the effort -------------------------
-        int Rs = R0;
-        std::vector<double> refY = run.run(A[ref], STREAM1 + 1000003ULL * ref, 0, R0);
+        // ---------------- Phase 2: size the reference, then the competitors -
+        //
+        //  Two separate questions, which an earlier implementation conflated in
+        //  one variable:
+        //
+        //    (a) how long must the REFERENCE be before a given competitor can be
+        //        resolved at eps?  That is one allocation, so it is cheap, and
+        //        every comparison benefits from the answer.
+        //    (b) how many replications does THAT COMPETITOR then need?
+        //
+        //  A competitor whose true mean sits just inside the indifference zone
+        //  needs a reference of size (1+eps)^2 s2_S t^2 / delta^2, which diverges
+        //  as delta -> 0.  No cap covers that, so we extend the reference as far
+        //  as is useful within maxReps and leave any competitor still unresolved
+        //  to raise epsilon_hat, rather than spending replications on it that
+        //  cannot change the answer.  A looser epsilon_hat is the honest report.
+        int Rs = std::max(e1[ref].reps, RREF);
+        std::vector<double> refY = run.run(A[ref], STREAM1 + 1000003ULL * ref, 0, Rs);
         Est eS = summarize(refY);
         std::vector<int> plan(A.size(), 0);
-        for (int round = 0; ; round++) {
-            int needed = 0;
+        int rounds = 0, unresolved = 0, refBound = 0, atCap = 0, refTarget = Rs;
+        for (int round = 0; round < 5; round++) {
+            rounds = round + 1;
+            int target = Rs;
             for (size_t i = 0; i < A.size(); i++) {
-                if (i == ref) { plan[i] = Rs; continue; }
+                if (A[i].structured) continue;
                 const double delta = eS.mean * (1 + eps) - e1[i].mean;
+                if (delta <= 0.0) continue;
                 const double df = welch_df((1 + eps) * (1 + eps) * eS.var, Rs,
-                                           e1[i].var, R0);
+                                           e1[i].var, e1[i].reps);
                 const double t = t_quantile(alpha, df);
-                const double lhs = (delta / t) * (delta / t)
-                                 - (1 + eps) * (1 + eps) * eS.var / Rs;
-                double r;
-                if (delta <= 0.0 || lhs <= 0.0) r = (double)Rs;       // infeasible: cap
-                else r = std::min((double)Rs,
-                                  (double)kappa * std::ceil(e1[i].var / lhs));
-                plan[i] = std::max(R0, (int)std::min((double)maxReps, r));
-                needed = std::max(needed, plan[i]);
+                const double need = (1 + eps) * (1 + eps) * eS.var
+                                  / ((delta / t) * (delta / t));
+                if (need > (double)maxReps) continue;   // hopeless; eps_hat will say so
+                if ((int)std::ceil(need) > target) target = (int)std::ceil(need);
             }
-            if (needed <= Rs || Rs >= maxReps) break;
-            const int add = std::min(R0, maxReps - Rs);
-            auto extra = run.run(A[ref], STREAM1 + 1000003ULL * ref, Rs, add);
+            refTarget = target;
+            if (target <= Rs) break;
+            auto extra = run.run(A[ref], STREAM1 + 1000003ULL * ref, Rs, target - Rs);
             refY.insert(refY.end(), extra.begin(), extra.end());
-            Rs += add;
+            Rs = target;
             eS = summarize(refY);
             if (verbose)
                 std::fprintf(stderr, "  phase 2: reference extended to %d replications\n", Rs);
         }
+        for (size_t i = 0; i < A.size(); i++) {
+            if (i == ref)          { plan[i] = Rs;           continue; }
+            //  Other structured allocations are not revalidated.  The claim is
+            //  that no member of C beats the BEST member of S by more than eps,
+            //  and the reference is a member of S, so mu_ref <= max_S mu.  Any
+            //  competitor shown to fall short of the reference therefore falls
+            //  short of the best member of S a fortiori.  Whether the pilot
+            //  happened to pick that best member does not enter the claim, and
+            //  two near-identical allocations could not be ordered in any case.
+            if (A[i].structured)   { plan[i] = 0;            continue; }
+            const double delta = eS.mean * (1 + eps) - e1[i].mean;
+            const double df = welch_df((1 + eps) * (1 + eps) * eS.var, Rs,
+                                       e1[i].var, e1[i].reps);
+            const double t = t_quantile(alpha, df);
+            const double lhs = (delta / t) * (delta / t)
+                             - (1 + eps) * (1 + eps) * eS.var / Rs;
+            double r;
+            if (delta <= 0.0)    { r = (double)R0; unresolved++; }
+            else if (lhs <= 0.0) { r = (double)R0; refBound++;   }
+            else                   r = (double)kappa * std::ceil(e1[i].var / lhs);
+            plan[i] = std::max(R0, (int)std::min((double)maxReps, r));
+            if (plan[i] >= maxReps) atCap++;
+        }
         long long planned = 0;
         for (size_t i = 0; i < A.size(); i++) planned += plan[i];
+        if (planOnly) {
+            std::printf("{\"n\":%d,\"m\":%d,\"B\":%d,\"dual\":%s,"
+                        "\"allocations\":%zu,\"structured\":%zu,"
+                        "\"phase1_replications\":%lld,\"phase2_rounds\":%d,"
+                        "\"reps_structured\":%d,\"reference_target\":%d,"
+                        "\"reps_reference\":%d,\"planned_phase3\":%lld,"
+                        "\"competitors_at_cap\":%d,\"reference_bound\":%d,"
+                        "\"unresolvable_at_eps\":%d,\"plan_only\":true}\n",
+                        cfg.n, cfg.m, B, cfg.dual ? "true" : "false",
+                        A.size(), nS,
+                        (long long)(A.size() - nS) * R0 + (long long)nS * RS, rounds,
+                        RS, refTarget,
+                        Rs, planned, atCap, refBound, unresolved);
+            return 0;
+        }
         if (!json)
             std::printf("phase 2: reference at %d replications, "
                         "validation plans %lld replications in total\n", Rs, planned);
 
         // ---------------- Phase 3: independent validation ------------------
+        //
+        //  The reference carries far more replications than any competitor, and
+        //  sweep() parallelizes across allocations rather than within one, so
+        //  leaving the reference inside it would run those replications on a
+        //  single thread and make the reference the critical path of every cell.
+        //  run() spreads them over the pool instead.  The two forms produce
+        //  identical values, as the comment on run() explains; only timing differs.
+        if (verbose)
+            std::fprintf(stderr, "  phase 2: reference at %d replications; phase 3 plans %lld\n",
+                         Rs, planned);
         std::vector<Est> e3(A.size());
+        const int refPlan = plan[ref];
+        plan[ref] = 0;
         sweep(run, A, e3, STREAM3, [&](size_t i) { return plan[i]; }, cfg.threads,
               verbose ? "phase 3" : nullptr);
-        size_t refv = ref; double bestv = -1.0;
-        for (size_t i = 0; i < A.size(); i++)
-            if (A[i].structured && e3[i].mean > bestv) { bestv = e3[i].mean; refv = i; }
-
+        plan[ref] = refPlan;
+        e3[ref] = summarize(run.run(A[ref], STREAM3 + 1000003ULL * ref, 0, refPlan));
         double epsHat = 0.0; size_t worst = ref;
         for (size_t i = 0; i < A.size(); i++) {
             if (A[i].structured) continue;
             const double g = implied_gap(e3[ref], e3[i], alpha);
             if (g > epsHat) { epsHat = g; worst = i; }
         }
-        const double hw = t_quantile(0.025, Rs - 1)
-                        * std::sqrt(e3[ref].var / Rs);
+        const double hw = t_quantile(0.025, e3[ref].reps - 1)
+                        * std::sqrt(e3[ref].var / e3[ref].reps);
 
         // ---------------- optional: dump every allocation ------------------
         //
@@ -571,9 +653,13 @@ int main(int argc, char **argv) {
                     << e1[i].reps << ','
                     << std::setprecision(6) << e1[i].mean << ','
                     << std::setprecision(6) << std::sqrt(e1[i].var) << ','
-                    << e3[i].reps << ','
-                    << std::setprecision(6) << e3[i].mean << ','
-                    << std::setprecision(6) << std::sqrt(e3[i].var) << '\n';
+                    << e3[i].reps << ',';
+                if (e3[i].reps > 0)
+                    out << std::setprecision(6) << e3[i].mean << ','
+                        << std::setprecision(6) << std::sqrt(e3[i].var);
+                else
+                    out << ',';                 // not revalidated
+                out << '\n';
             }
             if (!out) throw std::runtime_error("error while writing " + dumpPath);
         }
@@ -581,17 +667,22 @@ int main(int argc, char **argv) {
         if (json) {
             std::printf("{\"n\":%d,\"m\":%d,\"B\":%d,\"dual\":%s,\"loop\":%lld,"
                         "\"allocations\":%zu,\"structured\":%zu,\"R0\":%d,"
-                        "\"reps_reference\":%d,\"steps\":%lld,\"warmup\":%lld,"
+                        "\"reps_reference\":%d,\"reps_structured\":%d,"
+                        "\"reference_target\":%d,\"phase2_rounds\":%d,"
+                        "\"competitors_at_cap\":%d,\"reference_bound\":%d,"
+                        "\"unresolvable_at_eps\":%d,"
+                        "\"steps\":%lld,\"warmup\":%lld,"
                         "\"eps_target\":%g,\"alpha\":%g,\"kappa\":%d,"
                         "\"reference\":\"%s\",\"throughput\":%.6f,\"halfwidth\":%.6f,"
                         "\"eps_hat\":%.6f,\"worst_competitor\":\"%s\","
-                        "\"reference_confirmed\":%s,\"replications_total\":%lld}\n",
+                        "\"replications_total\":%lld}\n",
                         cfg.n, cfg.m, B, cfg.dual ? "true" : "false", run.ly0.L[0],
-                        A.size(), nS, R0, Rs, cfg.steps, warmUsed, eps, alpha, kappa,
+                        A.size(), nS, R0, Rs, RS, refTarget, rounds,
+                        atCap, refBound, unresolved,
+                        cfg.steps, warmUsed, eps, alpha, kappa,
                         alloc_str(A[ref], cfg.m, cfg.dual).c_str(),
                         e3[ref].mean, hw, epsHat,
-                        alloc_str(A[worst], cfg.m, cfg.dual).c_str(),
-                        (refv == ref) ? "true" : "false", planned);
+                        alloc_str(A[worst], cfg.m, cfg.dual).c_str(), planned);
         } else {
             std::printf("phase 3: throughput of the reference %.6f +- %.6f\n",
                         e3[ref].mean, hw);
@@ -599,8 +690,6 @@ int main(int argc, char **argv) {
             if (epsHat > 0.0)
                 std::printf("         attained by the outside allocation %s\n",
                             alloc_str(A[worst], cfg.m, cfg.dual).c_str());
-            std::printf("         the validation run %s the Phase 1 choice of reference\n",
-                        (refv == ref) ? "confirms" : "DOES NOT confirm");
             std::printf("\n%s at eps = %g: %s\n",
                         epsHat <= eps ? "H0 rejected" : "H0 not rejected", eps,
                         epsHat <= eps
