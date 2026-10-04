@@ -7,6 +7,7 @@ __pycache__/
 # is not.
 results/cache/
 sweep_rep
+/transient_pilot
 
 # generated and reproducible from the scripts, 30 permutations of the sequence
 results/shuffled/

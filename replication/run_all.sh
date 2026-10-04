@@ -34,6 +34,7 @@ echo "building: $CXX $CXXFLAGS -o meshsorter meshsorter.cpp"
 $CXX $CXXFLAGS -o meshsorter meshsorter.cpp
 $CXX $CXXFLAGS -o certify_rep certify_rep.cpp
 $CXX $CXXFLAGS -o sweep_rep   sweep_rep.cpp
+$CXX $CXXFLAGS -o transient_pilot transient_pilot.cpp
 
 python3 exact_single_drop.py              # Table 2(a)
 python3 unbuffered_grid.py "$@"           # Table 2(b)
@@ -56,6 +57,9 @@ python3 sequence_dependence.py            # statistics quoted in Section S9
 python3 order_shuffled.py                 # Table S17, about an hour
 python3 asymmetry_check.py                # Table S16
 
+python3 transient_pilot.py "$@"            # transient figures of Section S2.2, about half an hour
+python3 warmup_sensitivity.py "$@"         # Table S3, about forty minutes
+
 python3 gcd_verification.py               # the enumeration behind Proposition 5
 python3 validate.py                       # the simulator against the exact values
 echo
@@ -70,4 +74,5 @@ echo "order-derived  : results/table6.tex results/table6.csv"
 echo "shuffled       : results/order_shuffled.tex results/order_shuffled.csv"
 echo "asymmetry      : results/asymmetry.tex results/asymmetry.csv"
 echo "sequence       : results/sequence_dependence.json"
+echo "warm-up         : results/transient_pilot/pilot_summary.json results/warmup_sensitivity.tex"
 echo "scatter data   : results/approx_scatter_*.dat"

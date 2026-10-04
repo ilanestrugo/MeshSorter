@@ -348,6 +348,16 @@ struct Replication {
     const std::vector<int> *seq = nullptr;
     size_t spos = 0;
 
+    //  Optional block trace, for the transient pilot of Supplement S2.  When
+    //  traceBlock > 0, the admissions of every consecutive block of traceBlock
+    //  steps are appended to *trace, counted from step 0 whatever the warm-up,
+    //  and the number of items held in buffers when run() returns is left in
+    //  bufferContentAtEnd.  Both are off by default and change nothing else:
+    //  with the trace disabled the program does exactly what it did before.
+    std::vector<int> *trace = nullptr;
+    long long traceBlock = 0;
+    long long bufferContentAtEnd = 0;
+
     Replication(const Layout &L, long long w, long long t, uint64_t sd)
         : ly(L), warmup(w), steps(t), seed(sd) {}
 
@@ -417,6 +427,7 @@ struct Replication {
         }
 
         const long long total = warmup + steps;
+        int blockAdm = 0;                       // used only when tracing
         for (long long t = 0; t < total; t++) {
             const bool counting = (t >= warmup);
 
@@ -431,6 +442,7 @@ struct Replication {
                         feeder[j][fa] = (int)rng[j].below((uint32_t)n) + 1;
                     }
                     if (counting) admissions[j]++;
+                    ++blockAdm;
                 }
             }
             // 2. transfers
@@ -452,6 +464,15 @@ struct Replication {
             for (int i = 0; i < n; i++) prim[pidx(i, ly.pmin)] = 0;
             for (int j = 0; j < m; j++)
                 if (++foff[j] == ly.L[j]) foff[j] = 0;
+            if (traceBlock > 0 && trace && (t + 1) % traceBlock == 0) {
+                trace->push_back(blockAdm);
+                blockAdm = 0;
+            }
+        }
+        if (traceBlock > 0) {
+            bufferContentAtEnd = 0;
+            for (int b : bufF) bufferContentAtEnd += b;
+            for (int b : bufB) bufferContentAtEnd += b;
         }
 
         long long sum = 0;

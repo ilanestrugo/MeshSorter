@@ -93,6 +93,8 @@ not included; their records are in `results/transient_pilot/`, and no other resu
 | `order_shuffled.py` | the same check on 30 random permutations of the labels | Table S17 |
 | `sequence_dependence.py` | shares, dependence at lags 1 to 20 and drift of the order-derived sequence | the statistics quoted in Section S9 |
 | `asymmetry_check.py` | what the symmetry restriction costs, with 100 replications per allocation | Table S16 |
+| `transient_pilot.cpp`, `transient_pilot.py` | the transient pilot: 48 configurations, 300 empty-start runs each, the settling point and the cumulative excess | the transient figures of Section S2.2 |
+| `warmup_sensitivity.py` | the estimate re-computed after deleting 0 to 10^6 steps of seven 40-replication runs | Table S3 |
 | `gcd_verification.py` | brute-force enumeration of the families, against the gcd formula | the check of Proposition 5 |
 | `validate.py` | the simulator against the exact single-drop values on chosen cells | |
 | `run_all.sh`, `run_server.sh` | build and run everything that is quick, or everything on a many-core server | |

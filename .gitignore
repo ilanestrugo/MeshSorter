@@ -4,5 +4,6 @@
 replication/certify_rep
 replication/meshsorter
 replication/sweep_rep
+replication/transient_pilot
 replication/certify.log
 *.log
