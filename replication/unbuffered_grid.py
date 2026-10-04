@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Table 1 of the manuscript: steady-state throughput of the unbuffered
+"""Table 2 of the manuscript: steady-state throughput of the unbuffered
 MeshSorter with identical feeder-loop lengths.
 
     panel (a)  single-drop, computed exactly       (exact_single_drop.py)
@@ -7,7 +7,7 @@ MeshSorter with identical feeder-loop lengths.
 
 Every parameter of the experiment is written out below.  Run
 
-    python3 table1.py
+    python3 unbuffered_grid.py
 
 to reproduce the panel bodies in results/table1.tex and the caption figures
 printed at the end.  Expect a few hours on two cores; pass --quick for a
@@ -18,12 +18,13 @@ import common
 from exact_single_drop import exact
 
 # ---------------------------------------------------------------- parameters
-BELTS   = [4, 5, 6, 7, 8, 9]      # n
-FEEDERS = [4, 5, 6, 7, 8, 9]      # m
-DP      = 4                       # loop slots per primary belt
-TURN    = 4                       # loop slots per end of the loop
-DF      = 4                       # feeder spacing along a primary belt
-WIDTH   = 2                       # forward-to-backward distance on a belt
+BELTS   = [3, 4, 5, 6, 7, 8, 9]      # n
+FEEDERS = [3, 4, 5, 6, 7, 8, 9]      # m
+import geometry as _geo
+DP      = _geo.DP                       # loop slots per primary belt
+TURN    = _geo.TURN                       # loop slots per end of the loop
+DF      = _geo.DF                       # feeder spacing along a primary belt
+WIDTH   = _geo.WIDTH                       # forward-to-backward distance on a belt
                                   # loop length is therefore 4n + 8
 BUFFERS = None                    # unbuffered
 STEPS   = 1_330_000               # measured steps per replication

@@ -25,7 +25,7 @@ Output
     results/approx_scatter<tag>_*.dat   pgfplots data
 
 Usage
-    python3 approx_eval.py                       the four-belt grid of Table 7
+    python3 approx_eval.py                       the four-belt grid of Table 6
     python3 approx_eval.py --dir results/large --tag large --scatter 15
     python3 approx_eval.py --all                 include allocations outside S
 
@@ -112,6 +112,9 @@ def read_cell(path):
     return rows
 
 
+WORST3 = []
+
+
 def summarize(rows):
     """Accuracy, ranking and selection statistics over one class."""
     if not rows:
@@ -122,6 +125,11 @@ def summarize(rows):
     best = max(rows, key=lambda x: x["sim"])
     pick = max(rows, key=lambda x: x["approx"])
     order = sorted(rows, key=lambda x: -x["sim"])
+    #  The three the model ranks highest, and the best of them as the
+    #  simulation sees it.  A designer who shortlists three and simulates
+    #  those takes this one rather than the model's first choice.
+    top3 = sorted(rows, key=lambda x: -x["approx"])[:3]
+    pick3 = max(top3, key=lambda x: x["sim"])
     return dict(
         count=len(rows),
         gap_mean=sum(gaps) / len(gaps),
@@ -133,6 +141,8 @@ def summarize(rows):
         best_approx=best["approx"], pick_approx=pick["approx"],
         loss=(best["sim"] - pick["sim"]) / best["sim"],
         rank=next(i for i, x in enumerate(order) if x is pick) + 1,
+        in_top3=1 if any(x is best for x in top3) else 0,
+        loss_top3=(best["sim"] - pick3["sim"]) / best["sim"],
         pick_cf=pick["cf"], pick_cb=pick["cb"],
         best_cf=best["cf"], best_cb=best["cb"],
         se=sum(x["se"] for x in rows) / len(rows),
@@ -226,12 +236,15 @@ def main():
             #  What is meaningful at any size is where the model's choice
             #  stands in the simulated ordering.
             hits = sum(1 for c in sel if c["full"]["rank"] == 1)
+            in3 = sum(c["full"]["in_top3"] for c in sel)
             lines.append(
                 f"{mech.capitalize()} & {m} & {tot} & {gm:.4f} & "
                 f"{max(c['full']['gap_max'] for c in sel):.4f} & "
                 f"{hits}/{len(sel)} & "
+                f"{in3}/{len(sel)} & "
                 f"{max(c['full']['rank'] for c in sel)} & "
                 f"{max(c['full']['loss'] for c in sel):.5f} " + r"\\")
+            WORST3.append(max(c["full"]["loss_top3"] for c in sel))
             for c in sel:
                 a = c["full"]
                 r = a["rho"]
@@ -297,6 +310,9 @@ def report(classes, everything):
               f"over the {len(rhos)} classes of {RANKABLE} or more")
     print(f"  the model picks the simulated best in "
           f"{sum(1 for c in pos if c['full']['rank'] == 1)} of {len(pos)} classes")
+    if WORST3:
+        print(f"  worst loss taking the best of the model's top three: "
+              f"{max(WORST3):.5f}")
     print(f"  selection loss at most {max(c['full']['loss'] for c in pos):.5f}, "
           f"below the indifference zone of 0.001 in "
           f"{sum(1 for c in pos if c['full']['loss'] <= 0.001)}")

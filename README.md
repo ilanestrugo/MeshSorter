@@ -4,6 +4,8 @@ MeshSorter is a research implementation of a two-layer conveyor-sortation model.
 
 The software accompanies the manuscript *MeshSorter: A Two-Layer Conveyor Architecture for High-Throughput Sortation*.
 
+**Which program produced the reported results.** Every simulated number in the manuscript and its Supplemental Online Material comes from the programs in [`replication/`](replication/README.md): independent replications on separate random-number streams, a warm-up rule applied to each allocation, and a replication-based certification. Start with the section "Read this first" of that README, which lists the script behind each table and figure and says how to reproduce the results exactly. The programs in this directory (`MeshSim`, `buffer_certify` and `recheck_candidates`) are an earlier implementation that forms batch means along one long run, kept for the record; they use a shared random-number generator and an automatic warm-up, and no number in the manuscript comes from them.
+
 ## Repository contents
 
 | File | Purpose |
@@ -14,14 +16,14 @@ The software accompanies the manuscript *MeshSorter: A Two-Layer Conveyor Archit
 | `recheck_candidates.cpp` | High-precision re-simulation of the leading Phase-3 competitors |
 | `CMakeLists.txt` | Portable CMake build configuration |
 | `olist_orders_ForRun.csv` | CSV file containing the processed Olist destination sequence |
-| `replication/` | Standalone replication-based simulator and the scripts that reproduce Tables 1 and 2. See [`replication/README.md`](replication/README.md) |
+| `replication/` | The simulator, the certification program, the exact solver and the scripts that produce every table and figure of the manuscript. See [`replication/README.md`](replication/README.md) |
 
 The build produces four executables:
 
 - `meshsim_cli`: runs the simulator, the analytical approximation, or both.
 - `buffer_certify`: enumerates buffer allocations and evaluates a specified structured subset.
 - `recheck_candidates`: re-simulates the strongest competitors from a certification run at a long common horizon.
-- `meshsorter`: the standalone replication-based simulator described in `replication/README.md`. It estimates the throughput of one configuration from independent replications run in parallel, rather than from batch means taken along a single long run, which is the output-analysis protocol of Supplement S1. It is the program that reproduces Tables 1 and 2.
+- `meshsorter`: the standalone replication-based simulator described in `replication/README.md`. It estimates the throughput of one configuration from independent replications run in parallel, rather than from batch means taken along a single long run, which is the output-analysis protocol of Section S2 of the Supplemental Online Material. It is the program behind every simulated result in the manuscript.
 
 ## Requirements
 

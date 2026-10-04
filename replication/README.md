@@ -13,32 +13,90 @@ Student `t` interval on the `R` replication averages. Because the replications
 are independent by construction, the whole serial dependence of a run is
 confined inside a single replication average, so no batch size has to be chosen
 and no autocorrelation has to be tested. The protocol is described in full in
-Supplement S1 of the manuscript.
+Section S2 of the Supplemental Online Material.
+
+## Read this first
+
+**What this is.** The simulator and the scripts that produce every simulated number in
+*MeshSorter: A Two-Layer Conveyor Architecture for High-Throughput Sortation* and its
+Supplemental Online Material, in the release tagged `tre-submission`. The programs in the
+repository root (`MeshSim`, `buffer_certify` and the others) are an earlier implementation
+that forms batch means along one long run. They are kept for the record, and no number in
+the manuscript comes from them.
+
+**The geometry is not the simulator's default.** The paper's feeding area has loops of
+`20n + 24` slots, with consecutive primary belts 10 slots apart. It is set in `geometry.py`,
+which every script reads and passes to the simulator as
+
+```
+--spacing 10 --turn 12 --df 14 --width 10
+```
+
+The simulator's own built-in defaults describe an earlier, shorter loop (`4n + 8` slots), so a
+bare `./meshsorter -n 4 -m 4 --dual` does **not** run the paper's system. The Quick start below
+shows the command that does.
+
+**The protocol.** Each configuration is run for `R = 30` independent replications of
+1,330,000 steps, after discarding a warm-up of `W = max(20000, 10(c+1)L)` steps, where `c` is the
+largest buffer capacity and `L` the longest feeder loop of that allocation. The floor of 20,000
+binds in every experiment on loops of 104 slots or fewer. It does not bind in the loop-length
+study (`W` up to 32,160) or in the fifteen-belt systems (`W` from 20,000 to 51,840). The result
+records state the geometry, the seed, the number of replications and the run length, and the
+warm-up wherever the program prints it. Section S2 of the Supplemental Online Material gives the
+reasoning.
+
+**Random numbers and reproducibility.** Replication seeds come from the base seed 20260901, and
+the destination stream of feeder `j` is derived from the replication seed and `j` by SplitMix64.
+When the order-derived sequence is used, a replication enters it at a position fixed by its seed.
+In the certification every allocation also has streams of its own, with seed
+`s0 + 1,000,003 a + 16,777,619 (r + 1)` for allocation `a` and replication `r`, and Phase 3 uses
+a disjoint family. The results do not depend on the number of threads or on the platform: a build
+with Microsoft Visual C++ on Windows and the Linux build that produced the reported results give
+identical replication values on the unbuffered 4 x 4 dual-drop system (all 30, to eight
+decimals), reproduce the 49 cells of Table 4, and regenerate Table S12 to the last digit, except
+for the one row whose allocation was corrected in this release (see `order_derived.py`).
+
+**Numbering.** The rest of this file was written against an earlier numbering of tables and
+sections, and some of its references ("Table 6", "Section 7", "Supplement S1") are out of date.
+Where they disagree with the table below, which uses the numbering of the release, trust the table.
+
+**What is not produced by a script in this release.** The resource counts of Table 1 and Table S1
+are arithmetic on the layouts of Section S1 of the Supplemental Online Material. The transient
+pilot and the warm-up sensitivity of Table S3 were produced by a separate analysis whose script is
+not included; their records are in `results/transient_pilot/`, and no other result uses them.
 
 ## Contents
 
-| File | Purpose |
-| --- | --- |
-| `meshsorter_core.hpp` | the model, the geometry and one replication |
-| `meshsorter.cpp` | the command-line simulator |
-| `certify_rep.cpp` | replication-based certification of a structured buffer-allocation class (Supplement S3) |
-| `certify_all.py` | reproduces Table 4 and Table S3, the certification grid, and writes the per-allocation dumps |
-| `approx_model.py` | the analytical approximation model of Section 6, with its self-checks |
-| `approx_eval.py` | reproduces Table 7 and Figure 7, and Tables S6, S7 and S8, the accuracy of the approximation against the certified grid |
-| `sweep_rep.cpp` | evaluates a stated set of allocations by replications, for systems too large to enumerate |
-| `sweep_structured.py` | simulates the structured class: the four-belt grid of Table 7, and the fifteen-belt grid of Section S8 |
-| `sec7_numbers.py` | every number that appears in the prose of Section 7, taken from the data |
-| `exact_single_drop.py` | exact throughput of the unbuffered single-drop system, in rational arithmetic |
-| `common.py` | helpers shared by the table scripts: run one configuration, cache the result, format LaTeX |
-| `table1.py` | reproduces Table 1, panels (a) and (b) |
-| `table2.py` | reproduces Table 2, panels (a), (b) and (c) |
-| `loops_buffered.py` | reproduces Table 5, how loop length and staggering act on a buffered system, at three per-primary-belt budgets |
-| `tableS4S5.py` | reproduces Tables S4 and S5, throughput against load balancing over the structured class |
-| `frontier.py` | reproduces Figure 6, the efficient frontier of throughput against load balancing |
-| `table6.py` | reproduces Table 6, the order-derived destination-sequence robustness check |
-| `feeder_returns.py` | Figure 4, the diminishing return of additional feeder loops |
-| `run_all.sh` | builds the simulator and runs all four scripts |
-| `results/` | generated output: the LaTeX bodies, the run logs, and the raw numbers |
+| File | Purpose | Produces |
+| --- | --- | --- |
+| `meshsorter_core.hpp` | the model, the geometry and one replication | |
+| `meshsorter.cpp` | the command-line simulator | |
+| `geometry.py` | the feeding-area geometry, read by every script | |
+| `common.py` | helpers shared by the table scripts: run one configuration, cache the result, format LaTeX | |
+| `exact_single_drop.py` | exact throughput of the unbuffered single-drop system, in rational arithmetic | Table 2(a); the exact column of Table 4 |
+| `exact_vs_approximation.py` | exact and approximate throughput, imported by `three_way_comparison.py` | |
+| `unbuffered_grid.py` | the unbuffered grid with identical loop lengths | Table 2(b) |
+| `stagger_grid.py` | the staggered configuration, and the placement on the return run | Tables S5 and S6 (S7 is computed from S5) |
+| `loops_buffered.py` | loop length and staggering once buffers are installed | Table S11 |
+| `certify_rep.cpp` | replication-based certification of a structured buffer-allocation class | |
+| `certify_all.py` | runs the certification over the grid and writes the per-allocation dumps | Table 3, Table S8, Figure 5 |
+| `sweep_rep.cpp` | evaluates a stated set of allocations by replications | |
+| `sweep_structured.py` | simulates the structured class: the four-belt grid and the fifteen-belt systems | the simulated side of Tables 5 and S13 to S15 and Figure S5 |
+| `approx_model.py` | the analytical approximation model, with its self-checks | |
+| `approx_eval.py` | the accuracy of the approximation against the simulated classes | Table 5, Tables S13 to S15, Figure S5 |
+| `sec7_numbers.py` | every number quoted in the prose of Section 6.5, taken from the data | |
+| `three_way_comparison.py` | exact, simulated and approximate throughput on the common-loop single-drop family | Table 4 |
+| `load_balance.py` | throughput against load balancing over the structured class | Tables S9 and S10 |
+| `frontier.py` | the efficient frontier of throughput against load balancing | Figure S4 |
+| `feeder_returns.py` | the diminishing return of additional feeder loops | Figure S2 |
+| `order_derived.py` | the order-derived destination-sequence check | Table S12 |
+| `order_shuffled.py` | the same check on 30 random permutations of the labels | Table S17 |
+| `sequence_dependence.py` | shares, dependence at lags 1 to 20 and drift of the order-derived sequence | the statistics quoted in Section S9 |
+| `asymmetry_check.py` | what the symmetry restriction costs, with 100 replications per allocation | Table S16 |
+| `gcd_verification.py` | brute-force enumeration of the families, against the gcd formula | the check of Proposition 5 |
+| `validate.py` | the simulator against the exact single-drop values on chosen cells | |
+| `run_all.sh`, `run_server.sh` | build and run everything that is quick, or everything on a many-core server | |
+| `results/` | generated output: LaTeX bodies, run logs, raw numbers, per-allocation dumps | |
 
 ## Build
 
@@ -61,25 +119,26 @@ library.
 ## Quick start
 
 ```bash
-./meshsorter -n 4 -m 4 --dual
+./meshsorter -n 4 -m 4 --dual --spacing 10 --turn 12 --df 14 --width 10
 ```
 
-runs the unbuffered dual-drop system with 4 primary belts and 4 feeder loops
-under the manuscript's defaults, and prints (the worker count shown is what a
-machine with 32 hardware threads chooses)
+runs the unbuffered dual-drop system of the paper, with 4 primary belts and 4 feeder
+loops of 104 slots (the geometry of `geometry.py`; see **Read this first**), and prints
+the following. The worker count shown is what the machine chooses, and it does not
+affect the result.
 
 ```
 MeshSorter, dual-drop, n = 4 primary belts, m = 4 feeder loops
-  feeder loop lengths    24 24 24 24
-  crossings on a loop    forward 1 3 5 7
-                         backward, feeder 1 21 19 17 15
-  crossings on a belt    s^f 0 4 8 12   s^b 2 6 10 14
+  feeder loop lengths    104 104 104 104
+  crossings on a loop    forward 1 11 21 31
+                         backward, feeder 1 93 83 73 63
+  crossings on a belt    s^f 0 14 28 42   s^b 10 24 38 52
   buffers                none (largest capacity 0)
   design                 30 replications of 1330000 steps, warm-up 20000 each, seed 20260901
-                         30 worker threads
+                         6 worker threads
 
-  throughput   3.02762   95% half-width 0.00020   [3.02742, 3.02782]
-  replications  3.02699 3.02742 3.02749 3.02733 3.02809 ...
+  throughput   3.02821   95% half-width 0.00025   [3.02796, 3.02845]
+  replications  3.02781 3.02867 3.02675 3.02774 3.02832 ...
 ```
 
 `--json` prints the same result as one JSON object, which is what the table
@@ -170,10 +229,10 @@ travels between its forward and its backward crossing with the same belt.
 
 * `turnaround` (default): the added slots extend the far end of the loop, so the
   backward crossings move away from the forward ones. This is the layout of
-  Table 2 panel (c).
+  Table 3 panel (b).
 * `return`: the added slots extend the return run between the last backward
   crossing and the loading station, so the crossings keep the positions computed
-  from the base length. This is the layout of Table 2 panel (b).
+  from the base length. This is the layout of Table S11.
 
 In a single-drop system the two coincide, since there are no backward crossings
 to move.
@@ -247,24 +306,24 @@ every number exactly.
 or, one table at a time,
 
 ```bash
-python3 table1.py
-python3 table2.py
+python3 unbuffered_grid.py
+python3 stagger_grid.py
 python3 loops_buffered.py
-python3 tableS4S5.py
+python3 load_balance.py
 python3 frontier.py
-python3 table6.py
+python3 order_derived.py
 python3 feeder_returns.py
 ```
 
 Each script carries its parameters at the top of the file, written out in full,
 and prints the figures a caption needs: the largest half-width over the panel,
-the warm-up actually used, and for Table 1 the pairwise-separation count.
+the warm-up actually used, and for Table 2 the pairwise-separation count.
 
 Three kinds of output are written:
 
 * `results/table1.tex`, `results/table2.tex`, `results/loops_buffered.tex`, the
   LaTeX bodies of the panels, ready to paste into the manuscript, and
-  `results/loops_buffered_table.tex`, the whole of Table 5 with its caption, the
+  `results/loops_buffered_table.tex`, the whole of Table S13 with its caption, the
   allocations named and the largest half-width filled in;
 * `results/table1.csv`, `results/table2.csv`, one row per cell with the
   estimate, its half-width and standard deviation, the gain over the reference
@@ -312,16 +371,16 @@ beside the scripts.
 
 ## Throughput against load balancing
 
-Tables S4 and S5 ask what a designer gives up by balancing the loaders instead
+Tables S5 and S6 ask what a designer gives up by balancing the loaders instead
 of maximizing throughput. At each per-primary-belt budget two allocations are
 reported: `c`, the one with the largest minimum loader utilization, and `c'`,
 the one with the largest throughput, together with both objectives for each and
 the gap between them.
 
 ```bash
-python3 tableS4S5.py             # about ten minutes
-python3 tableS4S5.py --quick     # a cheap pass, to check the wiring
-python3 tableS4S5.py --only dual # one drop mechanism
+python3 load_balance.py             # about ten minutes
+python3 load_balance.py --quick     # a cheap pass, to check the wiring
+python3 load_balance.py --only dual # one drop mechanism
 ```
 
 **The search is confined to the structured class.** That is a deliberate
@@ -338,7 +397,7 @@ budget into at most `m - 1` parts, whichever drop mechanism is in force. Under
 the dual-drop mechanism those are the capacities at the backward drop points,
 the forward ones being zero. The enumerator produces 1, 2, 3, 4, 5, 7, 8, 10,
 12 and 14 allocations at budgets 1 to 10, matching the class sizes behind
-Table 7.
+Table 6.
 
 **Loader utilization** comes from `meshsorter --per-feeder`, which reports the
 fraction of rounds in which each feeder admits an item. The minimum is over all
@@ -353,32 +412,32 @@ allocation that is better on the other.
 **One protocol.** Every allocation is evaluated under the design of
 Supplement S1, the same geometry, run length, warm-up rule and thirty
 replications the certification and Section 7 use, so these tables are directly
-comparable with Table 4. The earlier version of Tables S4 and S5 was produced at
+comparable with Table 4. The earlier version of Tables S5 and S6 was produced at
 the shorter loop length and is not comparable with it: its throughputs run up to
 0.034 items per time step low, and the gap widens with the budget.
 
-**Output.** `results/tableS4.tex` and `results/tableS5.tex` are the
-nine-column bodies, and `results/tableS4S5.csv` carries the per-feeder loader
+**Output.** `results/load_balance_single.tex` and `results/load_balance_dual.tex` are the
+nine-column bodies, and `results/load_balance.csv` carries the per-feeder loader
 utilizations behind every reported row. Results are cached per cell under
 `results/loadbalance/`, so an interrupted run resumes and a rerun is free.
 
 ## The order-derived destination sequence
 
 Every other experiment in this package draws each item's destination uniformly
-and independently. Table 6 asks what happens when those draws are replaced by a
+and independently. Table 5 asks what happens when those draws are replaced by a
 single chronological sequence taken from a real order stream, and whether the
 buffering trends survive it.
 
 ```bash
-python3 table6.py            # about two minutes
-python3 table6.py --quick    # a cheap pass, to check the wiring
+python3 order_derived.py            # about two minutes
+python3 order_derived.py --quick    # a cheap pass, to check the wiring
 ```
 
 **The sequence.** `olist_orders_ForRun.csv`, at the top of the repository, is the
 prepared order stream: one row per usable order, in chronological order, with the
 primary belt its destination is assigned to. Supplement S5 describes how the raw
 Brazilian e-commerce dataset was reduced to it, and the file is committed so the
-reduction does not have to be repeated. `table6.py` extracts its `belt` column
+reduction does not have to be repeated. `order_derived.py` extracts its `belt` column
 into `results/order_derived_sequence.txt`, one label per line, which is what the
 simulator reads. There are 98,816 labels, close to balanced across the four
 belts, between 0.2494 and 0.2506 of the stream each.
@@ -398,7 +457,7 @@ the day begins. It runs about a third of the spread of the corresponding uniform
 run. That is a property of the check rather than a weakness of the estimate:
 this is one sequence, and the manuscript says so.
 
-**One protocol for both columns.** The two columns of Table 6 use the same run
+**One protocol for both columns.** The two columns of Table 5 use the same run
 length, warm-up rule, geometry, seed and replication count, the ones of
 Supplement S1 that the certification and Section 7 also use. An earlier version
 of the table compared a long uniform run with a shorter order-derived one and
@@ -613,7 +672,7 @@ case.
 
 ## The exact single-drop values
 
-Panel (a) of Table 1 is not simulated. The unbuffered single-drop system with a
+Panel (a) of Table 2 is not simulated. The unbuffered single-drop system with a
 common loop length decomposes into `L` independent copies of a chain on the
 destinations the `m` feeders currently hold, and that chain is lumpable onto the
 integer partitions of `m`: 30 states for `m = 9`, against `n^m = 387,420,489`
@@ -622,7 +681,7 @@ arithmetic and solves for the stationary distribution, so its output carries no
 numerical error.
 
 ```bash
-python3 exact_single_drop.py            # the 6x6 grid of Table 1(a)
+python3 exact_single_drop.py            # the 6x6 grid of Table 2(a)
 python3 exact_single_drop.py 4 4        # one cell: 325/124 = 2.620967742
 python3 exact_single_drop.py --verify   # check small cases against the raw chain
 ```
@@ -672,7 +731,7 @@ model:
 
 * the exact single-drop values of `exact_single_drop.py`, for every cell of the
   6 by 6 grid, and
-* the published dual-drop figures of Tables 1 and 2, which were produced by a
+* the published dual-drop figures of Tables 2 and 3, which were produced by a
   separate implementation.
 
 `validate.py` performs the first comparison:

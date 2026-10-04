@@ -34,15 +34,24 @@ import common
 
 # ---------------------------------------------------------------- parameters
 BELTS, FEEDERS = 4, 4
-LOOPS   = [24, 32, 40, 56, 72, 100, 140, 200]   # base feeder-loop length
+import geometry as _g0
+# The shortest buildable loop is the one geometry.py describes: with the
+# primary belts 5 m apart a four-belt loop is 104 slots, 52 m.  Anything
+# below that cannot be built, and the simulator either refuses it or, for
+# the single-drop system where the ordering constraint does not bite,
+# returns a degenerate wrapped geometry.  The sweep therefore starts at the
+# minimum and lengthens it, which physically means slack at the turnaround.
+LMIN    = _g0.loop_length(4)                    # 104 slots = 52 m
+LOOPS   = [LMIN, 120, 144, 168, 200, 260, 320, 400]
 BUDGETS = [0, 5, 10]                            # per-primary-belt budget B
 ALLOC   = {0: None,                             # allocation used at each budget
            5: [0, 1, 1, 3],
            10: [0, 1, 2, 7]}
-DP      = 4                       # loop slots per primary belt
-TURN    = 4                       # loop slots per end of the loop
-DF      = 4                       # feeder spacing along a primary belt
-WIDTH   = 2                       # forward-to-backward distance on a belt
+import geometry as _geo
+DP      = _geo.DP                       # loop slots per primary belt
+TURN    = _geo.TURN                       # loop slots per end of the loop
+DF      = _geo.DF                       # feeder spacing along a primary belt
+WIDTH   = _geo.WIDTH                       # forward-to-backward distance on a belt
 EXTRA   = "turnaround"            # where the staggered slots are inserted
 STEPS   = 1_330_000               # measured steps per replication
 REPS    = 30                      # independent replications
@@ -54,6 +63,12 @@ if "--legacy" in sys.argv:                      # the protocol of the first run
     STEPS, REPS = 4_000_000, 10
 if "--quick" in sys.argv:
     STEPS, REPS = 100_000, 8
+
+for _L in LOOPS:
+    if _L < _g0.loop_length(BELTS):
+        sys.exit("loop length %d is shorter than the %d slots the "
+                 "geometry of %d primary belts needs"
+                 % (_L, _g0.loop_length(BELTS), BELTS))
 
 TQ = {8: 2.365, 10: 2.262, 30: 2.045}.get(REPS, 2.045)   # t_{0.975, R-1}
 

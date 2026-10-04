@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Tables S4 and S5: throughput against load balancing, over the structured class.
+"""Tables S5 and S6 of the Supplemental Online Material: throughput against
+load balancing, over the structured class.
 
 At each per-primary-belt budget the two objectives are optimized separately and
 the cost of preferring one to the other is reported:
@@ -14,9 +15,9 @@ optimum is not what the design rules were derived for, so this reports the best
 balance available to a designer who follows them, not the best in the whole
 allocation space.
 
-    python3 tables45.py            both mechanisms, about ten minutes
-    python3 tables45.py --quick    a cheap pass, to check the wiring
-    python3 tables45.py --only dual
+    python3 load_balance.py            both mechanisms, about ten minutes
+    python3 load_balance.py --quick    a cheap pass, to check the wiring
+    python3 load_balance.py --only dual
 
 Every allocation is evaluated under the protocol of Section S1: the geometry,
 run length, warm-up rule and thirty replications used by the certification and
@@ -36,8 +37,11 @@ CELLS = os.path.join(OUT, "loadbalance")
 BELTS    = 4
 FEEDERS  = 4
 BUDGETS  = list(range(0, 11))
-SPACING  = 4              # slots between consecutive primary belts along a loop
-TURN     = 4              # slots in each end curve; loop length is 2*S*n + 2*E
+import geometry as _geo
+SPACING  = _geo.SPACING              # slots between consecutive primary belts along a loop
+TURN     = _geo.TURN
+DF     = _geo.DF
+WIDTH     = _geo.WIDTH
 STEPS    = 1_330_000
 REPS     = 30
 SEED     = 20260901
@@ -93,6 +97,7 @@ def evaluate(c, dual):
     cmd = [BIN, "-n", str(BELTS), "-m", str(FEEDERS),
            "--dual" if dual else "--single",
            "--spacing", str(SPACING), "--turn", str(TURN),
+           "--df", str(DF), "--width", str(WIDTH),
            "-b", buffer_spec(c, dual),
            "-T", str(STEPS), "-R", str(REPS), "--seed", str(SEED),
            "--per-feeder", "--json"]
@@ -133,7 +138,7 @@ def cell(dual, B):
 
 
 def body(cells):
-    """One LaTeX row per budget, in the nine-column form of Tables S4 and S5."""
+    """One LaTeX row per budget, in the nine-column form of Tables S5 and S6."""
     out = []
     for r in cells:
         b, f = r["balanced"], r["fastest"]
@@ -152,9 +157,9 @@ for mech, dual in (("single", False), ("dual", True)):
         continue
     print(f"{mech}-drop:", file=sys.stderr)
     made[mech] = [cell(dual, B) for B in BUDGETS]
-    open(os.path.join(OUT, f"table45_{mech}.tex"), "w").write(body(made[mech]))
+    open(os.path.join(OUT, f"load_balance_{mech}.tex"), "w").write(body(made[mech]))
 
-with open(os.path.join(OUT, "table45.csv"), "w", newline="") as fh:
+with open(os.path.join(OUT, "load_balance.csv"), "w", newline="") as fh:
     w = csv.writer(fh)
     w.writerow(["mechanism", "n", "m", "B", "allocations", "role",
                 "alloc", "throughput", "halfwidth", "min_load", "loader_utilizations"])
@@ -167,5 +172,6 @@ with open(os.path.join(OUT, "table45.csv"), "w", newline="") as fh:
                             f"{x['minload']:.6f}",
                             "|".join(f"{v:.6f}" for v in x["loads"])])
 
-print(f"\nwrote {' '.join('results/table45_%s.tex' % m for m in made)} and "
-      f"results/table45.csv in {time.time() - t0:.0f}s", file=sys.stderr)
+names = " ".join("results/load_balance_%s.tex" % m for m in made)
+print(f"\nwrote {names} and results/load_balance.csv in {time.time() - t0:.0f}s",
+      file=sys.stderr)

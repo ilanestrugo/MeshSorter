@@ -1,31 +1,32 @@
 #!/usr/bin/env python3
-"""Table 2 of the manuscript: steady-state throughput of the unbuffered
+"""Table 3 of the manuscript: steady-state throughput of the unbuffered
 MeshSorter under the staggered configuration, with the gain over identical
 loop lengths in parentheses.
 
-    panel (a)  single-drop, staggered
-    panel (b)  dual-drop, staggered, added slots on the return run
-    panel (c)  dual-drop, staggered, added slots at the turnaround
+    panel (a)  single-drop, staggered                              Table 3(a)
+    panel (b)  dual-drop, staggered, added slots on the return run   Table S11
+    panel (c)  dual-drop, staggered, added slots at the turnaround   Table 3(b)
 
 The gains of panel (a) are measured against the exact single-drop values of
-Table 1(a); those of panels (b) and (c) against the simulated dual-drop values
-of Table 1(b), which this script recomputes so that the two tables are always
+Table 2(a); those of panels (b) and (c) against the simulated dual-drop values
+of Table 2(b), which this script recomputes so that the two tables are always
 consistent with each other.
 
-    python3 table2.py            full run, several hours on two cores
-    python3 table2.py --quick    low precision, minutes
+    python3 stagger_grid.py            full run, several hours on two cores
+    python3 stagger_grid.py --quick    low precision, minutes
 """
 import sys, math
 import common
 from exact_single_drop import exact
 
 # ---------------------------------------------------------------- parameters
-BELTS   = [4, 5, 6, 7, 8, 9]      # n
-FEEDERS = [4, 5, 6, 7, 8, 9]      # m
-DP      = 4
-TURN    = 4
-DF      = 4
-WIDTH   = 2                       # base loop length is 4n + 8
+BELTS   = [3, 4, 5, 6, 7, 8, 9]      # n
+FEEDERS = [3, 4, 5, 6, 7, 8, 9]      # m
+import geometry as _geo
+DP      = _geo.DP
+TURN    = _geo.TURN
+DF      = _geo.DF
+WIDTH   = _geo.WIDTH                    # base loop length is 20n + 24
 STAGGER_STEP = 1                  # L_1 = L_2 = L, L_j = L + (j-2) for j >= 3
 BUFFERS = None                    # unbuffered
 STEPS   = 1_330_000
@@ -43,7 +44,7 @@ geo = dict(steps=STEPS, reps=REPS, warmup=WARMUP, seed=SEED,
 
 EXACT = {(n, m): float(exact(n, m)) for n in BELTS for m in FEEDERS}
 
-print("reference: simulated, dual-drop, identical loop lengths [Table 1(b)]",
+print("reference: simulated, dual-drop, identical loop lengths [Table 2(b)]",
       file=sys.stderr)
 REF = common.grid(BELTS, FEEDERS, dual=True, stagger=False, **geo)
 
@@ -76,7 +77,7 @@ body.append("%% panel (a), single-drop, gain over the exact identical-length val
                                 lambda n, m: EXACT[(n, m)]))
 for name, G in (("(b), added slots on the return run", B),
                 ("(c), added slots at the turnaround", C)):
-    body.append(f"%% panel {name}, gain over Table 1(b)\n"
+    body.append(f"%% panel {name}, gain over Table 2(b)\n"
                 + common.latex_rows(BELTS, FEEDERS,
                                     lambda n, m, G=G: G[(n, m)]["throughput"],
                                     lambda n, m: REF[(n, m)]["throughput"]))

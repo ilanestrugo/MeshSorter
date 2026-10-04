@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Table 4: certify the structured buffer-allocation class over the reported grid.
+"""Tables 4 and S4: certify the structured buffer-allocation class over the reported grid.
 
 Runs certify_rep for both drop mechanisms, m = 3, 4 and 5 feeder loops, and
-per-primary-belt budgets B = 1 to 10, and writes the LaTeX body of Table 5 along
+per-primary-belt budgets B = 1 to 10, and writes the LaTeX body of Table S4 along
 with the raw JSON of every cell and, next to it, a CSV of every allocation the
 cell evaluated.  Section 7 does NOT read those CSV files; it needs only the
 structured class, which sweep_structured.py evaluates separately.  Keep them
@@ -44,8 +44,11 @@ BELTS    = 4
 FEEDERS  = [3, 4, 5]
 BUDGETS  = list(range(1, 11))   # B = 0 has a single allocation and no
                                 # competitors, so there is nothing to certify
-SPACING  = 4              # slots between consecutive primary belts along a loop
-TURN     = 4              # slots in each end curve; loop length is 2*S*n + 2*E
+import geometry as _geo
+SPACING  = _geo.SPACING              # slots between consecutive primary belts along a loop
+TURN     = _geo.TURN
+DF     = _geo.DF
+WIDTH     = _geo.WIDTH
 STEPS    = 1_330_000
 R0       = 10             # pilot replications for a competitor
 RS       = 30             # pilot replications for a structured allocation: the
@@ -83,7 +86,8 @@ def design():
     """Everything that changes the answer.  A cached cell produced under a
     different design is ignored rather than reused, so a --quick pass cannot
     contaminate a full run."""
-    return dict(belts=BELTS, spacing=SPACING, turn=TURN, steps=STEPS, R0=R0,
+    return dict(belts=BELTS, spacing=SPACING, turn=TURN, df=DF, width=WIDTH,
+                steps=STEPS, R0=R0,
                 kappa=KAPPA, eps=EPS, alpha=ALPHA, seed=SEED, RS=RS, RREF=RREF)
 
 
@@ -101,6 +105,7 @@ def cell(dual, m, B):
     cmd = [BIN, "-n", str(BELTS), "-m", str(m), "-B", str(B),
            "--dual" if dual else "--single",
            "--spacing", str(SPACING), "--turn", str(TURN),
+           "--df", str(DF), "--width", str(WIDTH),
            "-T", str(STEPS), "-R", str(R0), "--reps-structured", str(RS),
            "--reps-reference", str(RREF),
            "--kappa", str(KAPPA),
@@ -143,13 +148,13 @@ for m in FEEDERS:
     for B in BUDGETS:
         s = res.get((False, m, B)); d = res.get((True, m, B))
         if not s or not d: continue
-        lines.append(f"{BELTS} & {m} & {B} & {s['reference']} & {s['throughput']:.3f} & "
+        lines.append(f"{m} & {B} & {s['reference']} & {s['throughput']:.3f} & "
                      f"{s['eps_hat']:.5f} & {d['reference']} & {d['throughput']:.3f} & "
                      f"{d['eps_hat']:.5f} \\\\")
     lines.append(r"\hline")
 body = "\n".join(lines) + "\n"
 if ONLY is None and not SUBSET:       # a partial pass cannot fill the table
-    with open(os.path.join(HERE, "results", "table5.tex"), "w") as f:
+    with open(os.path.join(HERE, "results", "eps_grid.tex"), "w") as f:
         f.write(body)
     print(body)
 

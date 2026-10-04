@@ -22,9 +22,12 @@ def require_binary():
                  f"    c++ -O2 -std=c++17 -pthread -o meshsorter meshsorter.cpp")
 
 
+import geometry as _geo
+
+
 def run(n, m, dual=True, stagger=False, extra="turnaround", buffers=None,
         steps=4_000_000, reps=10, warmup=None, seed=20260901, loop=None,
-        loops=None, dp=4, turn=4, df=4, width=2):
+        loops=None, dp=_geo.DP, turn=_geo.TURN, df=_geo.DF, width=_geo.WIDTH):
     """Run one configuration and return the parsed JSON result."""
     cmd = [BIN, "-n", str(n), "-m", str(m),
            "--dual" if dual else "--single",

@@ -10,7 +10,7 @@ how well the approximation model of Section 6 carries out that search.  Only the
 class has to be simulated, which is a few hundred allocations rather than the
 54,120 the certification enumerates.
 
-    python3 sweep_structured.py                 the four-belt grid of Table 7
+    python3 sweep_structured.py                 the four-belt grid of Table 6
     python3 sweep_structured.py --grid large    the fifteen-belt grid of S7
     python3 sweep_structured.py --quick         a cheap pass, to check the wiring
 
@@ -46,8 +46,11 @@ GRIDS = {
                   out="structured"),
     "large": dict(belts=15, feeders=[10, 15],   budgets=[15], out="large"),
 }
-SPACING  = 4              # slots between consecutive primary belts along a loop
-TURN     = 4              # slots in each end curve; loop length is 2*S*n + 2*E
+import geometry as _geo
+SPACING  = _geo.SPACING              # slots between consecutive primary belts along a loop
+TURN     = _geo.TURN
+DF     = _geo.DF
+WIDTH     = _geo.WIDTH
 STEPS    = 1_330_000
 REPS     = 15             # per pass; two disjoint stream families pool to the
                           # R = 30 replications of Section S1.4
@@ -81,7 +84,8 @@ os.makedirs(OUT, exist_ok=True)
 def design():
     """Everything that changes the answer.  A cached cell produced under a
     different design is ignored rather than reused."""
-    return dict(belts=BELTS, spacing=SPACING, turn=TURN, steps=STEPS,
+    return dict(belts=BELTS, spacing=SPACING, turn=TURN, df=DF, width=WIDTH,
+                steps=STEPS,
                 reps=REPS, seed=SEED)
 
 
@@ -99,6 +103,7 @@ def cell(dual, m, B):
     cmd = [BIN, "-n", str(BELTS), "-m", str(m), "-B", str(B),
            "--dual" if dual else "--single",
            "--spacing", str(SPACING), "--turn", str(TURN),
+           "--df", str(DF), "--width", str(WIDTH),
            "-T", str(STEPS), "-R", str(REPS), "--seed", str(SEED),
            "--dump", dump, "--json"]
     if os.environ.get("MESHSORTER_THREADS"):

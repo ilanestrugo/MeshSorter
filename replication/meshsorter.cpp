@@ -87,13 +87,13 @@ OUTPUT
   -h, --help             this text
 
 EXAMPLES
-  Table 1(b), the 4 by 4 cell:
+  Table 2(b), the 4 by 4 cell:
       meshsorter -n 4 -m 4 --dual
-  Table 2(c), the 4 by 9 cell:
+  Table 3(b), the 4 by 9 cell:
       meshsorter -n 4 -m 9 --dual --stagger --extra turnaround
   A buffered system with three places at every crossing:
       meshsorter -n 4 -m 6 --dual -b 3
-  One row of Table 6, on the order-derived sequence:
+  One row of Table 5, on the order-derived sequence:
       meshsorter -n 4 -m 4 --dual --spacing 4 -b 0,0,1,2 \
                  --sequence results/order_derived_sequence.txt
 )");

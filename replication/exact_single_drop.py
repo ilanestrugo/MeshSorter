@@ -16,7 +16,7 @@ Fraction, so the result carries no numerical error at all.
 See Section 4 of the manuscript.
 
 Usage
-    python3 exact_single_drop.py            print the 6x6 grid used in Table 1(a)
+    python3 exact_single_drop.py            print the 6x6 grid used in Table 2(a)
     python3 exact_single_drop.py N M        print the exact value for one cell
     python3 exact_single_drop.py --verify   check small cases against a brute
                                             force chain on all n^m states

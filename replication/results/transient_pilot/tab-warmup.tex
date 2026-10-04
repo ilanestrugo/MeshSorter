@@ -1,0 +1,27 @@
+\begin{table}[!htbp]
+\centering
+\caption{Sensitivity of the estimated throughput to the length of the deleted warm-up.
+Each row is one configuration, simulated once with 40 replications of $4\times10^{6}$
+steps; the five middle columns re-estimate the throughput from those same runs after
+deleting the stated number of initial steps, so the entries of a row share their random
+numbers and differ only in the deletion. The last column is the half-width of the 95\%
+confidence interval at a warm-up of $10^{4}$. Here $L$ is the length of the feeder loops
+and $c$ the buffer capacity at every drop point.}
+\label{tab:warmup_sensitivity}
+\footnotesize
+\begin{tabular}{rrrr rrrrr r}
+\toprule
+ & & & & \multicolumn{5}{c}{deleted warm-up (steps)} & \\
+\cmidrule(lr){5-9}
+$n$ & $m$ & $L$ & $c$ & $0$ & $10^{3}$ & $10^{4}$ & $10^{5}$ & $10^{6}$ & half-width \\
+\midrule
+4 & 4 &  24 &  0 & 3.02789 & 3.02788 & 3.02788 & 3.02787 & 3.02785 & 0.00011 \\
+9 & 9 &  44 &  0 & 6.59209 & 6.59205 & 6.59205 & 6.59206 & 6.59205 & 0.00022 \\
+4 & 9 &  24 &  0 & 3.74421 & 3.74416 & 3.74416 & 3.74418 & 3.74412 & 0.00019 \\
+4 & 9 & 200 &  0 & 3.76118 & 3.76085 & 3.76083 & 3.76085 & 3.76090 & 0.00016 \\
+4 & 9 &  24 & 10 & 3.98108 & 3.98093 & 3.98094 & 3.98096 & 3.98088 & 0.00031 \\
+4 & 9 & 200 & 10 & 3.99583 & 3.99545 & 3.99544 & 3.99541 & 3.99529 & 0.00022 \\
+9 & 9 & 200 & 10 & 8.78615 & 8.78611 & 8.78611 & 8.78607 & 8.78609 & 0.00034 \\
+\bottomrule
+\end{tabular}
+\end{table}

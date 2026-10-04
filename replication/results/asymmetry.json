@@ -1,0 +1,803 @@
+{
+ "steps": 1330000,
+ "reps": 100,
+ "seed0": 20261004,
+ "loops": 10,
+ "seconds": 1023.2,
+ "rows": [
+  {
+   "name": "base",
+   "description": "symmetric (0,1,2,7) on every belt",
+   "budget": 40,
+   "throughput": 3.840398759,
+   "halfwidth": 0.000188156,
+   "diff_from_base": 0.0,
+   "diff_halfwidth": 0.0
+  },
+  {
+   "name": "move_1to2",
+   "description": "feeder 4: one unit from belt 1 to belt 2",
+   "budget": 40,
+   "throughput": 3.83976518,
+   "halfwidth": 0.000194169,
+   "diff_from_base": -0.0006335790000000507,
+   "diff_halfwidth": 0.00026871784189962605
+  },
+  {
+   "name": "move_1to3",
+   "description": "feeder 4: one unit from belt 1 to belt 3",
+   "budget": 40,
+   "throughput": 3.839858353,
+   "halfwidth": 0.000174712,
+   "diff_from_base": -0.0005404060000002708,
+   "diff_halfwidth": 0.00025519262853627756
+  },
+  {
+   "name": "move_1to4",
+   "description": "feeder 4: one unit from belt 1 to belt 4",
+   "budget": 40,
+   "throughput": 3.840013729,
+   "halfwidth": 0.000182161,
+   "diff_from_base": -0.0003850300000003415,
+   "diff_halfwidth": 0.0002602796867032007
+  },
+  {
+   "name": "move_2to1",
+   "description": "feeder 4: one unit from belt 2 to belt 1",
+   "budget": 40,
+   "throughput": 3.839690105,
+   "halfwidth": 0.000198303,
+   "diff_from_base": -0.0007086540000003083,
+   "diff_halfwidth": 0.0002716862877639467
+  },
+  {
+   "name": "move_2to3",
+   "description": "feeder 4: one unit from belt 2 to belt 3",
+   "budget": 40,
+   "throughput": 3.839883842,
+   "halfwidth": 0.000183328,
+   "diff_from_base": -0.0005149170000002812,
+   "diff_halfwidth": 0.00026108739126119593
+  },
+  {
+   "name": "move_2to4",
+   "description": "feeder 4: one unit from belt 2 to belt 4",
+   "budget": 40,
+   "throughput": 3.840229692,
+   "halfwidth": 0.00019745,
+   "diff_from_base": -0.00016906700000030028,
+   "diff_halfwidth": 0.0002710706772915542
+  },
+  {
+   "name": "move_3to1",
+   "description": "feeder 4: one unit from belt 3 to belt 1",
+   "budget": 40,
+   "throughput": 3.839874376,
+   "halfwidth": 0.000187254,
+   "diff_from_base": -0.0005243830000001282,
+   "diff_halfwidth": 0.00026382354296219734
+  },
+  {
+   "name": "move_3to2",
+   "description": "feeder 4: one unit from belt 3 to belt 2",
+   "budget": 40,
+   "throughput": 3.839874226,
+   "halfwidth": 0.000194296,
+   "diff_from_base": -0.0005245330000001047,
+   "diff_halfwidth": 0.00026880842677447307
+  },
+  {
+   "name": "move_3to4",
+   "description": "feeder 4: one unit from belt 3 to belt 4",
+   "budget": 40,
+   "throughput": 3.840330444,
+   "halfwidth": 0.000189007,
+   "diff_from_base": -6.831500000004098e-05,
+   "diff_halfwidth": 0.000265055643576522
+  },
+  {
+   "name": "move_4to1",
+   "description": "feeder 4: one unit from belt 4 to belt 1",
+   "budget": 40,
+   "throughput": 3.839449744,
+   "halfwidth": 0.000180597,
+   "diff_from_base": -0.0009490150000002195,
+   "diff_halfwidth": 0.0002592019088193348
+  },
+  {
+   "name": "move_4to2",
+   "description": "feeder 4: one unit from belt 4 to belt 2",
+   "budget": 40,
+   "throughput": 3.839520662,
+   "halfwidth": 0.000185404,
+   "diff_from_base": -0.0008780970000001886,
+   "diff_halfwidth": 0.00026253064666672583
+  },
+  {
+   "name": "move_4to3",
+   "description": "feeder 4: one unit from belt 4 to belt 3",
+   "budget": 40,
+   "throughput": 3.839322045,
+   "halfwidth": 0.000178673,
+   "diff_from_base": -0.0010767140000003117,
+   "diff_halfwidth": 0.0002578833545492608
+  },
+  {
+   "name": "tilt_to_belt4",
+   "description": "tilt toward belt 4 across feeders 2 to 4",
+   "budget": 40,
+   "throughput": 3.819969782,
+   "halfwidth": 0.0002243,
+   "diff_from_base": -0.020428977000000348,
+   "diff_halfwidth": 0.0002910226519753325
+  },
+  {
+   "name": "tilt_to_belt1",
+   "description": "tilt toward belt 1 across feeders 2 to 4",
+   "budget": 40,
+   "throughput": 3.820236707,
+   "halfwidth": 0.000163086,
+   "diff_from_base": -0.02016205200000032,
+   "diff_halfwidth": 0.0002474976747501851
+  },
+  {
+   "name": "plus1_f4",
+   "description": "one extra unit at feeder 4, belt 4",
+   "budget": 41,
+   "throughput": 3.842600421,
+   "halfwidth": 0.000180741,
+   "diff_from_base": 0.0022016620000000486,
+   "diff_halfwidth": 0.00025930080140372806
+  },
+  {
+   "name": "plus1_f3",
+   "description": "one extra unit at feeder 3, belt 4",
+   "budget": 41,
+   "throughput": 3.841024632,
+   "halfwidth": 0.000178548,
+   "diff_from_base": 0.0006258729999997215,
+   "diff_halfwidth": 0.00025779741149008044
+  },
+  {
+   "name": "plus1_f2",
+   "description": "one extra unit at feeder 2, belt 4",
+   "budget": 41,
+   "throughput": 3.840597316,
+   "halfwidth": 0.000164993,
+   "diff_from_base": 0.00019855700000004362,
+   "diff_halfwidth": 0.00024873840131771704
+  }
+ ],
+ "raw": {
+  "base": {
+   "desc": "symmetric (0,1,2,7) on every belt",
+   "alloc": [
+    [
+     0,
+     0,
+     0,
+     0
+    ],
+    [
+     1,
+     1,
+     1,
+     1
+    ],
+    [
+     2,
+     2,
+     2,
+     2
+    ],
+    [
+     7,
+     7,
+     7,
+     7
+    ]
+   ],
+   "total": 40,
+   "seed": 20261004,
+   "mean": 3.840398759,
+   "hw": 0.000188156,
+   "sd": 0.000948264,
+   "reps": 100
+  },
+  "move_1to2": {
+   "desc": "feeder 4: one unit from belt 1 to belt 2",
+   "alloc": [
+    [
+     0,
+     0,
+     0,
+     0
+    ],
+    [
+     1,
+     1,
+     1,
+     1
+    ],
+    [
+     2,
+     2,
+     2,
+     2
+    ],
+    [
+     6,
+     8,
+     7,
+     7
+    ]
+   ],
+   "total": 40,
+   "seed": 20262004,
+   "mean": 3.83976518,
+   "hw": 0.000194169,
+   "sd": 0.000978571,
+   "reps": 100
+  },
+  "move_1to3": {
+   "desc": "feeder 4: one unit from belt 1 to belt 3",
+   "alloc": [
+    [
+     0,
+     0,
+     0,
+     0
+    ],
+    [
+     1,
+     1,
+     1,
+     1
+    ],
+    [
+     2,
+     2,
+     2,
+     2
+    ],
+    [
+     6,
+     7,
+     8,
+     7
+    ]
+   ],
+   "total": 40,
+   "seed": 20263004,
+   "mean": 3.839858353,
+   "hw": 0.000174712,
+   "sd": 0.00088051,
+   "reps": 100
+  },
+  "move_1to4": {
+   "desc": "feeder 4: one unit from belt 1 to belt 4",
+   "alloc": [
+    [
+     0,
+     0,
+     0,
+     0
+    ],
+    [
+     1,
+     1,
+     1,
+     1
+    ],
+    [
+     2,
+     2,
+     2,
+     2
+    ],
+    [
+     6,
+     7,
+     7,
+     8
+    ]
+   ],
+   "total": 40,
+   "seed": 20264004,
+   "mean": 3.840013729,
+   "hw": 0.000182161,
+   "sd": 0.000918051,
+   "reps": 100
+  },
+  "move_2to1": {
+   "desc": "feeder 4: one unit from belt 2 to belt 1",
+   "alloc": [
+    [
+     0,
+     0,
+     0,
+     0
+    ],
+    [
+     1,
+     1,
+     1,
+     1
+    ],
+    [
+     2,
+     2,
+     2,
+     2
+    ],
+    [
+     8,
+     6,
+     7,
+     7
+    ]
+   ],
+   "total": 40,
+   "seed": 20265004,
+   "mean": 3.839690105,
+   "hw": 0.000198303,
+   "sd": 0.000999405,
+   "reps": 100
+  },
+  "move_2to3": {
+   "desc": "feeder 4: one unit from belt 2 to belt 3",
+   "alloc": [
+    [
+     0,
+     0,
+     0,
+     0
+    ],
+    [
+     1,
+     1,
+     1,
+     1
+    ],
+    [
+     2,
+     2,
+     2,
+     2
+    ],
+    [
+     7,
+     6,
+     8,
+     7
+    ]
+   ],
+   "total": 40,
+   "seed": 20266004,
+   "mean": 3.839883842,
+   "hw": 0.000183328,
+   "sd": 0.000923934,
+   "reps": 100
+  },
+  "move_2to4": {
+   "desc": "feeder 4: one unit from belt 2 to belt 4",
+   "alloc": [
+    [
+     0,
+     0,
+     0,
+     0
+    ],
+    [
+     1,
+     1,
+     1,
+     1
+    ],
+    [
+     2,
+     2,
+     2,
+     2
+    ],
+    [
+     7,
+     6,
+     7,
+     8
+    ]
+   ],
+   "total": 40,
+   "seed": 20267004,
+   "mean": 3.840229692,
+   "hw": 0.00019745,
+   "sd": 0.000995102,
+   "reps": 100
+  },
+  "move_3to1": {
+   "desc": "feeder 4: one unit from belt 3 to belt 1",
+   "alloc": [
+    [
+     0,
+     0,
+     0,
+     0
+    ],
+    [
+     1,
+     1,
+     1,
+     1
+    ],
+    [
+     2,
+     2,
+     2,
+     2
+    ],
+    [
+     8,
+     7,
+     6,
+     7
+    ]
+   ],
+   "total": 40,
+   "seed": 20268004,
+   "mean": 3.839874376,
+   "hw": 0.000187254,
+   "sd": 0.000943716,
+   "reps": 100
+  },
+  "move_3to2": {
+   "desc": "feeder 4: one unit from belt 3 to belt 2",
+   "alloc": [
+    [
+     0,
+     0,
+     0,
+     0
+    ],
+    [
+     1,
+     1,
+     1,
+     1
+    ],
+    [
+     2,
+     2,
+     2,
+     2
+    ],
+    [
+     7,
+     8,
+     6,
+     7
+    ]
+   ],
+   "total": 40,
+   "seed": 20269004,
+   "mean": 3.839874226,
+   "hw": 0.000194296,
+   "sd": 0.00097921,
+   "reps": 100
+  },
+  "move_3to4": {
+   "desc": "feeder 4: one unit from belt 3 to belt 4",
+   "alloc": [
+    [
+     0,
+     0,
+     0,
+     0
+    ],
+    [
+     1,
+     1,
+     1,
+     1
+    ],
+    [
+     2,
+     2,
+     2,
+     2
+    ],
+    [
+     7,
+     7,
+     6,
+     8
+    ]
+   ],
+   "total": 40,
+   "seed": 20270004,
+   "mean": 3.840330444,
+   "hw": 0.000189007,
+   "sd": 0.000952553,
+   "reps": 100
+  },
+  "move_4to1": {
+   "desc": "feeder 4: one unit from belt 4 to belt 1",
+   "alloc": [
+    [
+     0,
+     0,
+     0,
+     0
+    ],
+    [
+     1,
+     1,
+     1,
+     1
+    ],
+    [
+     2,
+     2,
+     2,
+     2
+    ],
+    [
+     8,
+     7,
+     7,
+     6
+    ]
+   ],
+   "total": 40,
+   "seed": 20271004,
+   "mean": 3.839449744,
+   "hw": 0.000180597,
+   "sd": 0.000910169,
+   "reps": 100
+  },
+  "move_4to2": {
+   "desc": "feeder 4: one unit from belt 4 to belt 2",
+   "alloc": [
+    [
+     0,
+     0,
+     0,
+     0
+    ],
+    [
+     1,
+     1,
+     1,
+     1
+    ],
+    [
+     2,
+     2,
+     2,
+     2
+    ],
+    [
+     7,
+     8,
+     7,
+     6
+    ]
+   ],
+   "total": 40,
+   "seed": 20272004,
+   "mean": 3.839520662,
+   "hw": 0.000185404,
+   "sd": 0.000934397,
+   "reps": 100
+  },
+  "move_4to3": {
+   "desc": "feeder 4: one unit from belt 4 to belt 3",
+   "alloc": [
+    [
+     0,
+     0,
+     0,
+     0
+    ],
+    [
+     1,
+     1,
+     1,
+     1
+    ],
+    [
+     2,
+     2,
+     2,
+     2
+    ],
+    [
+     7,
+     7,
+     8,
+     6
+    ]
+   ],
+   "total": 40,
+   "seed": 20273004,
+   "mean": 3.839322045,
+   "hw": 0.000178673,
+   "sd": 0.000900475,
+   "reps": 100
+  },
+  "tilt_to_belt4": {
+   "desc": "tilt toward belt 4 across feeders 2 to 4",
+   "alloc": [
+    [
+     0,
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     1,
+     1,
+     2
+    ],
+    [
+     1,
+     2,
+     2,
+     3
+    ],
+    [
+     4,
+     6,
+     8,
+     10
+    ]
+   ],
+   "total": 40,
+   "seed": 20274004,
+   "mean": 3.819969782,
+   "hw": 0.0002243,
+   "sd": 0.001130424,
+   "reps": 100
+  },
+  "tilt_to_belt1": {
+   "desc": "tilt toward belt 1 across feeders 2 to 4",
+   "alloc": [
+    [
+     0,
+     0,
+     0,
+     0
+    ],
+    [
+     2,
+     1,
+     1,
+     0
+    ],
+    [
+     3,
+     2,
+     2,
+     1
+    ],
+    [
+     10,
+     8,
+     6,
+     4
+    ]
+   ],
+   "total": 40,
+   "seed": 20275004,
+   "mean": 3.820236707,
+   "hw": 0.000163086,
+   "sd": 0.00082192,
+   "reps": 100
+  },
+  "plus1_f4": {
+   "desc": "one extra unit at feeder 4, belt 4",
+   "alloc": [
+    [
+     0,
+     0,
+     0,
+     0
+    ],
+    [
+     1,
+     1,
+     1,
+     1
+    ],
+    [
+     2,
+     2,
+     2,
+     2
+    ],
+    [
+     7,
+     7,
+     7,
+     8
+    ]
+   ],
+   "total": 41,
+   "seed": 20276004,
+   "mean": 3.842600421,
+   "hw": 0.000180741,
+   "sd": 0.000910894,
+   "reps": 100
+  },
+  "plus1_f3": {
+   "desc": "one extra unit at feeder 3, belt 4",
+   "alloc": [
+    [
+     0,
+     0,
+     0,
+     0
+    ],
+    [
+     1,
+     1,
+     1,
+     1
+    ],
+    [
+     2,
+     2,
+     2,
+     3
+    ],
+    [
+     7,
+     7,
+     7,
+     7
+    ]
+   ],
+   "total": 41,
+   "seed": 20277004,
+   "mean": 3.841024632,
+   "hw": 0.000178548,
+   "sd": 0.000899841,
+   "reps": 100
+  },
+  "plus1_f2": {
+   "desc": "one extra unit at feeder 2, belt 4",
+   "alloc": [
+    [
+     0,
+     0,
+     0,
+     0
+    ],
+    [
+     1,
+     1,
+     1,
+     2
+    ],
+    [
+     2,
+     2,
+     2,
+     2
+    ],
+    [
+     7,
+     7,
+     7,
+     7
+    ]
+   ],
+   "total": 41,
+   "seed": 20278004,
+   "mean": 3.840597316,
+   "hw": 0.000164993,
+   "sd": 0.000831529,
+   "reps": 100
+  }
+ }
+}

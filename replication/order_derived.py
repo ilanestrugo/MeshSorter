@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Table 6: the order-derived destination-sequence robustness check.
+"""Table 5: the order-derived destination-sequence robustness check.
 
 The check asks one question.  Every other experiment in the paper draws each
 item's destination uniformly and independently.  If those draws are replaced by
@@ -15,9 +15,9 @@ use.  The earlier version of this table compared a long uniform run with a
 shorter order-derived one, which is why it carried a caveat about horizons; this
 one does not need it.
 
-    python3 table6.py                 the table
-    python3 table6.py --quick         a cheap pass, to check the wiring
-    python3 table6.py --allocs FILE   read the allocations from FILE instead,
+    python3 order_derived.py                 the table
+    python3 order_derived.py --quick         a cheap pass, to check the wiring
+    python3 order_derived.py --allocs FILE   read the allocations from FILE instead,
                                       one per line, lowest budget first
 
 THE ALLOCATIONS
@@ -31,16 +31,17 @@ free choice of this script.  Three sources are tried in turn:
                                  sweep_structured.py produces in a couple of minutes
 
 The first two agree by construction.  The third agrees at every budget except
-B = 7, where it prefers 0,1,1,5 to the certification's 0,1,2,4; the two are
-separated by 0.0004 items per time step, inside the half-width of either
-estimate, and they agree to three decimals in both columns.  The source actually
-used is printed and recorded in the output, so the table always says where its
-allocations came from.
+B = 7, where the structured-class sweep prefers 0,1,2,4 and the certification
+selects 0,1,1,5; the two are separated by 0.0004 items per time step, inside
+the half-width of either estimate, but the printed row differs in its last
+digit, so the table is built from the certification, which is the allocation
+the manuscript names.  The source actually used is printed and recorded in the
+output, so the table always says where its allocations came from.
 
 THE SEQUENCE
 olist_orders_ForRun.csv, at the top of the repository, is the prepared order
 stream: one row per usable order, in chronological order, with the primary belt
-its destination is assigned to.  Supplement S4 describes how the raw Brazilian
+its destination is assigned to.  Supplement S5 describes how the raw Brazilian
 e-commerce dataset was reduced to it.  This script extracts the belt column into
 results/order_derived_sequence.txt, which is what the simulator reads.
 
@@ -58,7 +59,10 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
 BIN  = os.environ.get("MESHSORTER_BIN", os.path.join(HERE, "meshsorter"))
 OUT  = os.path.join(HERE, "results")
-ORDERS = os.path.join(REPO, "olist_orders_ForRun.csv")
+ORDERS = os.environ.get("ORDERS_CSV") or next(
+    (p for p in (os.path.join(HERE, "olist_orders_ForRun.csv"),
+                 os.path.join(REPO, "olist_orders_ForRun.csv"))
+     if os.path.exists(p)), os.path.join(REPO, "olist_orders_ForRun.csv"))
 SEQ    = os.path.join(OUT, "order_derived_sequence.txt")
 
 # ---------------------------------------------------------------- parameters
@@ -66,8 +70,11 @@ BELTS    = 4
 FEEDERS  = 4
 DUAL     = True
 BUDGETS  = list(range(0, 11))
-SPACING  = 4              # slots between consecutive primary belts along a loop
-TURN     = 4              # slots in each end curve; loop length is 2*S*n + 2*E
+import geometry as _geo
+SPACING  = _geo.SPACING              # slots between consecutive primary belts along a loop
+TURN     = _geo.TURN
+DF     = _geo.DF
+WIDTH     = _geo.WIDTH
 STEPS    = 1_330_000
 REPS     = 30
 SEED     = 20260901
@@ -85,7 +92,7 @@ os.makedirs(OUT, exist_ok=True)
 def build_sequence():
     """Extract the belt column of the prepared order stream, in arrival order."""
     if not os.path.exists(ORDERS):
-        sys.exit(f"{ORDERS} not found; it is the prepared order stream of Supplement S4")
+        sys.exit(f"{ORDERS} not found; it is the prepared order stream of Supplement S5")
     rows = []
     with open(ORDERS, newline="") as f:
         for d in csv.DictReader(f):
@@ -181,6 +188,7 @@ def simulate(alloc, sequence):
     cmd = [BIN, "-n", str(BELTS), "-m", str(FEEDERS),
            "--dual" if DUAL else "--single",
            "--spacing", str(SPACING), "--turn", str(TURN),
+           "--df", str(DF), "--width", str(WIDTH),
            "-b", buffer_spec(alloc),
            "-T", str(STEPS), "-R", str(REPS), "--seed", str(SEED), "--json"]
     if sequence:

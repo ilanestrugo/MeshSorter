@@ -1,0 +1,39 @@
+Protocol 2 warm-up sensitivity check
+====================================
+System: n = 4 belts, m = 9 feeders, dual-drop, identical loop lengths (L = 24),
+unbuffered.  This is the slowest-settling cell of the 6 x 6 grid.
+10 independent replications (seeds 1000, 1007, ..., 1063), T = 4,000,000 steps
+each, 95% t-interval across the ten replication means (t_{9,0.975} = 2.262).
+
+   warm-up     window         mean   half-width
+         0    4000000      3.74389      0.00030
+      1000    3999000      3.74384      0.00030
+     10000    3990000      3.74384      0.00030
+    100000    3900000      3.74381      0.00032
+    500000    3500000      3.74376      0.00030
+
+Spread across all five settings: 0.00013, i.e. well inside a single
+half-width.  Discarding zero steps and discarding 500,000 steps give the
+same answer.
+
+Transient measurement (independent of the above)
+------------------------------------------------
+Ensemble average of throughput in 20-step blocks over 200-300 seeds,
+using /tmp/ms/m5t.
+
+4 x 4 dual, identical L (steady state 3.0277):
+  t =   0- 20   4.0000
+  t =  20- 40   3.6115
+  t =  60- 80   3.0445
+  t =  80-100   3.0318
+  t = 100-120   3.0123
+  t = 120+      fluctuating about 3.028
+
+9 x 9 dual (L = 44):   settled by t ~ 200
+4 x 9 dual (slowest):  settled by t ~ 400
+
+The initial condition (all cells empty, all feeders loaded) is optimistic:
+the first round transfers every item, so the series starts at n and decays.
+The decay is over within a few hundred steps in every cell of the grid.
+A warm-up of 500,000 steps is roughly 1,000 times longer than needed and
+discards 12.5% of every run for nothing.

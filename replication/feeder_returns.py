@@ -11,10 +11,11 @@ from exact_single_drop import exact
 # ---------------------------------------------------------------- parameters
 N       = 4                       # primary belts
 MS      = list(range(1, 11))      # feeder loops
-DP      = 4                       # loop slots per primary belt
-TURN    = 4                       # loop slots per end of the loop
-DF      = 4                       # feeder spacing along a primary belt
-WIDTH   = 2                       # forward-to-backward distance on a belt
+import geometry as _geo
+DP      = _geo.DP                       # loop slots per primary belt
+TURN    = _geo.TURN                       # loop slots per end of the loop
+DF      = _geo.DF                       # feeder spacing along a primary belt
+WIDTH   = _geo.WIDTH                       # forward-to-backward distance on a belt
 STEPS   = 1_330_000               # measured steps per replication
 REPS    = 30                      # independent replications
 WARMUP  = None                    # None = the rule of Supplement S1

@@ -7,3 +7,14 @@ __pycache__/
 # is not.
 results/cache/
 sweep_rep
+
+# generated and reproducible from the scripts, 30 permutations of the sequence
+results/shuffled/
+
+# working copies, backups, archives and scratch logs: not part of a release
+_geometry_backup/
+_server_results/
+*.tar.gz
+/*.log
+*.exe
+*.obj
