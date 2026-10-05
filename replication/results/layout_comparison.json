@@ -1,0 +1,48 @@
+{
+ "destinations": 320,
+ "ceiling_per_step": 3.105747368,
+ "loops": [
+  104,
+  104,
+  105,
+  106
+ ],
+ "conventional": {
+  "sorters": 3,
+  "bins": 960,
+  "drops": 960,
+  "drops_bins": 960,
+  "drops_feeder": 0,
+  "belt": 489.0,
+  "belt_primary": 489.0,
+  "belt_loops": 0.0,
+  "aisle": 640.0,
+  "length": 166.0,
+  "width": 17.0,
+  "footprint": 2822.0,
+  "loading": 102.0,
+  "sorting": 2720.0,
+  "ceiling": 43200.0,
+  "bin_len": 160.0
+ },
+ "meshsorter": {
+  "bins": 320,
+  "drops": 352,
+  "drops_bins": 320,
+  "drops_feeder": 32,
+  "belt": 473.5,
+  "belt_primary": 264.0,
+  "belt_loops": 209.5,
+  "aisle": 330.0,
+  "length": 66.0,
+  "width": 22.0,
+  "width_feed": 25.0,
+  "footprint": 1530.0,
+  "loading": 650.0,
+  "sorting": 880.0,
+  "ceiling": 44722.7620992,
+  "bin_len": 40.0,
+  "loading_len": 26.0
+ },
+ "differences_from_paper": []
+}

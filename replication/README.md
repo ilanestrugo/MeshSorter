@@ -62,9 +62,10 @@ Sections S1 and onwards). The output files keep the names they had under earlier
 that nothing downstream breaks: `results/table1.*` is Table 2(b), `results/table2.*` is Tables S5
 and S6, `results/loops_buffered*` is Table S11 and `results/table6.*` is Table S12.
 
-**What is not produced by a script in this release.** The resource counts of Table 1 and Table S1
-are arithmetic on the layouts of Section S1 of the Supplemental Online Material. Everything else
-that is simulated or computed has a script in the Contents table below.
+**Every number has a script.** Everything that is simulated or computed has a script in the
+Contents table below. The resource counts of Table 1 and Table S1 are arithmetic on the layouts of
+Section S1 of the Supplemental Online Material, and `layout_comparison.py` derives each of them from
+the stated dimensions and compares it with the printed value.
 
 ## Contents
 
@@ -97,6 +98,7 @@ that is simulated or computed has a script in the Contents table below.
 | `transient_pilot.cpp`, `transient_pilot.py` | the transient pilot: 48 configurations (loops of one, two and four times the layout's own), 300 empty-start runs each, the settling point and the cumulative excess | the transient figures of Section S2.2 |
 | `buffer_relaxation.py` | how long the number of items held in buffers takes to settle, on the most heavily loaded pilot configuration | the buffer-content figures of Section S2.2 |
 | `warmup_sensitivity.py` | the estimate re-computed after deleting 0 to 10^6 steps of seven 40-replication runs | Table S3 |
+| `layout_comparison.py` | the resource comparison: every cell of Table 1 and Table S1, and the figures of Section S1, derived from the stated dimensions and checked against the printed values | Table 1, Table S1 |
 | `gcd_verification.py` | brute-force enumeration of the families, against the gcd formula | the check of Proposition 5 |
 | `validate.py` | the simulator against the exact single-drop values on chosen cells | |
 | `run_all.sh`, `run_server.sh` | build and run everything that is quick, or everything on a many-core server | |

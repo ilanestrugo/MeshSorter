@@ -66,6 +66,7 @@ python3 transient_pilot.py "$@"            # transient figures of Section S2.2, 
 python3 buffer_relaxation.py "$@"          # buffer-content figures of Section S2.2, a few minutes
 python3 warmup_sensitivity.py "$@"         # Table S3, about forty minutes
 
+python3 layout_comparison.py            # Table 1 and Table S1, from the stated dimensions
 python3 gcd_verification.py               # the enumeration behind Proposition 5
 python3 validate.py                       # the simulator against the exact values
 echo
