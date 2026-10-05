@@ -18,6 +18,8 @@ The software accompanies the manuscript *MeshSorter: A Two-Layer Conveyor Archit
 | `olist_orders_ForRun.csv` | CSV file containing the processed Olist destination sequence |
 | `replication/` | The simulator, the certification program, the exact solver and the scripts that produce every table and figure of the manuscript. See [`replication/README.md`](replication/README.md) |
 
+**Data source.** `olist_orders_ForRun.csv` is derived from the [Brazilian E-Commerce Public Dataset by Olist](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce), published on Kaggle under [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/). Section S9 of the Supplemental Online Material describes how it was prepared.
+
 The build produces four executables:
 
 - `meshsim_cli`: runs the simulator, the analytical approximation, or both.
