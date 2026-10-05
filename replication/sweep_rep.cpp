@@ -6,7 +6,7 @@
 //  possible for small systems: fifteen feeders and a budget of twenty admit
 //  about 1.1 billion allocations.  This program evaluates a stated set instead,
 //  by default the structured class itself, which is what a designer following
-//  the rules of Section 5.1 would actually search.
+//  the rules of Section 6.1 would actually search.
 //
 //  It writes the same CSV as certify_rep --dump, so approx_eval.py reads the
 //  output of either without knowing which produced it.  Each allocation is run
@@ -156,7 +156,7 @@ static void usage() {
       --verbose          report progress
   -h, --help             this text
 
-The allocations evaluated are the structured class of Section 5.1: capacities
+The allocations evaluated are the structured class of Section 6.1: capacities
 nondecreasing along the feeders, and, in the dual-drop system, nothing at a
 forward drop point.  Their number is the partitions of B into at most m-1 parts,
 which stays manageable where the full allocation space does not.

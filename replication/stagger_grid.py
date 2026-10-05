@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Table 3 of the manuscript: steady-state throughput of the unbuffered
+"""Tables S5 and S6 of the Supplemental Online Material: steady-state throughput of the unbuffered
 MeshSorter under the staggered configuration, with the gain over identical
 loop lengths in parentheses.
 
-    panel (a)  single-drop, staggered                              Table 3(a)
-    panel (b)  dual-drop, staggered, added slots on the return run   Table S11
-    panel (c)  dual-drop, staggered, added slots at the turnaround   Table 3(b)
+    panel (a)  single-drop, staggered                              Table S5(a)
+    panel (b)  dual-drop, staggered, added slots on the return run   Table S6
+    panel (c)  dual-drop, staggered, added slots at the turnaround   Table S5(b)
 
 The gains of panel (a) are measured against the exact single-drop values of
 Table 2(a); those of panels (b) and (c) against the simulated dual-drop values
@@ -31,7 +31,7 @@ STAGGER_STEP = 1                  # L_1 = L_2 = L, L_j = L + (j-2) for j >= 3
 BUFFERS = None                    # unbuffered
 STEPS   = 1_330_000
 REPS    = 30
-WARMUP  = None                    # None = the rule of Supplement S1
+WARMUP  = None                    # None = the rule of Section S2
 SEED    = 20260901
 # ---------------------------------------------------------------------------
 

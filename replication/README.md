@@ -56,14 +56,15 @@ identical replication values on the unbuffered 4 x 4 dual-drop system (all 30, t
 decimals), reproduce the 49 cells of Table 4, and regenerate Table S12 to the last digit, except
 for the one row whose allocation was corrected in this release (see `order_derived.py`).
 
-**Numbering.** The rest of this file was written against an earlier numbering of tables and
-sections, and some of its references ("Table 6", "Section 7", "Supplement S1") are out of date.
-Where they disagree with the table below, which uses the numbering of the release, trust the table.
+**Numbering.** Tables, figures and sections are cited by the numbers of the submitted manuscript
+(Tables 1 to 5, Sections 1 to 7) and of its Supplemental Online Material (Tables, Figures and
+Sections S1 and onwards). The output files keep the names they had under earlier numbering, so
+that nothing downstream breaks: `results/table1.*` is Table 2(b), `results/table2.*` is Tables S5
+and S6, `results/loops_buffered*` is Table S11 and `results/table6.*` is Table S12.
 
 **What is not produced by a script in this release.** The resource counts of Table 1 and Table S1
-are arithmetic on the layouts of Section S1 of the Supplemental Online Material. The transient
-pilot and the warm-up sensitivity of Table S3 were produced by a separate analysis whose script is
-not included; their records are in `results/transient_pilot/`, and no other result uses them.
+are arithmetic on the layouts of Section S1 of the Supplemental Online Material. Everything else
+that is simulated or computed has a script in the Contents table below.
 
 ## Contents
 
@@ -232,10 +233,10 @@ travels between its forward and its backward crossing with the same belt.
 
 * `turnaround` (default): the added slots extend the far end of the loop, so the
   backward crossings move away from the forward ones. This is the layout of
-  Table 3 panel (b).
+  Table S5(b).
 * `return`: the added slots extend the return run between the last backward
   crossing and the loading station, so the crossings keep the positions computed
-  from the base length. This is the layout of Table S11.
+  from the base length. This is the layout of Table S6.
 
 In a single-drop system the two coincide, since there are no backward crossings
 to move.
@@ -279,7 +280,7 @@ threads, which runs the default 30 replications in a single pass and leaves two
 threads for everything else. Replication `r` always draws the same stream, so
 the number of workers changes the wall clock and nothing else.
 
-The default warm-up is the rule of Supplement S1,
+The default warm-up is the rule of Section S2.2,
 
 ```
 W = max( 20000 , 10 * (c + 1) * L )
@@ -290,11 +291,12 @@ anywhere in the configuration. The reasoning is that a feeder reaches each of
 its crossings once per revolution, so a buffer of capacity `c` cannot fill from
 empty in fewer than `c * L` steps; `(c+1) * L` is therefore the natural fill
 time of the system, and the rule deletes ten of them, subject to a floor of
-20,000 steps. A pilot study reported in Supplement S1 found the transient over
-within 2,000 steps in every configuration in and beyond the range used in the
-paper, and the estimates are insensitive to the choice: deleting nothing at all
-moves them by less than 0.0006 items per step, and deleting 10,000 rather than
-1,000,000 moves them by less than 0.0002.
+20,000 steps. A pilot study reported in Section S2.2 timed the transient in 48
+configurations, with loops from the layout's own length up to four times as
+long: the median settled within 580 time steps and the slowest within 2,480.
+The estimates are insensitive to the choice (Table S3): deleting nothing at all
+moves them by at most 0.0007 items per step, and deleting 10,000 rather than
+1,000,000 moves them by at most 0.0001.
 
 Each `(replication, feeder)` pair draws from its own stream, seeded from
 `--seed` and the two indices, so rerunning with the same `--seed` reproduces
@@ -320,13 +322,13 @@ python3 feeder_returns.py
 
 Each script carries its parameters at the top of the file, written out in full,
 and prints the figures a caption needs: the largest half-width over the panel,
-the warm-up actually used, and for Table 2 the pairwise-separation count.
+the warm-up actually used, and for Table 2(b) the pairwise-separation count.
 
 Three kinds of output are written:
 
 * `results/table1.tex`, `results/table2.tex`, `results/loops_buffered.tex`, the
   LaTeX bodies of the panels, ready to paste into the manuscript, and
-  `results/loops_buffered_table.tex`, the whole of Table S13 with its caption, the
+  `results/loops_buffered_table.tex`, the whole of Table S11 with its caption, the
   allocations named and the largest half-width filled in;
 * `results/table1.csv`, `results/table2.csv`, one row per cell with the
   estimate, its half-width and standard deviation, the gain over the reference
@@ -341,14 +343,14 @@ The raw numbers behind every published figure are kept under `results/raw`, and
 are committed with the rest, so a reader can check a table without rerunning
 anything:
 
-* `<panel>_n<N>_m<M>.json`, one file per cell, holding the ten replication
+* `<panel>_n<N>_m<M>.json`, one file per cell, holding the thirty replication
   averages together with the geometry, the seed, the warm-up and the run length
   that produced them;
 * `<panel>.csv`, one row per replication of that panel, with the same fields.
 
 The panels are named `table1b_dual_identical`, `table2a_single_staggered`,
 `table2b_dual_staggered_return` and `table2c_dual_staggered_turnaround`. The
-mean and half-width of a cell can be recomputed from its ten values with any
+mean and half-width of a cell can be recomputed from its thirty values with any
 tool at hand, which is the point of keeping them.
 
 Results are also cached under `results/cache`, keyed on every argument that can
@@ -362,7 +364,7 @@ once it is a small fraction of that. `--quick` runs the same grids at low
 precision in a few minutes, which is enough to check that everything is wired up.
 
 Every script sets the run length and the replication count explicitly at the top
-of the file, at the 30 replications of 1,330,000 steps that Supplement S1
+of the file, at the 30 replications of 1,330,000 steps that Section S2
 describes, so that none of them can inherit a different design from `common.py`
 by accident. Every raw file records the `steps` and `replications` that produced
 it, so the provenance of a number is never in doubt.
@@ -374,7 +376,7 @@ beside the scripts.
 
 ## Throughput against load balancing
 
-Tables S5 and S6 ask what a designer gives up by balancing the loaders instead
+Tables S9 and S10 ask what a designer gives up by balancing the loaders instead
 of maximizing throughput. At each per-primary-belt budget two allocations are
 reported: `c`, the one with the largest minimum loader utilization, and `c'`,
 the one with the largest throughput, together with both objectives for each and
@@ -387,7 +389,7 @@ python3 load_balance.py --only dual # one drop mechanism
 ```
 
 **The search is confined to the structured class.** That is a deliberate
-restriction rather than an approximation of a wider search. Section 5.1 of the
+restriction rather than an approximation of a wider search. Section 6.1 of the
 manuscript certifies the class as containing a near-optimal design, so it is
 what a designer following the design rules would consider; but the rules were
 derived for throughput, not for balance, and the best-balanced allocation in the
@@ -400,7 +402,7 @@ budget into at most `m - 1` parts, whichever drop mechanism is in force. Under
 the dual-drop mechanism those are the capacities at the backward drop points,
 the forward ones being zero. The enumerator produces 1, 2, 3, 4, 5, 7, 8, 10,
 12 and 14 allocations at budgets 1 to 10, matching the class sizes behind
-Table 6.
+Table 3.
 
 **Loader utilization** comes from `meshsorter --per-feeder`, which reports the
 fraction of rounds in which each feeder admits an item. The minimum is over all
@@ -413,9 +415,9 @@ two spellings of the same design. Ties within an objective break toward the
 allocation that is better on the other.
 
 **One protocol.** Every allocation is evaluated under the design of
-Supplement S1, the same geometry, run length, warm-up rule and thirty
-replications the certification and Section 7 use, so these tables are directly
-comparable with Table 4. The earlier version of Tables S5 and S6 was produced at
+Section S2, the same geometry, run length, warm-up rule and thirty
+replications the certification and Section 6.5 use, so these tables are directly
+comparable with Table 3. The earlier version of Tables S9 and S10 was produced at
 the shorter loop length and is not comparable with it: its throughputs run up to
 0.034 items per time step low, and the gap widens with the budget.
 
@@ -427,7 +429,7 @@ utilizations behind every reported row. Results are cached per cell under
 ## The order-derived destination sequence
 
 Every other experiment in this package draws each item's destination uniformly
-and independently. Table 5 asks what happens when those draws are replaced by a
+and independently. Table S12 asks what happens when those draws are replaced by a
 single chronological sequence taken from a real order stream, and whether the
 buffering trends survive it.
 
@@ -438,7 +440,7 @@ python3 order_derived.py --quick    # a cheap pass, to check the wiring
 
 **The sequence.** `olist_orders_ForRun.csv`, at the top of the repository, is the
 prepared order stream: one row per usable order, in chronological order, with the
-primary belt its destination is assigned to. Supplement S5 describes how the raw
+primary belt its destination is assigned to. Section S9 describes how the raw
 Brazilian e-commerce dataset was reduced to it, and the file is committed so the
 reduction does not have to be repeated. `order_derived.py` extracts its `belt` column
 into `results/order_derived_sequence.txt`, one label per line, which is what the
@@ -449,7 +451,7 @@ belts, between 0.2494 and 0.2506 of the stream each.
 uniform draw at the loading step. The feeders consume the sequence in index
 order, so when several admit an item in the same time step they take consecutive
 labels, and the sequence repeats cyclically. That is the rule stated in
-Supplement S5.
+Section S9.
 
 **What a replication means here.** The sequence is deterministic, so replications
 cannot differ in their draws. They differ in phase: each begins reading the cycle
@@ -460,12 +462,12 @@ the day begins. It runs about a third of the spread of the corresponding uniform
 run. That is a property of the check rather than a weakness of the estimate:
 this is one sequence, and the manuscript says so.
 
-**One protocol for both columns.** The two columns of Table 5 use the same run
+**One protocol for both columns.** The two columns of Table S12 use the same run
 length, warm-up rule, geometry, seed and replication count, the ones of
-Supplement S1 that the certification and Section 7 also use. An earlier version
+Section S2 that the certification and Section 6.5 also use. An earlier version
 of the table compared a long uniform run with a shorter order-derived one and
 carried a caveat about horizons; this one does not need it. The uniform column
-now agrees with Table 4 at `B = 10`, which is a useful check that the two
+now agrees with Table 3 at `B = 10`, which is a useful check that the two
 experiments really do share a protocol.
 
 **The allocations.** The allocation at each budget is the one the certification
@@ -478,8 +480,8 @@ selects, not a free choice of the script. Three sources are tried in turn:
 | `results/structured/` | the best of the structured class, two minutes of work |
 
 The first two agree by construction: the committed file is the cumulative sum of
-the addition order Table 4 prints. The third agrees at every budget but `B = 7`,
-where it prefers `0,1,1,5` to the certification's `0,1,2,4`. Those two are
+the addition order Table S8 prints. The third agrees at every budget but `B = 7`,
+where it prefers `0,1,2,4` to the certification's `0,1,1,5`. Those two are
 separated by 0.0004 items per time step, inside the half-width of either
 estimate, and they agree to three decimals in both columns of the table, so the
 choice does not move a printed figure. Whichever source was used is printed and
@@ -515,7 +517,7 @@ outcome rather than a failure.
 ```bash
 ./certify_rep -n 4 -m 4 -B 10 --dual        # one cell
 ./certify_rep --help                        # the options
-python3 certify_all.py                      # the grid of Table 4
+python3 certify_all.py                      # the grid of Tables 3 and S8
 python3 certify_all.py --verbose            # per-phase progress from each cell
 python3 certify_all.py --feeders 3          # one feeder count, to split across machines
 ```
@@ -536,7 +538,7 @@ The earlier program `buffer_certify` in the parent directory answers the same
 question by batch means along a single long run. `certify_rep` replaces the batch
 by the replication, which is what removes the need to argue that successive
 observations are uncorrelated; the procedure is otherwise the same three phases,
-and is documented in Supplement S1 and S2.
+and is documented in Section S6.
 
 Work is spread over the allocations rather than over the replications of any one
 of them, which is what keeps every thread busy: there are tens of thousands of
@@ -548,7 +550,7 @@ single thread and become the critical path of every cell.
 
 The grid is 54,114 allocations across both mechanisms, three feeder counts and
 ten budgets, B = 1 to 10. A budget of zero admits a single allocation and leaves
-no competitors, so there is nothing to certify and it is not run. each piloted and then validated, so it is an overnight run on a
+no competitors, so there is nothing to certify and it is not run. Each allocation is piloted and then validated, so it is an overnight run on a
 machine with thirty usable threads. Cells are cached under `results/certify`,
 keyed on the whole design, so an interrupted run resumes and a `--quick` pass
 cannot contaminate a full one.
@@ -569,10 +571,10 @@ run that should not disturb a finished grid.
 
 ## Evaluating the approximation model
 
-Section 6 replaces the simulation by a recursion along the feeders, in which
+Section 5 replaces the simulation by a recursion along the feeders, in which
 every buffer is a Geo/Geo/1/c queue whose birth and death probabilities are read
 off the belt utilization upstream of it. `approx_model.py` is that recursion,
-transcribed equation by equation, and Section 7 asks how much is lost by using
+transcribed equation by equation, and Section 6.5 asks how much is lost by using
 it in place of the simulation.
 
 ```bash
@@ -582,11 +584,11 @@ python3 approx_eval.py         # the evaluation
 ```
 
 The comparison is confined to the structured class, the allocations the design
-rules of Section 5.1 admit. That is the set a designer searches, since the
+rules of Section 6.1 admit. That is the set a designer searches, since the
 certification of that section establishes that it contains an allocation optimal
 up to the indifference zone, and it is what makes the question tractable at
 scale. Only the class has to be simulated, which is 388 allocations over both drop
-mechanisms rather than the 54,120 the certification enumerates, so
+mechanisms rather than the 54,114 the certification enumerates, so
 `sweep_structured.py` produces it in a couple of minutes and the certification
 does not have to be run again. `approx_eval.py` also reads the certification's
 own dumps if you have them, with `--dir results/certify`, and `--all` then
@@ -621,7 +623,7 @@ the approximation is never used there. Its numbers stay in `approx_eval.csv`.
 `--scatter` chooses the budgets whose allocations are written out for the
 figure; the default is 5 and 10, and the fifteen-belt grid uses 15.
 
-`sec7_numbers.py` prints every number that appears in the prose of Section 7,
+`sec7_numbers.py` prints every number that appears in the prose of Section 6.5,
 and `sec7_numbers.py --map` prints them as a JSON mapping from the placeholders
 the manuscript uses, so a rerun of the grid regenerates the sentences instead of
 inviting a hand edit.
@@ -734,7 +736,7 @@ model:
 
 * the exact single-drop values of `exact_single_drop.py`, for every cell of the
   6 by 6 grid, and
-* the published dual-drop figures of Tables 2 and 3, which were produced by a
+* the published dual-drop figures of Tables 2(b), S5 and S6, which were produced by a
   separate implementation.
 
 `validate.py` performs the first comparison:

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Tables S5 and S6 of the Supplemental Online Material: throughput against
+"""Tables S9 and S10 of the Supplemental Online Material: throughput against
 load balancing, over the structured class.
 
 At each per-primary-belt budget the two objectives are optimized separately and
@@ -9,7 +9,7 @@ the cost of preferring one to the other is reported:
     c'  the allocation with the largest throughput
 
 The search is confined to the structured class of allocations the design rules
-admit, which Section 5.1 of the main manuscript certifies as containing a
+admit, which Section 6.1 of the main manuscript certifies as containing a
 near-optimal design.  That is a deliberate restriction: the load-balancing
 optimum is not what the design rules were derived for, so this reports the best
 balance available to a designer who follows them, not the best in the whole
@@ -19,9 +19,9 @@ allocation space.
     python3 load_balance.py --quick    a cheap pass, to check the wiring
     python3 load_balance.py --only dual
 
-Every allocation is evaluated under the protocol of Section S1: the geometry,
+Every allocation is evaluated under the protocol of Section S2: the geometry,
 run length, warm-up rule and thirty replications used by the certification and
-by Section 7, so these tables and Table 4 are directly comparable.  The earlier
+by Section 6.5, so these tables and Table 3 are directly comparable.  The earlier
 version of these tables was run at the shorter loop length and is not.
 
 Results are cached per cell, so an interrupted run resumes and a rerun is free.
@@ -138,7 +138,7 @@ def cell(dual, B):
 
 
 def body(cells):
-    """One LaTeX row per budget, in the nine-column form of Tables S5 and S6."""
+    """One LaTeX row per budget, in the nine-column form of Tables S9 and S10."""
     out = []
     for r in cells:
         b, f = r["balanced"], r["fastest"]

@@ -42,36 +42,36 @@ echo "built meshsorter, certify_rep, sweep_rep"
 echo
 
 echo "=============================================================="
-echo " 1/4  certification grid      Table 4 and Table S4"
+echo " 1/4  certification grid      Table 3 and Table S8"
 echo "      60 cells, up to 19,448 allocations in the largest"
 echo "=============================================================="
 time python3 certify_all.py "$@"
 echo
 
 echo "=============================================================="
-echo " 2/4  structured sweep, four belts     inputs to Table 6"
+echo " 2/4  structured sweep, four belts     inputs to Table 5"
 echo "      388 allocations in 60 classes"
 echo "=============================================================="
 time python3 sweep_structured.py "$@"
 echo
 
 echo "=============================================================="
-echo " 3/4  structured sweep, fifteen belts  Section S8"
+echo " 3/4  structured sweep, fifteen belts  Section S11"
 echo "      664 allocations in four designs"
 echo "=============================================================="
 time python3 sweep_structured.py --grid large "$@"
 echo
 
 echo "=============================================================="
-echo " 4/4  approximation against both sweeps, then Table 5"
+echo " 4/4  approximation against both sweeps, then Table S12"
 echo "=============================================================="
 python3 approx_model.py
 python3 approx_eval.py
 python3 approx_eval.py --dir results/large --tag large --scatter 15
-# Table 5 reads the certified allocation at each budget from results/certify,
+# Table S12 reads the certified allocation at each budget from results/certify,
 # so it is rerun here now that the certification exists.  A --quick pass cannot
 # produce it: --quick cuts certify_all.py to three feeders and budgets 0 to 2,
-# and sweep_structured.py to one feeder and two budgets, whereas Table 5 needs
+# and sweep_structured.py to one feeder and two budgets, whereas Table S12 needs
 # all ten budgets at four feeders.  Skipping it keeps the smoke test green.
 case " $* " in
   *" --quick "*)
@@ -90,8 +90,8 @@ tar czf "results-newgeom-$STAMP.tar.gz" results geometry.py
 echo "wrote results-newgeom-$STAMP.tar.gz"
 echo
 echo "Send back that archive.  The files that carry the numbers are:"
-echo "  results/certify/*.json          the certification grid, Table 4 and S4"
+echo "  results/certify/*.json          the certification grid, Table 3 and S8"
 echo "  results/structured/*.json       the four-belt structured sweep"
-echo "  results/large/*.json            the fifteen-belt sweep, Section S8"
-echo "  results/approx_eval*.csv|.tex   Table 6, Tables S7 to S9, Figure 6"
-echo "  results/table6.csv              Table 5, the order-derived check"
+echo "  results/large/*.json            the fifteen-belt sweep, Section S11"
+echo "  results/approx_eval*.csv|.tex   Table 5, Tables S13 to S15, Figure S5"
+echo "  results/table6.csv              Table S12, the order-derived check"

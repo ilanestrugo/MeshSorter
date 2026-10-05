@@ -22,7 +22,7 @@
 //  parallel, one worker thread per replication, discarding a warm-up period
 //  from each, and forming an ordinary t confidence interval on the R
 //  replication averages.  The output analysis protocol is the one described in
-//  Supplement S1 of the manuscript.
+//  Section S2 of the Supplemental Online Material.
 //
 //  Build:      c++ -O2 -std=c++17 -pthread -o meshsorter meshsorter.cpp
 //  Run:        ./meshsorter -n 4 -m 4 --dual
@@ -114,7 +114,7 @@
 //    turnaround  (default)  the added slots extend the far end of the loop, so
 //                           the backward crossings move away from the forward
 //                           ones: q^b_i is computed from L_j.  This is the
-//                           layout of panel (c) of Table 2.
+//                           layout of panel (b) of Table S5.
 //    return                 the added slots extend the return run between the
 //                           last backward crossing and the loading station, so
 //                           q^b_i keeps the value computed from the base
@@ -142,7 +142,7 @@
 //  freedom in the variance estimate rather than 9, which both narrows the
 //  interval slightly and makes the half-width itself a stable quantity.
 //
-//  The default warm-up is the rule of Supplement S1,
+//  The default warm-up is the rule of Section S2.2,
 //
 //        W = max( 20000 , 10 * (c_max + 1) * L_max ) ,
 //
@@ -216,7 +216,7 @@ struct Config {
     std::vector<int> bufF, bufB;   // capacity per crossing, indexed [j*n + i]
 
     long long steps = 1330000;     // measured steps per replication
-    long long warmup = -1;         // -1 = the rule of Supplement S1
+    long long warmup = -1;         // -1 = the rule of Section S2.2
     int  reps = 30;
     int  threads = 0;              // 0 = choose from the hardware
     uint64_t seed = 20260901ULL;
@@ -340,7 +340,7 @@ struct Replication {
     std::vector<Rng> rng;
     std::vector<long long> admissions;   // per feeder, during the window only
 
-    //  Optional order-derived destination sequence (Supplement S4): labels in
+    //  Optional order-derived destination sequence (Section S9): labels in
     //  1..n, consumed cyclically by the feeders in index order.  When it is set
     //  the loading step reads from it instead of drawing, so the run is
     //  deterministic given the starting position, and replications differ only

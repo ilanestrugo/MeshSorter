@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Diminishing returns from additional feeder loops, four primary belts.
 
-Replaces the old Figure 5.  Both mechanisms, staggered loop lengths, m = 1..10.
+Figure S2.  Both mechanisms, staggered loop lengths, m = 1..10.
 The single-drop identical-length values are added for reference; they are exact.
 """
 import sys, json
@@ -18,7 +18,7 @@ DF      = _geo.DF                       # feeder spacing along a primary belt
 WIDTH   = _geo.WIDTH                       # forward-to-backward distance on a belt
 STEPS   = 1_330_000               # measured steps per replication
 REPS    = 30                      # independent replications
-WARMUP  = None                    # None = the rule of Supplement S1
+WARMUP  = None                    # None = the rule of Section S2
 SEED    = 20260901
 # ---------------------------------------------------------------------------
 

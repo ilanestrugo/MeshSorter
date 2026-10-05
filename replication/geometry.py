@@ -2,7 +2,7 @@
 """The feeding-area geometry, in slots, shared by every table script.
 
 Everything imports these constants, so the geometry cannot drift between one
-table and another.  They are the layout costed in Supplement S9 and drawn in
+table and another.  They are the layout costed in Section S1 and drawn in
 Figure 3 of the manuscript, converted at the pitch of 0.5 m used throughout:
 
     a primary belt with its bins on both sides           3 m
@@ -22,7 +22,7 @@ A feeder loop is 5 m across, so the forward and backward crossings of one
 feeder on a primary belt are 5 m = 10 slots apart: WIDTH = 10.
 
 Consecutive feeders sit 5 m apart with a 2 m gap: DF = 14 slots.  By
-Proposition 2 the steady state does not depend on DF at all; it is set
+Proposition 3 the steady state does not depend on DF at all; it is set
 correctly for the record rather than because it changes an answer.
 
 Earlier versions of these scripts used DP = 4, TURN = 4, WIDTH = 2, DF = 4,

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Table 5: the order-derived destination-sequence robustness check.
+"""Table S12: the order-derived destination-sequence robustness check.
 
 The check asks one question.  Every other experiment in the paper draws each
 item's destination uniformly and independently.  If those draws are replaced by
@@ -10,7 +10,7 @@ For each per-primary-belt budget B the script simulates the same four-by-four
 dual-drop system twice, once with uniform destinations and once with the
 order-derived sequence, and reports the two throughputs and their difference.
 Both columns use one protocol: the run length, warm-up rule, geometry and
-replication count of Supplement S1, the same ones the certification and Section 7
+replication count of Section S2, the same ones the certification and Section 6.5
 use.  The earlier version of this table compared a long uniform run with a
 shorter order-derived one, which is why it carried a caveat about horizons; this
 one does not need it.
@@ -41,7 +41,7 @@ output, so the table always says where its allocations came from.
 THE SEQUENCE
 olist_orders_ForRun.csv, at the top of the repository, is the prepared order
 stream: one row per usable order, in chronological order, with the primary belt
-its destination is assigned to.  Supplement S5 describes how the raw Brazilian
+its destination is assigned to.  Section S9 describes how the raw Brazilian
 e-commerce dataset was reduced to it.  This script extracts the belt column into
 results/order_derived_sequence.txt, which is what the simulator reads.
 
@@ -92,7 +92,7 @@ os.makedirs(OUT, exist_ok=True)
 def build_sequence():
     """Extract the belt column of the prepared order stream, in arrival order."""
     if not os.path.exists(ORDERS):
-        sys.exit(f"{ORDERS} not found; it is the prepared order stream of Supplement S5")
+        sys.exit(f"{ORDERS} not found; it is the prepared order stream of Section S9")
     rows = []
     with open(ORDERS, newline="") as f:
         for d in csv.DictReader(f):

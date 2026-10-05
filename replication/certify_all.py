@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Tables 4 and S4: certify the structured buffer-allocation class over the reported grid.
+"""Tables 3 and S8: certify the structured buffer-allocation class over the reported grid.
 
 Runs certify_rep for both drop mechanisms, m = 3, 4 and 5 feeder loops, and
-per-primary-belt budgets B = 1 to 10, and writes the LaTeX body of Table S4 along
+per-primary-belt budgets B = 1 to 10, and writes the LaTeX body of Table S8 along
 with the raw JSON of every cell and, next to it, a CSV of every allocation the
-cell evaluated.  Section 7 does NOT read those CSV files; it needs only the
+cell evaluated.  Section 6.5 does NOT read those CSV files; it needs only the
 structured class, which sweep_structured.py evaluates separately.  Keep them
 anyway: each row carries both stages' mean and standard deviation for every
 allocation, which is what makes a cell re-analysable without rerunning it.
@@ -26,7 +26,7 @@ thirty usable threads.  Results are cached per cell, so an interrupted run
 resumes where it stopped.
 
 Every cell also writes a CSV of every allocation it evaluated, as raw material
-for anyone who wants it.  Section 7 does not read these: it needs only the
+for anyone who wants it.  Section 6.5 does not read these: it needs only the
 structured class, which sweep_structured.py evaluates on its own in a couple of
 minutes, so there is no reason to run this grid again for it.
 

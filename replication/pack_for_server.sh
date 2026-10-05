@@ -34,7 +34,7 @@ if [ -f olist_orders_ForRun.csv ]; then
 elif [ -f ../olist_orders_ForRun.csv ]; then
     cp ../olist_orders_ForRun.csv "$DEST"/
 else
-    echo "WARNING: olist_orders_ForRun.csv not found; Table 5 will not run" >&2
+    echo "WARNING: olist_orders_ForRun.csv not found; Table S12 will not run" >&2
 fi
 
 rm -rf "$DEST/__pycache__" "$DEST/_geometry_backup" "$DEST/results"

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Every number that appears in the prose of Section 7, taken from the data.
+"""Every number that appears in the prose of Section 6.5, taken from the data.
 
 The manuscript keeps the prose with placeholders in place of the numbers, so
 that a rerun of the grid regenerates the sentences rather than inviting a hand
@@ -98,7 +98,7 @@ def show(label, value):
     print(f"  {label:<50s} {value}")
 
 
-print(f"\nSection 7 prose, from {len(pos)} classes with a positive budget\n")
+print(f"\nSection 6.5 prose, from {len(pos)} classes with a positive budget\n")
 show("allocations in the structured class", f"{tot:,}")
 show("allocations they were drawn from", f"{offered:,}")
 show("mean |pass 1 - pass 2|, relative",

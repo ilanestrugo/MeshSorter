@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Section 7: accuracy of the approximation model on the structured class.
+"""Section 6.5: accuracy of the approximation model on the structured class.
 
-The design rules of Section 5.1 define a small class S of buffer allocations,
+The design rules of Section 6.1 define a small class S of buffer allocations,
 and the certification reported there establishes that S contains an allocation
 that is optimal up to the indifference zone.  A designer therefore searches S,
 not the whole allocation space.  This script asks how well the approximation
-model of Section 6 serves that search: whether it predicts the throughput of an
+model of Section 5 serves that search: whether it predicts the throughput of an
 allocation in S, whether it ranks the members of S as the simulation does, and
 what is lost by building the one it likes best.
 
@@ -25,7 +25,7 @@ Output
     results/approx_scatter<tag>_*.dat   pgfplots data
 
 Usage
-    python3 approx_eval.py                       the four-belt grid of Table 6
+    python3 approx_eval.py                       the four-belt grid of Table 5
     python3 approx_eval.py --dir results/large --tag large --scatter 15
     python3 approx_eval.py --all                 include allocations outside S
 
@@ -188,7 +188,7 @@ def main():
         cells[(head["dual"], head["m"], head["B"])] = kept
         #  How widely the class is spread, and how much the model's bias
         #  varies across it.  The first has to exceed the second for the model
-        #  to order the class, which is the condition Section 7 reports.
+        #  to order the class, which is the condition Section 6.5 reports.
         mean = sum(x["sim"] for x in kept) / len(kept)
         spread = (max(x["sim"] for x in kept)
                   - min(x["sim"] for x in kept)) / mean

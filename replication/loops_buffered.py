@@ -20,7 +20,7 @@ Output
   and, on standard output, the comparison summary and the caption figures.
 
 Protocol.  Thirty independent replications of 1,330,000 measured time steps,
-the protocol of Supplement S1 and of the other tables in the manuscript.  The
+the protocol of Section S2 and of the other tables in the manuscript.  The
 earlier version of this script left `common.run` at its own defaults, ten
 replications of 4,000,000 steps, which is the same total work but not the
 protocol the manuscript states; pass --legacy to reproduce those numbers.
@@ -55,7 +55,7 @@ WIDTH   = _geo.WIDTH                       # forward-to-backward distance on a b
 EXTRA   = "turnaround"            # where the staggered slots are inserted
 STEPS   = 1_330_000               # measured steps per replication
 REPS    = 30                      # independent replications
-WARMUP  = None                    # None = the rule of Supplement S1
+WARMUP  = None                    # None = the rule of Section S2
 SEED    = 20260901
 # ---------------------------------------------------------------------------
 

@@ -46,7 +46,7 @@ WINDOWS = [0, 2_000, 20_000]                          # w in A(w)
 
 cases = [(n, m, k * geo.loop_length(n), c) for (n, m) in SIZES for k in MULTIPLES for c in CAPS]
 if "--quick" in sys.argv:
-    REPS, cases = 60, [(4, 4, 24, 0), (4, 9, 24, 1)]
+    REPS, cases = 60, [(4, 4, geo.loop_length(4), 0), (4, 9, geo.loop_length(4), 1)]
 
 
 def run(n, m, L, c):

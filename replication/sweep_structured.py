@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
-"""Section 7: evaluate the structured class by simulation, for the approximation
+"""Section 6.5: evaluate the structured class by simulation, for the approximation
 model to be compared against.
 
-The design rules of Section 5.1 define a small class of buffer allocations, and
+The design rules of Section 6.1 define a small class of buffer allocations, and
 the certification reported in that section establishes that the class contains
 an allocation optimal up to the indifference zone.  A designer therefore
-searches the class rather than the whole allocation space, and Section 7 asks
-how well the approximation model of Section 6 carries out that search.  Only the
+searches the class rather than the whole allocation space, and Section 6.5 asks
+how well the approximation model of Section 5 carries out that search.  Only the
 class has to be simulated, which is a few hundred allocations rather than the
 54,120 the certification enumerates.
 
-    python3 sweep_structured.py                 the four-belt grid of Table 6
+    python3 sweep_structured.py                 the four-belt grid of Table 5
     python3 sweep_structured.py --grid large    the fifteen-belt grid of S7
     python3 sweep_structured.py --quick         a cheap pass, to check the wiring
 
@@ -20,7 +20,7 @@ class has to be simulated, which is a few hundred allocations rather than the
             664 allocations, about an hour on thirty threads
 
 The two grids answer different halves of the question.  The four-belt grid is
-the one where Section 5.1 has shown, exhaustively, that the class contains a
+the one where Section 6.1 has shown, exhaustively, that the class contains a
 near-optimal allocation, so an accurate ranking of the class there is an
 accurate ranking of the design problem.  The fifteen-belt grid is the scale the
 model exists for, where the full space holds about 1.1 billion allocations and
@@ -53,7 +53,7 @@ DF     = _geo.DF
 WIDTH     = _geo.WIDTH
 STEPS    = 1_330_000
 REPS     = 15             # per pass; two disjoint stream families pool to the
-                          # R = 30 replications of Section S1.4
+                          # R = 30 replications of Section S2.3
 SEED     = 20260901
 # ---------------------------------------------------------------------------
 

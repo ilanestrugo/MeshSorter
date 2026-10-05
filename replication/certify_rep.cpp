@@ -3,7 +3,7 @@
 //  allocation?
 //
 //  This is the replication-based form of the three-phase certification
-//  procedure of Supplement S3.  The earlier version measured simulation effort
+//  procedure of Section S6.  The earlier version measured simulation effort
 //  in batches of a single long run and had to argue that successive batches were
 //  approximately uncorrelated.  Here the unit of effort is an independent
 //  replication, so the observations entering every variance estimate and every
@@ -359,7 +359,7 @@ static double implied_gap(const Est &S, const Est &c, double alpha) {
 
 static void usage() {
     std::printf(R"(certify_rep - replication-based certification of a structured
-                buffer-allocation class (Supplement S3)
+                buffer-allocation class (Section S6)
 
 USAGE
   certify_rep -n BELTS -m FEEDERS -B BUDGET [options]
@@ -378,7 +378,7 @@ SYSTEM
       --df F             spacing of feeders along a primary belt      (default 4)
       --width W          forward-to-backward distance on a belt       (default 2)
 
-  The loop lengths are common to all feeders.  Section 5.1 of the manuscript
+  The loop lengths are common to all feeders.  Section 6.1 of the manuscript
   shows that staggering them is worth almost nothing once buffers are installed,
   so it is not offered here.
 
@@ -407,7 +407,7 @@ DESIGN
 OUTPUT
       --dump FILE        write every allocation, with its Phase 1 and Phase 3
                          estimates, to FILE as CSV; this is the raw material
-                         for the approximation-model evaluation of Section 7
+                         for the approximation-model evaluation of Section 6.5
       --json             machine-readable summary
       --verbose          report progress as the phases run
   -h, --help             this text

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""What does the order-derived destination sequence look like? (Supplement S5)
+"""What does the order-derived destination sequence look like? (Section S9)
 
 No simulation is involved.  The script reads results/order_derived_sequence.txt,
 the belt label of each of the 98,816 usable orders in chronological order, and

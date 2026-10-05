@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-The analytical approximation model of Section 6 of the manuscript.
+The analytical approximation model of Section 5 of the manuscript.
 
 The model replaces the simulation by a recursion along the feeders of a single
 primary belt.  Items are assumed to arrive at each drop point independently of
@@ -161,7 +161,7 @@ def throughput(n: int, m: int, c_forward, c_backward=None) -> float:
 
 def loader_utilizations(n: int, m: int, c_forward, c_backward=None):
     """Utilization of each loading station, the analytical counterpart of the
-    measurements in Section 5.3."""
+    measurements in Section S5.3 of the Supplemental Online Material."""
     return trace(n, m, c_forward, c_backward)["loaders"]
 
 
@@ -203,7 +203,7 @@ def _selfcheck() -> None:
 
     # 3.  Adding capacity never lowers the predicted utilization, and moving
     #     capacity from a forward drop point to the backward one never lowers
-    #     it either.  These are the two empirical design rules of Section 5.1,
+    #     it either.  These are the two empirical design rules of Section 6.1,
     #     which the model should reproduce rather than contradict.
     for n in (4,):
         for m in (3, 4, 5):

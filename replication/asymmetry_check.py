@@ -18,6 +18,8 @@ Backward drop points only, as in the structured class for the dual-drop system.
 Capacities are written per feeder, one value per primary belt.
 
     python3 asymmetry_check.py
+    python3 asymmetry_check.py --quick     6 short replications per allocation;
+                                           writes results/asymmetry_quick.*
 """
 import csv, json, math, os, subprocess, sys, time
 
@@ -28,6 +30,9 @@ import geometry as _geo
 
 BELTS, FEEDERS = 4, 4
 STEPS, REPS, SEED0 = 1_330_000, 100, 20261004
+SUFFIX = ""
+if "--quick" in sys.argv:
+    STEPS, REPS, SUFFIX = 100_000, 6, "_quick"
 
 # the symmetric optimum, (0,1,2,7) on every belt: feeder j, then capacity per belt
 BASE = [[0] * 4, [1] * 4, [2] * 4, [7] * 4]
@@ -67,7 +72,7 @@ def total(alloc):
 
 def write_tex(rows):
     """The body of the supplement's table: one row per allocation."""
-    with open(os.path.join(OUT, "asymmetry.tex"), "w") as f:
+    with open(os.path.join(OUT, f"asymmetry{SUFFIX}.tex"), "w") as f:
         for r in rows:
             d = ("--" if r["name"] == "base" else
                  f"{float(r['diff_from_base']):+.4f} $\\pm$ {float(r['diff_halfwidth']):.4f}")
@@ -77,7 +82,7 @@ def write_tex(rows):
 
 
 if "--tex-only" in sys.argv:           # rebuild the LaTeX body from the saved CSV
-    write_tex(list(csv.DictReader(open(os.path.join(OUT, "asymmetry.csv")))))
+    write_tex(list(csv.DictReader(open(os.path.join(OUT, f"asymmetry{SUFFIX}.csv")))))
     sys.exit(0)
 
 cases = [("base", "symmetric (0,1,2,7) on every belt", BASE)]
@@ -144,11 +149,11 @@ for name, r in results.items():
                      throughput=r["mean"], halfwidth=r["hw"],
                      diff_from_base=d, diff_halfwidth=hw))
 
-with open(os.path.join(OUT, "asymmetry.csv"), "w", newline="") as f:
+with open(os.path.join(OUT, f"asymmetry{SUFFIX}.csv"), "w", newline="") as f:
     w = csv.DictWriter(f, fieldnames=list(rows[0]))
     w.writeheader()
     w.writerows(rows)
-with open(os.path.join(OUT, "asymmetry.json"), "w") as f:
+with open(os.path.join(OUT, f"asymmetry{SUFFIX}.json"), "w") as f:
     json.dump(dict(steps=STEPS, reps=REPS, seed0=SEED0, spacing=_geo.SPACING, loop=_geo.loop_length(4),
                    seconds=round(time.time() - t0, 1),
                    rows=rows,

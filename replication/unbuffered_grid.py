@@ -29,7 +29,7 @@ WIDTH   = _geo.WIDTH                       # forward-to-backward distance on a b
 BUFFERS = None                    # unbuffered
 STEPS   = 1_330_000               # measured steps per replication
 REPS    = 30                      # independent replications
-WARMUP  = None                    # None = the rule of Supplement S1
+WARMUP  = None                    # None = the rule of Section S2
 SEED    = 20260901
 # ---------------------------------------------------------------------------
 

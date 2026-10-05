@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Shuffled-sequence control for the order-derived check (Supplement S5).
+"""Shuffled-sequence control for the order-derived check (Section S12.2).
 
 The order-derived check replaces independent uniform destination draws by one
 chronological sequence of 98,816 labels, read cyclically and consumed by the
@@ -24,6 +24,8 @@ one shuffle.
     python3 order_shuffled.py              the control, K = 30 shuffles
     python3 order_shuffled.py --shuffles K another number of shuffles
     python3 order_shuffled.py --budgets 10 only the listed budgets (comma list)
+    python3 order_shuffled.py --quick      3 shuffles, 6 short replications, budgets 0 to 2;
+                                           writes results/order_shuffled_quick.*
 
 The allocations are those of results/table6.csv, the ones the order-derived
 table used, so that the three columns of the comparison share them.
@@ -46,8 +48,11 @@ if "--shuffles" in sys.argv:
     K = int(sys.argv[sys.argv.index("--shuffles") + 1])
 if "--budgets" in sys.argv:
     BUDGETS = [int(x) for x in sys.argv[sys.argv.index("--budgets") + 1].split(",")]
+if "--quick" in sys.argv:
+    K, STEPS, REPS, BUDGETS = 3, 100_000, 6, [0, 1, 2]
 SHUFFLE_SEED = 20261004          # fixed, so the control is reproducible
-TAG = "" if len(BUDGETS) == 11 else "_" + "_".join(map(str, BUDGETS))
+TAG = ("_quick" if "--quick" in sys.argv
+       else "" if len(BUDGETS) == 11 else "_" + "_".join(map(str, BUDGETS)))
 
 
 def read_sequence():

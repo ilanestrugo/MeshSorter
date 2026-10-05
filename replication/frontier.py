@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Figure S1: the efficient frontier of throughput against load balancing.
+"""Figure S4: the efficient frontier of throughput against load balancing.
 
 At a per-primary-belt budget of ten, every allocation the design rules leave
 open is evaluated and plotted as one point, throughput against the minimum
 loader utilization.  The non-dominated subset is the frontier drawn over them.
 
-The space is larger than the structured class that Tables S5 and S6 search.  It
+The space is larger than the structured class that Tables S9 and S10 search.  It
 fixes nothing on feeder 1, which is never blocked, and under the dual-drop
 mechanism it places capacity only at the backward drop points; but it does not
 require the capacities to be nondecreasing, so it holds all 66 compositions of
@@ -16,9 +16,9 @@ space the rules admit.
     python3 frontier.py           both mechanisms, about ten minutes
     python3 frontier.py --quick   a cheap pass, to check the wiring
 
-Every allocation is evaluated under the protocol of Section S1, the same
+Every allocation is evaluated under the protocol of Section S2, the same
 geometry, run length, warm-up rule and thirty replications used everywhere else,
-so the figure and Tables S5 and S6 are directly comparable.
+so the figure and Tables S9 and S10 are directly comparable.
 
 Writes the four data files the manuscript's figure reads, which belong beside
 the manuscript in its data/ directory:

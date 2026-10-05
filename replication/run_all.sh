@@ -6,6 +6,11 @@
 #   ./run_all.sh            the full grids
 #   ./run_all.sh --quick    the same grids at low precision, a few minutes
 #
+# A --quick pass overwrites some of the tables in results/ with low-precision
+# values (those of the scripts that write table1.*, table2.*, loops_buffered.*,
+# load_balance.*, table6.* and the structured sweeps).  Run it in a scratch copy
+# of this directory, or restore results/ from git afterwards.
+#
 # Not run here, because they take hours: the certification of Table 3 and
 # Table S8 (certify_all.py enumerates 54,114 allocations), and the fifteen-belt
 # systems of Section S11.  Split the certification across machines with
@@ -54,8 +59,8 @@ python3 approx_eval.py                    # Table 5, Tables S13 and S14, Figure 
 # results/structured only as a last resort.  It comes after sweep_structured.py.
 python3 order_derived.py "$@"             # Table S12
 python3 sequence_dependence.py            # statistics quoted in Section S9
-python3 order_shuffled.py                 # Table S17, about an hour
-python3 asymmetry_check.py                # Table S16
+python3 order_shuffled.py "$@"            # Table S17, about an hour
+python3 asymmetry_check.py "$@"           # Table S16
 
 python3 transient_pilot.py "$@"            # transient figures of Section S2.2, about half an hour
 python3 buffer_relaxation.py "$@"          # buffer-content figures of Section S2.2, a few minutes

@@ -65,13 +65,13 @@ EXPERIMENT
   -R, --reps R           independent replications                     (default 30)
   -w, --warmup W         time steps discarded from each replication
                          (default max(20000, 10*(c+1)*L), the rule of
-                         Supplement S1, where c is the largest buffer
+                         Section S2.2, where c is the largest buffer
                          capacity and L the longest feeder loop)
       --seed S           base seed                                    (default 20260901)
       --sequence FILE    read destination labels from FILE instead of
                          drawing them uniformly: one integer in 1..N per
-                         line, the order-derived sequence of Supplement
-                         S4.  The feeders consume it in index order and
+                         line, the order-derived sequence of Section
+                         S9.  The feeders consume it in index order and
                          it repeats cyclically, and each replication
                          starts at its own position in the cycle, so the
                          replications differ in phase rather than in the
@@ -87,14 +87,17 @@ OUTPUT
   -h, --help             this text
 
 EXAMPLES
+  The defaults describe an earlier, shorter layout.  The paper's geometry, loops
+  of 20n + 24 slots, is set with the options below, written GEOM in what follows:
+      GEOM = --spacing 10 --turn 12 --df 14 --width 10
   Table 2(b), the 4 by 4 cell:
-      meshsorter -n 4 -m 4 --dual
-  Table 3(b), the 4 by 9 cell:
-      meshsorter -n 4 -m 9 --dual --stagger --extra turnaround
+      meshsorter -n 4 -m 4 --dual GEOM
+  Table S5(b), the 4 by 9 cell:
+      meshsorter -n 4 -m 9 --dual --stagger --extra turnaround GEOM
   A buffered system with three places at every crossing:
-      meshsorter -n 4 -m 6 --dual -b 3
-  One row of Table 5, on the order-derived sequence:
-      meshsorter -n 4 -m 4 --dual --spacing 4 -b 0,0,1,2 \
+      meshsorter -n 4 -m 6 --dual -b 3 GEOM
+  One row of Table S12, on the order-derived sequence:
+      meshsorter -n 4 -m 4 --dual -b 0,0,1,2 GEOM \
                  --sequence results/order_derived_sequence.txt
 )");
 }
