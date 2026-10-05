@@ -149,7 +149,7 @@ with open(os.path.join(OUT, "asymmetry.csv"), "w", newline="") as f:
     w.writeheader()
     w.writerows(rows)
 with open(os.path.join(OUT, "asymmetry.json"), "w") as f:
-    json.dump(dict(steps=STEPS, reps=REPS, seed0=SEED0, loops=_geo.SPACING,
+    json.dump(dict(steps=STEPS, reps=REPS, seed0=SEED0, spacing=_geo.SPACING, loop=_geo.loop_length(4),
                    seconds=round(time.time() - t0, 1),
                    rows=rows,
                    raw={k: {kk: vv for kk, vv in v.items() if kk != "y"} for k, v in results.items()}),

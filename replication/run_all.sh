@@ -58,6 +58,7 @@ python3 order_shuffled.py                 # Table S17, about an hour
 python3 asymmetry_check.py                # Table S16
 
 python3 transient_pilot.py "$@"            # transient figures of Section S2.2, about half an hour
+python3 buffer_relaxation.py "$@"          # buffer-content figures of Section S2.2, a few minutes
 python3 warmup_sensitivity.py "$@"         # Table S3, about forty minutes
 
 python3 gcd_verification.py               # the enumeration behind Proposition 5

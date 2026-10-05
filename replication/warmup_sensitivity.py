@@ -10,16 +10,18 @@ of 4 x 10^6 is the same as running with warm-up w over the remaining
 4 x 10^6 - w steps on the same seed, and the entries of a row share their random
 numbers and differ only in the deletion.
 
-The configurations are the seven of the supplement's pilot range: dual-drop,
-loops of one common length, buffers of one capacity at every drop point.  The
-loop length is given explicitly, on the crossings of the simulator's built-in
-geometry, as in the pilot the table accompanies; the table is about how long the
-transient lasts, not about the layout drawn in Figure 3.
+The configurations are seven of the supplement's pilot range: dual-drop, loops
+of one common length, buffers of one capacity at every drop point, in the
+geometry of the paper (geometry.py).  The loops are the layout's own, 104 slots
+at four belts and 204 at nine, and the longest of the pilot, four times as long,
+which is where the transient lasts longest.
 
     python3 warmup_sensitivity.py            about ten minutes
     python3 warmup_sensitivity.py --quick    a few replications, to check the wiring
 """
 import csv, json, os, subprocess, sys, time
+
+import geometry as geo
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 BIN = os.environ.get("MESHSORTER_BIN", os.path.join(HERE, "meshsorter"))
@@ -27,8 +29,9 @@ OUT = os.path.join(HERE, "results")
 
 TOTAL, REPS, SEED = 4_000_000, 40, 20260901
 DELETIONS = [0, 1_000, 10_000, 100_000, 1_000_000]
-CASES = [(4, 4, 24, 0), (9, 9, 44, 0), (4, 9, 24, 0), (4, 9, 200, 0),
-         (4, 9, 24, 10), (4, 9, 200, 10), (9, 9, 200, 10)]       # n, m, L, c
+L4, L9 = geo.loop_length(4), geo.loop_length(9)                # 104 and 204
+CASES = [(4, 4, L4, 0), (9, 9, L9, 0), (4, 9, L4, 0), (4, 9, 4 * L4, 0),
+         (4, 9, L4, 10), (4, 9, 4 * L4, 10), (9, 9, 4 * L9, 10)]  # n, m, L, c
 if "--quick" in sys.argv:
     TOTAL, REPS, DELETIONS, CASES = 400_000, 6, [0, 1_000, 10_000], CASES[:2]
 
@@ -38,6 +41,8 @@ os.makedirs(OUT, exist_ok=True)
 def simulate(n, m, L, c, w):
     cmd = [BIN, "-n", str(n), "-m", str(m), "--dual", "-L", str(L),
            "-b", str(c), "-w", str(w), "-T", str(TOTAL - w), "-R", str(REPS),
+           "--spacing", str(geo.SPACING), "--turn", str(geo.TURN),
+           "--df", str(geo.DF), "--width", str(geo.WIDTH),
            "--seed", str(SEED), "--json"]
     if os.environ.get("MESHSORTER_THREADS"):
         cmd += ["-t", os.environ["MESHSORTER_THREADS"]]

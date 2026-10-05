@@ -1,0 +1,56 @@
+{
+ "n": 4,
+ "m": 9,
+ "loop": 416,
+ "capacity": 10,
+ "reps": 200,
+ "seed": 20260901,
+ "rows": [
+  {
+   "steps": 2000,
+   "items_in_buffers": 441.06,
+   "relative_to_last": 1.398060098896919
+  },
+  {
+   "steps": 10000,
+   "items_in_buffers": 433.83,
+   "relative_to_last": 1.375142639786991
+  },
+  {
+   "steps": 20000,
+   "items_in_buffers": 428.505,
+   "relative_to_last": 1.3582635983263598
+  },
+  {
+   "steps": 100000,
+   "items_in_buffers": 393.33,
+   "relative_to_last": 1.2467668314948648
+  },
+  {
+   "steps": 200000,
+   "items_in_buffers": 372.99,
+   "relative_to_last": 1.1822936477748194
+  },
+  {
+   "steps": 400000,
+   "items_in_buffers": 343.015,
+   "relative_to_last": 1.0872797007734245
+  },
+  {
+   "steps": 1000000,
+   "items_in_buffers": 323.915,
+   "relative_to_last": 1.026737035628249
+  },
+  {
+   "steps": 2000000,
+   "items_in_buffers": 318.765,
+   "relative_to_last": 1.0104127044503612
+  },
+  {
+   "steps": 4000000,
+   "items_in_buffers": 315.48,
+   "relative_to_last": 1.0
+  }
+ ],
+ "overshoot_percent": 39.80600988969189
+}

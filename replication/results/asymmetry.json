@@ -2,7 +2,8 @@
  "steps": 1330000,
  "reps": 100,
  "seed0": 20261004,
- "loops": 10,
+ "spacing": 10,
+ "loop": 104,
  "seconds": 1023.2,
  "rows": [
   {
