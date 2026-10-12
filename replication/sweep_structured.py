@@ -11,7 +11,7 @@ class has to be simulated, which is a few hundred allocations rather than the
 54,120 the certification enumerates.
 
     python3 sweep_structured.py                 the four-belt grid of Table 5
-    python3 sweep_structured.py --grid large    the fifteen-belt grid of S7
+    python3 sweep_structured.py --grid large    the fifteen-belt grid of Section S11
     python3 sweep_structured.py --quick         a cheap pass, to check the wiring
 
     main    four primary belts, 3, 4 and 5 feeder loops, budgets 1 to 10:

@@ -74,8 +74,8 @@ the stated dimensions and compares it with the printed value.
 | `meshsorter.cpp` | the command-line simulator | |
 | `geometry.py` | the feeding-area geometry, read by every script | |
 | `common.py` | helpers shared by the table scripts: run one configuration, cache the result, format LaTeX | |
-| `exact_single_drop.py` | exact throughput of the unbuffered single-drop system, in rational arithmetic | Table 2(a); the exact column of Table 4 |
-| `exact_vs_approximation.py` | exact and approximate throughput, imported by `three_way_comparison.py` | |
+| `exact_single_drop.py` | exact throughput of the unbuffered single-drop system, in rational arithmetic | Table 2(a) |
+| `exact_vs_approximation.py` | exact and approximate throughput, imported by `three_way_comparison.py` | the exact and approximate columns of Table 4 |
 | `unbuffered_grid.py` | the unbuffered grid with identical loop lengths | Table 2(b) |
 | `stagger_grid.py` | the staggered configuration, and the placement on the return run | Tables S5 and S6 (S7 is computed from S5) |
 | `stagger_gains.py` | the gain of staggering over the whole grid, read from `table2.csv` | Figure 5 |
@@ -89,6 +89,7 @@ the stated dimensions and compares it with the printed value.
 | `approx_eval.py` | the accuracy of the approximation against the simulated classes | Table 5, Tables S13 to S15, Figure 9 |
 | `sec7_numbers.py` | every number quoted in the prose of Section 6.5, taken from the data | |
 | `three_way_comparison.py` | exact, simulated and approximate throughput on the common-loop single-drop family | Table 4 |
+| `approximation_gap.py` | the approximation against the exact throughput over 240 pairs (n up to 16, m up to 16), and against the staggered simulation of Table S5(a) | the figures quoted in Section 6.5 |
 | `load_balance.py` | throughput against load balancing over the structured class | Tables S9 and S10 |
 | `frontier.py` | the efficient frontier of throughput against load balancing | Figure 8 |
 | `feeder_returns.py` | the diminishing return of additional feeder loops | Figure S2 |

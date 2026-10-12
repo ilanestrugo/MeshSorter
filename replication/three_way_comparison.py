@@ -7,9 +7,10 @@ the unbuffered single-drop MeshSorter with a common loop length.
     approximation  n(1-(1-1/n)^m)
 
 Table 4 of the manuscript.  The simulation uses the geometry of the paper, the
-one in geometry.py, passed as --spacing 10 --turn 12 --df 14 --width 10, so that
-the loops hold 20n + 24 slots; T = 1,330,000, R = 30, the warm-up rule of
-Section S2 of the Supplemental Online Material, and seed 20260901.  By
+values of geometry.py written out below and passed as --spacing 10 --turn 12
+--df 14 --width 10, so that the loops hold 20n + 24 slots; T = 1,330,000,
+R = 30, the warm-up rule of Section S2 of the Supplemental Online Material,
+and seed 20260901.  By
 Proposition 6 the exact value does not depend on the geometry, but the reported
 sample comes from the protocol the paper states.  Results are written to
 results/three_way/threeway_results.json.

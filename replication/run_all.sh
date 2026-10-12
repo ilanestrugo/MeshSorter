@@ -50,6 +50,7 @@ python3 load_balance.py "$@"              # Tables S9 and S10
 python3 frontier.py "$@"                  # Figure 8
 python3 feeder_returns.py "$@"            # Figure S2
 python3 three_way_comparison.py           # Table 4
+python3 approximation_gap.py              # the 240 exact pairs and the staggered cells of Section 6.5
 
 python3 approx_model.py
 python3 sweep_structured.py "$@"
