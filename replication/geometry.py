@@ -25,6 +25,9 @@ Consecutive feeders sit 5 m apart with a 2 m gap: DF = 14 slots.  By
 Proposition 3 the steady state does not depend on DF at all; it is set
 correctly for the record rather than because it changes an answer.
 
+These values are also the defaults of the simulators; the scripts pass them
+explicitly all the same, so that a table never depends on a default.
+
 Earlier versions of these scripts used DP = 4, TURN = 4, WIDTH = 2, DF = 4,
 which is a loop of 4n + 8 slots and puts consecutive primary belts 1 m apart.
 The certification scripts used SPACING = 4, a loop of 8n + 8.  Neither is

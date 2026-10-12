@@ -140,11 +140,11 @@ static void usage() {
       --dual             dual-drop                                    (default)
       --single           single-drop
       --spacing S        slots between consecutive primary belts along
-                         a feeder loop                                (default 4)
-      --turn E           slots in each end curve of the loop          (default 4)
+                         a feeder loop                                (default 10)
+      --turn E           slots in each end curve of the loop          (default 12)
   -L, --loop LEN         set the loop length directly
-      --df F             spacing of feeders along a primary belt      (default 4)
-      --width W          forward-to-backward distance on a belt       (default 2)
+      --df F             spacing of feeders along a primary belt      (default 14)
+      --width W          forward-to-backward distance on a belt       (default 10)
   -T, --steps T          measured time steps per replication     (default 1330000)
   -R, --reps R           replications in each of the two passes       (default 10)
   -w, --warmup W         warm-up steps discarded from each replication
@@ -166,8 +166,6 @@ which stays manageable where the full allocation space does not.
 int main(int argc, char **argv) {
     Config cfg;
     cfg.steps = 1330000;
-    cfg.dp = 8;
-    cfg.turn = 4;
     int B = -1, R = 10;
     bool json = false, verbose = false;
     std::string dumpPath;

@@ -34,12 +34,12 @@ GEOMETRY
       --single           single-drop: forward crossings only
       --dp D             feeder-loop slots consumed by each primary
                          belt; consecutive belts sit D/2 slots apart
-                         on each run.  D must be even                 (default 4)
+                         on each run.  D must be even                 (default 20)
       --spacing S        the same thing stated as the distance between
                          consecutive primary belts along the loop;
-                         --spacing S is exactly --dp 2S               (default 2)
+                         --spacing S is exactly --dp 2S               (default 10)
       --turn E           feeder-loop slots consumed by each end of
-                         the loop                                     (default 4)
+                         the loop                                     (default 12)
   -L, --loop LEN         base feeder-loop length          (default N*D + 2*E)
       --loops a,b,...    explicit lengths for the M feeders; overrides
                          -L and --stagger
@@ -48,10 +48,10 @@ GEOMETRY
       --extra WHERE      where slots beyond the base length are
                          inserted: turnaround or return               (default turnaround)
       --df F             spacing of consecutive feeders along a
-                         primary belt                                 (default 4)
+                         primary belt                                 (default 14)
       --width W          distance along a primary belt between the
                          forward and the backward crossing of one
-                         feeder                                       (default 2)
+                         feeder                                       (default 10)
 
 BUFFERS
   -b, --buffers SPEC     buffer capacity at the crossings.  SPEC is
@@ -87,17 +87,16 @@ OUTPUT
   -h, --help             this text
 
 EXAMPLES
-  The defaults describe an earlier, shorter layout.  The paper's geometry, loops
-  of 20n + 24 slots, is set with the options below, written GEOM in what follows:
-      GEOM = --spacing 10 --turn 12 --df 14 --width 10
+  The default geometry is the paper's: loops of 20n + 24 slots, consecutive
+  primary belts 10 slots apart (--spacing 10 --turn 12 --df 14 --width 10).
   Table 2(b), the 4 by 4 cell:
-      meshsorter -n 4 -m 4 --dual GEOM
+      meshsorter -n 4 -m 4 --dual
   Table S5(b), the 4 by 9 cell:
-      meshsorter -n 4 -m 9 --dual --stagger --extra turnaround GEOM
+      meshsorter -n 4 -m 9 --dual --stagger --extra turnaround
   A buffered system with three places at every crossing:
-      meshsorter -n 4 -m 6 --dual -b 3 GEOM
+      meshsorter -n 4 -m 6 --dual -b 3
   One row of Table S12, on the order-derived sequence:
-      meshsorter -n 4 -m 4 --dual -b 0,0,1,2 GEOM \
+      meshsorter -n 4 -m 4 --dual -b 0,0,1,2 \
                  --sequence results/order_derived_sequence.txt
 )");
 }

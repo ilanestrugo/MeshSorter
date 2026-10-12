@@ -24,17 +24,16 @@ repository root (`MeshSim`, `buffer_certify` and the others) are an earlier impl
 that forms batch means along one long run. They are kept for the record, and no number in
 the manuscript comes from them.
 
-**The geometry is not the simulator's default.** The paper's feeding area has loops of
-`20n + 24` slots, with consecutive primary belts 10 slots apart. It is set in `geometry.py`,
-which every script reads and passes to the simulator as
+**The geometry.** The paper's feeding area has loops of `20n + 24` slots, with consecutive
+primary belts 10 slots apart. It is the simulator's default, so a bare
+`./meshsorter -n 4 -m 4 --dual` runs the paper's system. The table scripts take it from
+`geometry.py`, which every script reads, and pass it to the simulator explicitly as
 
 ```
 --spacing 10 --turn 12 --df 14 --width 10
 ```
 
-The simulator's own built-in defaults describe an earlier, shorter loop (`4n + 8` slots), so a
-bare `./meshsorter -n 4 -m 4 --dual` does **not** run the paper's system. The Quick start below
-shows the command that does.
+so that a change to the defaults could never alter a table.
 
 **The protocol.** Each configuration is run for `R = 30` independent replications of
 1,330,000 steps, after discarding a warm-up of `W = max(20000, 10(c+1)L)` steps, where `c` is the
@@ -50,8 +49,8 @@ the destination stream of feeder `j` is derived from the replication seed and `j
 When the order-derived sequence is used, a replication enters it at a position fixed by its seed.
 In the certification every allocation also has streams of its own, with seed
 `s0 + 1,000,003 a + 16,777,619 (r + 1)` for allocation `a` and replication `r`, and Phase 3 uses
-a disjoint family. The results do not depend on the number of threads or on the platform: a build
-with Microsoft Visual C++ on Windows and the Linux build that produced the reported results give
+a disjoint family. The results do not depend on the number of threads or on the platform: the
+large experiments were run on a Linux server and the small ones on a Windows computer with Microsoft Visual C++, and the two builds give
 identical replication values on the unbuffered 4 x 4 dual-drop system (all 30, to eight
 decimals), reproduce the 49 cells of Table 4, and regenerate Table S12 to the last digit, except
 for the one row whose allocation was corrected in this release (see `order_derived.py`).
@@ -127,11 +126,11 @@ library.
 ## Quick start
 
 ```bash
-./meshsorter -n 4 -m 4 --dual --spacing 10 --turn 12 --df 14 --width 10
+./meshsorter -n 4 -m 4 --dual
 ```
 
 runs the unbuffered dual-drop system of the paper, with 4 primary belts and 4 feeder
-loops of 104 slots (the geometry of `geometry.py`; see **Read this first**), and prints
+loops of 104 slots (the default geometry, the one in `geometry.py`), and prints
 the following. The worker count shown is what the machine chooses, and it does not
 affect the result.
 
@@ -188,30 +187,30 @@ so that unusual geometries remain reproducible.
 
 The layout is built from two lengths measured on the feeder loop:
 
-* `--dp D` (default 4): the loop slots consumed by each primary belt. A feeder
+* `--dp D` (default 20): the loop slots consumed by each primary belt. A feeder
   crosses a belt twice, so consecutive belts sit `D/2` slots apart on the forward
   run and `D/2` apart on the backward run. `D` must be even.
-* `--turn E` (default 4): the loop slots consumed by each end of the loop.
+* `--turn E` (default 12): the loop slots consumed by each end of the loop.
 
 so the base loop length is
 
 ```
-L = n * D + 2 * E                 (= 4n + 8 with the defaults)
+L = n * D + 2 * E                 (= 20n + 24 with the defaults)
 ```
 
 and the crossings sit at
 
 ```
-q^f_i = 1 + (i-1) * D/2                    (= 2i - 1)
-q^b_i = L - E + 1 - (i-1) * D/2            (= 4n + 7 - 2i)
+q^f_i = 1 + (i-1) * D/2                    (= 10i - 9)
+q^b_i = L - E + 1 - (i-1) * D/2            (= 20n + 13 - 10i)
 ```
 
 With the defaults, the last forward crossing and the first backward crossing of
-a feeder are `D + E = 8` slots apart, and the last backward crossing is `E = 4`
+a feeder are `D + E = 32` slots apart, and the last backward crossing is `E = 12`
 slots from the loading station going forward around the loop.
 
-Along a primary belt, consecutive feeders are `--df F` slots apart (default 4)
-and the two crossings of one feeder are `--width W` slots apart (default 2):
+Along a primary belt, consecutive feeders are `--df F` slots apart (default 14)
+and the two crossings of one feeder are `--width W` slots apart (default 10):
 
 ```
 s^f_j = (j-1) * F ,     s^b_j = s^f_j + W
@@ -704,15 +703,16 @@ GEOMETRY
   -m, --feeders M        number of feeder loops                       (required)
       --dual             dual-drop                                    (default)
       --single           single-drop: forward crossings only
-      --dp D             loop slots per primary belt, even            (default 4)
-      --turn E           loop slots per end of the loop               (default 4)
+      --dp D             loop slots per primary belt, even            (default 20)
+      --spacing S        the same as --dp 2S                          (default 10)
+      --turn E           loop slots per end of the loop               (default 12)
   -L, --loop LEN         base loop length                   (default N*D + 2*E)
       --loops a,b,...    explicit lengths for the M feeders
       --stagger          L, L, L+s, L+2s, ...
       --stagger-step s   the increment                                (default 1)
       --extra WHERE      turnaround or return                (default turnaround)
-      --df F             feeder spacing along a primary belt          (default 4)
-      --width W          forward-to-backward distance on a belt       (default 2)
+      --df F             feeder spacing along a primary belt          (default 14)
+      --width W          forward-to-backward distance on a belt       (default 10)
 
 BUFFERS
   -b, --buffers SPEC     1, M, or 2*M*N capacities                    (default 0)

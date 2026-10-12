@@ -371,12 +371,12 @@ SYSTEM
       --dual             dual-drop                                    (default)
       --single           single-drop
       --spacing S        slots between consecutive primary belts along
-                         a feeder loop; the loop length is 2*S*N + 2*E (default 4)
-      --turn E           slots in each end curve of the loop          (default 4)
+                         a feeder loop; the loop length is 2*S*N + 2*E (default 10)
+      --turn E           slots in each end curve of the loop          (default 12)
   -L, --loop LEN         set the loop length directly, overriding the
                          two lengths above
-      --df F             spacing of feeders along a primary belt      (default 4)
-      --width W          forward-to-backward distance on a belt       (default 2)
+      --df F             spacing of feeders along a primary belt      (default 14)
+      --width W          forward-to-backward distance on a belt       (default 10)
 
   The loop lengths are common to all feeders.  Section 6.1 of the manuscript
   shows that staggering them is worth almost nothing once buffers are installed,
@@ -417,8 +417,6 @@ OUTPUT
 int main(int argc, char **argv) {
     Config cfg;
     cfg.steps = 1330000;
-    cfg.dp = 8;                    // spacing 4 between consecutive primary belts
-    cfg.turn = 4;
     int B = -1, R0 = 10, kappa = 3, maxReps = 4000, RS = 30, RREF = 500;
     bool planOnly = false;
     double eps = 0.001, alpha = 0.01;

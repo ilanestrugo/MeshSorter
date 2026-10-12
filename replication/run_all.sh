@@ -21,9 +21,8 @@
 #   python3 approx_eval.py --dir results/large --tag large --scatter 15
 #
 # The geometry of the paper, loops of 20n + 24 slots with consecutive primary
-# belts 10 slots apart, is set in geometry.py, which every script reads.  The
-# simulator's own built-in defaults describe an earlier, shorter loop, so a
-# bare "./meshsorter -n 4 -m 4 --dual" does NOT run the paper's system; add
+# belts 10 slots apart, is the simulator's default and is set in geometry.py,
+# which every script reads and passes explicitly as
 #   --spacing 10 --turn 12 --df 14 --width 10
 #
 # CXX and CXXFLAGS override the compiler and its flags, for example

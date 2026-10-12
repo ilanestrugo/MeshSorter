@@ -75,30 +75,30 @@
 //    dp    slots of the feeder loop consumed by each primary belt.  The feeder
 //          crosses a belt twice, so consecutive belts sit dp/2 slots apart on
 //          the forward run and dp/2 slots apart on the backward run.
-//          Default 4, hence a spacing of 2 slots between consecutive belts.
+//          Default 20, hence a spacing of 10 slots between consecutive belts.
 //    turn  slots of the feeder loop consumed by each end of the loop.
-//          Default 4.
+//          Default 12.
 //
 //  giving the base loop length
 //
-//        L = n * dp + 2 * turn                        ( = 4n + 8 by default )
+//        L = n * dp + 2 * turn                        ( = 20n + 24 by default )
 //
 //  and the crossing positions
 //
-//        q^f_i = 1 + (i-1) * dp/2                     ( = 2i - 1 )
-//        q^b_i = L - turn + 1 - (i-1) * dp/2          ( = 4n + 7 - 2i )
+//        q^f_i = 1 + (i-1) * dp/2                     ( = 10i - 9 )
+//        q^b_i = L - turn + 1 - (i-1) * dp/2          ( = 20n + 13 - 10i )
 //
 //  With the defaults the last forward crossing and the first backward crossing
-//  of a feeder are dp + turn = 8 slots apart, and the last backward crossing is
-//  turn = 4 slots from the loading station, going forward around the loop.
+//  of a feeder are dp + turn = 32 slots apart, and the last backward crossing is
+//  turn = 12 slots from the loading station, going forward around the loop.
 //
 //  Along a primary belt, consecutive feeders are df slots apart and the two
 //  crossings of one feeder are width slots apart:
 //
 //        s^f_j = (j-1) * df ,      s^b_j = s^f_j + width
 //
-//  with df = 4 and width = 2 by default.  A single-drop system has no backward
-//  crossings at all.
+//  with df = 14 and width = 10 by default.  A single-drop system has no
+//  backward crossings at all.
 //
 //  STAGGERED LOOP LENGTHS
 //  ----------------------
@@ -202,10 +202,10 @@ struct Rng {                       // xoshiro-free, dependency-free 64-bit LCG-m
 struct Config {
     int  n = 0;                    // primary belts
     int  m = 0;                    // feeder loops
-    int  dp = 4;                   // loop slots per primary belt (even)
-    int  turn = 4;                 // loop slots per end of the loop
-    int  df = 4;                   // spacing of feeders along a primary belt
-    int  width = 2;                // s^b_j - s^f_j
+    int  dp = 20;                  // loop slots per primary belt (even)
+    int  turn = 12;                // loop slots per end of the loop
+    int  df = 14;                  // spacing of feeders along a primary belt
+    int  width = 10;               // s^b_j - s^f_j
     bool dual = true;              // dual-drop if true, single-drop if false
     long long Lbase = -1;          // base loop length, -1 = n*dp + 2*turn
     std::vector<long long> loops;  // explicit per-feeder lengths, empty if unused

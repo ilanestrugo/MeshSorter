@@ -25,7 +25,7 @@ DP      = _geo.DP                       # loop slots per primary belt
 TURN    = _geo.TURN                       # loop slots per end of the loop
 DF      = _geo.DF                       # feeder spacing along a primary belt
 WIDTH   = _geo.WIDTH                       # forward-to-backward distance on a belt
-                                  # loop length is therefore 4n + 8
+                                  # loop length is therefore 20n + 24
 BUFFERS = None                    # unbuffered
 STEPS   = 1_330_000               # measured steps per replication
 REPS    = 30                      # independent replications

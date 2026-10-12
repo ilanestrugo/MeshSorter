@@ -12,14 +12,13 @@
 // the number of items held in buffers at the end.  transient_pilot.py turns
 // that into the figures the supplement quotes.
 //
-//   transient_pilot -n 4 -m 4 --dual --spacing 10 --turn 12 --df 14 --width 10 //                   -L 104 -b 3 -R 300 -T 200000 --block 20
+//   transient_pilot -n 4 -m 4 --dual -L 104 -b 3 -R 300 -T 200000 --block 20
 //
 // The system is built exactly as meshsorter builds it, from the same Config and
 // buildLayout, and the replication seeds are derived in the same way, so the
 // two programs share a model and a stream family.  The geometry options are
-// those of meshsorter; as there, the built-in defaults describe an earlier,
-// shorter layout, so the paper's geometry must be passed.  -L is the length of
-// every feeder loop and -b the capacity at every drop point, forward and
+// those of meshsorter, with the same defaults, which are the paper's geometry.
+// -L is the length of every feeder loop and -b the capacity at every drop point, forward and
 // backward.
 
 #include "meshsorter_core.hpp"
