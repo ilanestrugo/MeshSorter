@@ -79,17 +79,19 @@ the stated dimensions and compares it with the printed value.
 | `exact_vs_approximation.py` | exact and approximate throughput, imported by `three_way_comparison.py` | |
 | `unbuffered_grid.py` | the unbuffered grid with identical loop lengths | Table 2(b) |
 | `stagger_grid.py` | the staggered configuration, and the placement on the return run | Tables S5 and S6 (S7 is computed from S5) |
+| `stagger_gains.py` | the gain of staggering over the whole grid, read from `table2.csv` | Figure 5 |
 | `loops_buffered.py` | loop length and staggering once buffers are installed | Table S11 |
+| `lever_gains.py` | what staggering and the second drop point are worth against the budget, read from `loops_buffered.json` | Figure 7 |
 | `certify_rep.cpp` | replication-based certification of a structured buffer-allocation class | |
-| `certify_all.py` | runs the certification over the grid and writes the per-allocation dumps | Table 3, Table S8, Figure 5 |
+| `certify_all.py` | runs the certification over the grid and writes the per-allocation dumps | Table 3, Table S8, Figure 6 |
 | `sweep_rep.cpp` | evaluates a stated set of allocations by replications | |
-| `sweep_structured.py` | simulates the structured class: the four-belt grid and the fifteen-belt systems | the simulated side of Tables 5 and S13 to S15 and Figure S5 |
+| `sweep_structured.py` | simulates the structured class: the four-belt grid and the fifteen-belt systems | the simulated side of Tables 5 and S13 to S15 and Figure 9 |
 | `approx_model.py` | the analytical approximation model, with its self-checks | |
-| `approx_eval.py` | the accuracy of the approximation against the simulated classes | Table 5, Tables S13 to S15, Figure S5 |
+| `approx_eval.py` | the accuracy of the approximation against the simulated classes | Table 5, Tables S13 to S15, Figure 9 |
 | `sec7_numbers.py` | every number quoted in the prose of Section 6.5, taken from the data | |
 | `three_way_comparison.py` | exact, simulated and approximate throughput on the common-loop single-drop family | Table 4 |
 | `load_balance.py` | throughput against load balancing over the structured class | Tables S9 and S10 |
-| `frontier.py` | the efficient frontier of throughput against load balancing | Figure S4 |
+| `frontier.py` | the efficient frontier of throughput against load balancing | Figure 8 |
 | `feeder_returns.py` | the diminishing return of additional feeder loops | Figure S2 |
 | `order_derived.py` | the order-derived destination-sequence check | Table S12 |
 | `order_shuffled.py` | the same check on 30 random permutations of the labels | Table S17 |
@@ -331,7 +333,8 @@ Three kinds of output are written:
 * `results/table1.tex`, `results/table2.tex`, `results/loops_buffered.tex`, the
   LaTeX bodies of the panels, ready to paste into the manuscript, and
   `results/loops_buffered_table.tex`, the whole of Table S11 with its caption, the
-  allocations named and the largest half-width filled in;
+  allocations named and the largest half-width filled in, and
+  `results/lever_gains.tex`, the plot coordinates of Figure 7, and `results/stagger_gains.tex`, those of Figure 5;
 * `results/table1.csv`, `results/table2.csv`, one row per cell with the
   estimate, its half-width and standard deviation, the gain over the reference
   panel where there is one, and the design and geometry that produced it;

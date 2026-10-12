@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Figure S4: the efficient frontier of throughput against load balancing.
+"""Figure 8: the efficient frontier of throughput against load balancing.
 
 At a per-primary-belt budget of ten, every allocation the design rules leave
 open is evaluated and plotted as one point, throughput against the minimum
