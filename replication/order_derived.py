@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Table S12: the order-derived destination-sequence robustness check.
+"""Table S13: the order-derived destination-sequence robustness check.
 
 The check asks one question.  Every other experiment in the paper draws each
 item's destination uniformly and independently.  If those draws are replaced by

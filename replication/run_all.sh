@@ -44,9 +44,9 @@ python3 exact_single_drop.py              # Table 2(a)
 python3 unbuffered_grid.py "$@"           # Table 2(b)
 python3 stagger_grid.py "$@"              # Tables S5 and S6
 python3 stagger_gains.py                  # Figure 5, from the cells of Table S5
-python3 loops_buffered.py "$@"            # Table S11
-python3 lever_gains.py                    # Figure 7, from the cells of Table S11
-python3 load_balance.py "$@"              # Tables S9 and S10
+python3 loops_buffered.py "$@"            # Table S12
+python3 lever_gains.py                    # Figure 7, from the cells of Table S12
+python3 load_balance.py "$@"              # Tables S10 and S11
 python3 frontier.py "$@"                  # Figure 8
 python3 feeder_returns.py "$@"            # Figure S2
 python3 three_way_comparison.py           # Table 4
@@ -54,15 +54,15 @@ python3 approximation_gap.py              # the 240 exact pairs and the staggere
 
 python3 approx_model.py
 python3 sweep_structured.py "$@"
-python3 approx_eval.py                    # Table 5, Tables S13 and S14, Figure 9
+python3 approx_eval.py                    # Table 5, Tables S15 and S16, Figure 9
 
-# Table S12 reads the certified allocation at each budget from results/certify if
+# Table S13 reads the certified allocation at each budget from results/certify if
 # that grid has been run, then from results/table6_allocations.txt, and from
 # results/structured only as a last resort.  It comes after sweep_structured.py.
-python3 order_derived.py "$@"             # Table S12
+python3 order_derived.py "$@"             # Table S13
 python3 sequence_dependence.py            # statistics quoted in Section S9
-python3 order_shuffled.py "$@"            # Table S17, about an hour
-python3 asymmetry_check.py "$@"           # Table S16
+python3 order_shuffled.py "$@"            # Table S14, about an hour
+python3 asymmetry_check.py "$@"           # Table S9
 
 python3 transient_pilot.py "$@"            # transient figures of Section S2.2, about half an hour
 python3 buffer_relaxation.py "$@"          # buffer-content figures of Section S2.2, a few minutes

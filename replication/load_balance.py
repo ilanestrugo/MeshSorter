@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Tables S9 and S10 of the Supplemental Online Material: throughput against
+"""Tables S10 and S11 of the Supplemental Online Material: throughput against
 load balancing, over the structured class.
 
 At each per-primary-belt budget the two objectives are optimized separately and
@@ -138,7 +138,7 @@ def cell(dual, B):
 
 
 def body(cells):
-    """One LaTeX row per budget, in the nine-column form of Tables S9 and S10."""
+    """One LaTeX row per budget, in the nine-column form of Tables S10 and S11."""
     out = []
     for r in cells:
         b, f = r["balanced"], r["fastest"]

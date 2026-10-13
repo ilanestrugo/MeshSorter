@@ -52,14 +52,14 @@ In the certification every allocation also has streams of its own, with seed
 a disjoint family. The results do not depend on the number of threads or on the platform: the
 large experiments were run on a Linux server and the small ones on a Windows computer with Microsoft Visual C++, and the two builds give
 identical replication values on the unbuffered 4 x 4 dual-drop system (all 30, to eight
-decimals), reproduce the 49 cells of Table 4, and regenerate Table S12 to the last digit, except
+decimals), reproduce the 49 cells of Table 4, and regenerate Table S13 to the last digit, except
 for the one row whose allocation was corrected in this release (see `order_derived.py`).
 
 **Numbering.** Tables, figures and sections are cited by the numbers of the submitted manuscript
 (Tables 1 to 5, Sections 1 to 7) and of its Supplemental Online Material (Tables, Figures and
 Sections S1 and onwards). The output files keep the names they had under earlier numbering, so
 that nothing downstream breaks: `results/table1.*` is Table 2(b), `results/table2.*` is Tables S5
-and S6, `results/loops_buffered*` is Table S11 and `results/table6.*` is Table S12.
+and S6, `results/loops_buffered*` is Table S12 and `results/table6.*` is Table S13.
 
 **Every number has a script.** Everything that is simulated or computed has a script in the
 Contents table below. The resource counts of Table 1 and Table S1 are arithmetic on the layouts of
@@ -79,24 +79,24 @@ the stated dimensions and compares it with the printed value.
 | `unbuffered_grid.py` | the unbuffered grid with identical loop lengths | Table 2(b) |
 | `stagger_grid.py` | the staggered configuration, and the placement on the return run | Tables S5 and S6 (S7 is computed from S5) |
 | `stagger_gains.py` | the gain of staggering over the whole grid, read from `table2.csv` | Figure 5 |
-| `loops_buffered.py` | loop length and staggering once buffers are installed | Table S11 |
+| `loops_buffered.py` | loop length and staggering once buffers are installed | Table S12 |
 | `lever_gains.py` | what staggering and the second drop point are worth against the budget, read from `loops_buffered.json` | Figure 7 |
 | `certify_rep.cpp` | replication-based certification of a structured buffer-allocation class | |
 | `certify_all.py` | runs the certification over the grid and writes the per-allocation dumps | Table 3, Table S8, Figure 6 |
 | `sweep_rep.cpp` | evaluates a stated set of allocations by replications | |
-| `sweep_structured.py` | simulates the structured class: the four-belt grid and the fifteen-belt systems | the simulated side of Tables 5 and S13 to S15 and Figure 9 |
+| `sweep_structured.py` | simulates the structured class: the four-belt grid and the fifteen-belt systems | the simulated side of Tables 5 and S15 to S17 and Figure 9 |
 | `approx_model.py` | the analytical approximation model, with its self-checks | |
-| `approx_eval.py` | the accuracy of the approximation against the simulated classes | Table 5, Tables S13 to S15, Figure 9 |
+| `approx_eval.py` | the accuracy of the approximation against the simulated classes | Table 5, Tables S15 to S17, Figure 9 |
 | `sec7_numbers.py` | every number quoted in the prose of Section 6.5, taken from the data | |
 | `three_way_comparison.py` | exact, simulated and approximate throughput on the common-loop single-drop family | Table 4 |
 | `approximation_gap.py` | the approximation against the exact throughput over 240 pairs (n up to 16, m up to 16), and against the staggered simulation of Table S5(a) | the figures quoted in Section 6.5 |
-| `load_balance.py` | throughput against load balancing over the structured class | Tables S9 and S10 |
+| `load_balance.py` | throughput against load balancing over the structured class | Tables S10 and S11 |
 | `frontier.py` | the efficient frontier of throughput against load balancing | Figure 8 |
 | `feeder_returns.py` | the diminishing return of additional feeder loops | Figure S2 |
-| `order_derived.py` | the order-derived destination-sequence check | Table S12 |
-| `order_shuffled.py` | the same check on 30 random permutations of the labels | Table S17 |
+| `order_derived.py` | the order-derived destination-sequence check | Table S13 |
+| `order_shuffled.py` | the same check on 30 random permutations of the labels | Table S14 |
 | `sequence_dependence.py` | shares, dependence at lags 1 to 20 and drift of the order-derived sequence | the statistics quoted in Section S9 |
-| `asymmetry_check.py` | what the symmetry restriction costs, with 100 replications per allocation | Table S16 |
+| `asymmetry_check.py` | what the symmetry restriction costs, with 100 replications per allocation | Table S9 |
 | `transient_pilot.cpp`, `transient_pilot.py` | the transient pilot: 48 configurations (loops of one, two and four times the layout's own), 300 empty-start runs each, the settling point and the cumulative excess | the transient figures of Section S2.2 |
 | `buffer_relaxation.py` | how long the number of items held in buffers takes to settle, on the most heavily loaded pilot configuration | the buffer-content figures of Section S2.2 |
 | `warmup_sensitivity.py` | the estimate re-computed after deleting 0 to 10^6 steps of seven 40-replication runs | Table S3 |
@@ -332,7 +332,7 @@ Three kinds of output are written:
 
 * `results/table1.tex`, `results/table2.tex`, `results/loops_buffered.tex`, the
   LaTeX bodies of the panels, ready to paste into the manuscript, and
-  `results/loops_buffered_table.tex`, the whole of Table S11 with its caption, the
+  `results/loops_buffered_table.tex`, the whole of Table S12 with its caption, the
   allocations named and the largest half-width filled in, and
   `results/lever_gains.tex`, the plot coordinates of Figure 7, and `results/stagger_gains.tex`, those of Figure 5;
 * `results/table1.csv`, `results/table2.csv`, one row per cell with the
@@ -381,7 +381,7 @@ beside the scripts.
 
 ## Throughput against load balancing
 
-Tables S9 and S10 ask what a designer gives up by balancing the loaders instead
+Tables S10 and S11 ask what a designer gives up by balancing the loaders instead
 of maximizing throughput. At each per-primary-belt budget two allocations are
 reported: `c`, the one with the largest minimum loader utilization, and `c'`,
 the one with the largest throughput, together with both objectives for each and
@@ -422,7 +422,7 @@ allocation that is better on the other.
 **One protocol.** Every allocation is evaluated under the design of
 Section S2, the same geometry, run length, warm-up rule and thirty
 replications the certification and Section 6.5 use, so these tables are directly
-comparable with Table 3. The earlier version of Tables S9 and S10 was produced at
+comparable with Table 3. The earlier version of Tables S10 and S11 was produced at
 the shorter loop length and is not comparable with it: its throughputs run up to
 0.034 items per time step low, and the gap widens with the budget.
 
@@ -434,7 +434,7 @@ utilizations behind every reported row. Results are cached per cell under
 ## The order-derived destination sequence
 
 Every other experiment in this package draws each item's destination uniformly
-and independently. Table S12 asks what happens when those draws are replaced by a
+and independently. Table S13 asks what happens when those draws are replaced by a
 single chronological sequence taken from a real order stream, and whether the
 buffering trends survive it.
 
@@ -467,7 +467,7 @@ the day begins. It runs about a third of the spread of the corresponding uniform
 run. That is a property of the check rather than a weakness of the estimate:
 this is one sequence, and the manuscript says so.
 
-**One protocol for both columns.** The two columns of Table S12 use the same run
+**One protocol for both columns.** The two columns of Table S13 use the same run
 length, warm-up rule, geometry, seed and replication count, the ones of
 Section S2 that the certification and Section 6.5 also use. An earlier version
 of the table compared a long uniform run with a shorter order-derived one and

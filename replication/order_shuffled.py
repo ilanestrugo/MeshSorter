@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Shuffled-sequence control for the order-derived check (Section S12.2).
+"""Shuffled-sequence control for the order-derived check (Section S9.1).
 
 The order-derived check replaces independent uniform destination draws by one
 chronological sequence of 98,816 labels, read cyclically and consumed by the

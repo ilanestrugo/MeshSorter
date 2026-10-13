@@ -95,7 +95,7 @@ EXAMPLES
       meshsorter -n 4 -m 9 --dual --stagger --extra turnaround
   A buffered system with three places at every crossing:
       meshsorter -n 4 -m 6 --dual -b 3
-  One row of Table S12, on the order-derived sequence:
+  One row of Table S13, on the order-derived sequence:
       meshsorter -n 4 -m 4 --dual -b 0,0,1,2 \
                  --sequence results/order_derived_sequence.txt
 )");
