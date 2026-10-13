@@ -168,7 +168,8 @@
 //
 // Each (replication, feeder) pair gets its own stream.  The stream seed is
 // derived from the base seed and the two indices with SplitMix64, and the
-// stream itself is a 64-bit Mersenne twister.  Two consequences worth stating:
+// stream itself is SplitMix64 run as a generator (struct Rng below).  Two
+// consequences worth stating:
 // the streams do not depend on how the work is distributed over threads, so
 // the result is the same for any --threads setting; and rerunning with the
 // same --seed reproduces every number exactly, on any platform.
