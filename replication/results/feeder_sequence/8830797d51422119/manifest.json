@@ -1,0 +1,117 @@
+{
+  "allocation_sha256": "f42d474d284c4f52f4b16e3ef65c8a65a54e64fe48a5d9d557133c1623d6fbc1",
+  "allocation_source": "/Users/talraviv/Library/CloudStorage/Dropbox/research/Sorting/MeshSorter TRE/MeshSorter/replication/results/table6_allocations.txt",
+  "allocations": {
+    "0": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "1": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "2": [
+      0,
+      0,
+      1,
+      1
+    ],
+    "3": [
+      0,
+      0,
+      1,
+      2
+    ],
+    "4": [
+      0,
+      0,
+      1,
+      3
+    ],
+    "5": [
+      0,
+      1,
+      1,
+      3
+    ],
+    "6": [
+      0,
+      1,
+      1,
+      4
+    ],
+    "7": [
+      0,
+      1,
+      1,
+      5
+    ],
+    "8": [
+      0,
+      1,
+      2,
+      5
+    ],
+    "9": [
+      0,
+      1,
+      2,
+      6
+    ],
+    "10": [
+      0,
+      1,
+      2,
+      7
+    ]
+  },
+  "belts": 4,
+  "binary_sha256": "9473b2c8425f5a3444147083bb9c891d0e2548865d63440573ba49371b589afd",
+  "code_sha256": {
+    "feeder_sequence.py": "7ccf76e314d7d9ba4aa1311405e0ead52398a6ffd81b4ffb4f86aa9da36027a7",
+    "geometry.py": "64325a2adc99b8f31e67f9fe0a37cbbced298abf02b9161d41a59cd9cebec2a9",
+    "meshsorter.cpp": "cf25aa5372e5cff2f383bbb2fcf6f59473f93a743a682d37a52b7ea174c1e6d6",
+    "meshsorter_core.hpp": "48130840402045d25d7fd2431236b0a3ef98b9d4c8672e6b04b5215e8721a7ed"
+  },
+  "conditions": [
+    "chronological",
+    "shuffled",
+    "uniform"
+  ],
+  "discard_steps": [
+    0,
+    2000,
+    5000
+  ],
+  "dual": true,
+  "experiment": "separate_feeder_finite_record_v1",
+  "experiment_key": "8830797d514221191b3657b3721d7fabf4188cce5c3043beec892e7408e43fc0",
+  "feeders": 4,
+  "geometry": {
+    "df": 14,
+    "spacing": 10,
+    "turn": 12,
+    "width": 10
+  },
+  "interval_scope": "conditional on this record; shuffled control also varies its permutation",
+  "reps": 30,
+  "seed": 20260901,
+  "sequence_counts": [
+    24649,
+    24705,
+    24701,
+    24761
+  ],
+  "sequence_length": 98816,
+  "sequence_sha256": "560bde640e66912c4034e54fc0eeb4ce2c2e6f7c20765c36c2c770073b04622d",
+  "shuffled_control": "one independent permutation per replication, shared by all feeders",
+  "source": "/Users/talraviv/Library/CloudStorage/Dropbox/research/Sorting/MeshSorter TRE/MeshSorter/olist_orders_ForRun.csv",
+  "source_sha256": "5e8e8098c984d56bca1b3ef6251424179473ea68ebd77538767fa92ce12a66fb",
+  "steps": 98816,
+  "warmup": 20000,
+  "warmup_input": "uniform"
+}

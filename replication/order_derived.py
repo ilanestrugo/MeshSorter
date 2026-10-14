@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""Table S13: the order-derived destination-sequence robustness check.
+"""Earlier version of the order-derived destination-sequence robustness check.
+
+Superseded: the paper no longer reports this table.  Table S13 now comes from
+feeder_sequence.py, in which each feeder reads the record from a position of
+its own.  This script is kept for the record; see the README.
 
 The check asks one question.  Every other experiment in the paper draws each
 item's destination uniformly and independently.  If those draws are replaced by

@@ -349,6 +349,22 @@ struct Replication {
     const std::vector<int> *seq = nullptr;
     size_t spos = 0;
 
+    // Separate-feeder finite-record experiment. Warm-up still uses uniform
+    // draws. During measurement each feeder advances its own cursor only on
+    // admission, starting at an independently sampled position. At most one
+    // record length of steps is allowed, so no feeder revisits a position.
+    bool sequencePerFeeder = false;
+    std::vector<size_t> sequenceStarts, sequencePositions;
+    std::vector<long long> sequenceConsumed, sequenceWraps;
+    std::vector<std::vector<long long>> sequenceBeltCounts;
+    bool auditInitialState = false;
+    uint64_t initialStateHash = 0;
+
+    // Cumulative admissions after selected numbers of measurement steps.
+    // These allow switching-transient checks on the same simulated trajectory.
+    std::vector<long long> checkpoints;
+    std::vector<std::vector<long long>> checkpointAdmissions;
+
     //  Optional block trace, for the transient pilot of Supplement S2.  When
     //  traceBlock > 0, the admissions of every consecutive block of traceBlock
     //  steps are appended to *trace, counted from step 0 whatever the warm-up,
@@ -407,6 +423,10 @@ struct Replication {
     //  Returns the average throughput over the measurement window.
     double run() {
         const int n = ly.n, m = ly.m;
+        if (sequencePerFeeder && (!seq || seq->empty() ||
+                seq->size() > UINT32_MAX || steps < 1 ||
+                static_cast<unsigned long long>(steps) > seq->size()))
+            throw std::runtime_error("separate-feeder sequence requires 1 <= steps <= sequence length <= UINT32_MAX");
         feeder.resize(m);
         for (int j = 0; j < m; j++) feeder[j].assign((size_t)ly.L[j], 0);
         prim.assign((size_t)n * ly.P, 0);
@@ -422,21 +442,60 @@ struct Replication {
             uint64_t s = seed ^ (0x9E3779B97F4A7C15ULL * (uint64_t)(j + 1));
             rng.emplace_back(splitmix64(s));
         }
-        if (seq && !seq->empty()) {
+        sequenceStarts.clear(); sequencePositions.clear();
+        sequenceConsumed.clear(); sequenceWraps.clear();
+        sequenceBeltCounts.clear();
+        if (sequencePerFeeder) {
+            Rng off(seed ^ 0xA24BAED4963EE407ULL);
+            for (int j = 0; j < m; j++)
+                sequenceStarts.push_back(off.below(static_cast<uint32_t>(seq->size())));
+            sequencePositions = sequenceStarts;
+            sequenceConsumed.assign(m, 0);
+            sequenceWraps.assign(m, 0);
+            sequenceBeltCounts.assign(m, std::vector<long long>(n, 0));
+        } else if (seq && !seq->empty()) {
             Rng off(seed ^ 0xA24BAED4963EE407ULL);
             spos = (size_t)(off.next() % (uint64_t)seq->size());
         }
+
+        checkpointAdmissions.assign(checkpoints.size(), std::vector<long long>(m, 0));
+        size_t nextCheckpoint = 0;
+        if (!checkpoints.empty() && checkpoints[0] == 0) ++nextCheckpoint;
 
         const long long total = warmup + steps;
         int blockAdm = 0;                       // used only when tracing
         for (long long t = 0; t < total; t++) {
             const bool counting = (t >= warmup);
+            if (auditInitialState && t == warmup) {
+                // Audit the physical state and uniform RNG states immediately
+                // before switching input. Exclude the record cursors, which
+                // are intentionally different from the uniform condition.
+                initialStateHash = 14695981039346656037ULL;
+                auto add = [&](uint64_t value) {
+                    initialStateHash ^= value;
+                    initialStateHash *= 1099511628211ULL;
+                };
+                for (const auto &loop : feeder) for (int v : loop) add(v);
+                for (int v : prim) add(v);
+                for (int v : bufF) add(v);
+                for (int v : bufB) add(v);
+                for (long long v : foff) add(v);
+                add(poff);
+                for (const auto &stream : rng) add(stream.s);
+            }
 
             // 1. loading
             for (int j = 0; j < m; j++) {
                 const int fa = fidx(j, 0);
                 if (feeder[j][fa] == 0) {
-                    if (seq) {
+                    if (sequencePerFeeder && counting) {
+                        size_t &pos = sequencePositions[j];
+                        if (pos == 0 && sequenceConsumed[j] > 0) ++sequenceWraps[j];
+                        feeder[j][fa] = (*seq)[pos];
+                        ++sequenceBeltCounts[j][feeder[j][fa] - 1];
+                        if (++pos == seq->size()) pos = 0;
+                        ++sequenceConsumed[j];
+                    } else if (seq && !sequencePerFeeder) {
                         feeder[j][fa] = (*seq)[spos];
                         if (++spos == seq->size()) spos = 0;
                     } else {
@@ -465,6 +524,11 @@ struct Replication {
             for (int i = 0; i < n; i++) prim[pidx(i, ly.pmin)] = 0;
             for (int j = 0; j < m; j++)
                 if (++foff[j] == ly.L[j]) foff[j] = 0;
+            if (counting && nextCheckpoint < checkpoints.size() &&
+                    t - warmup + 1 == checkpoints[nextCheckpoint]) {
+                checkpointAdmissions[nextCheckpoint] = admissions;
+                ++nextCheckpoint;
+            }
             if (traceBlock > 0 && trace && (t + 1) % traceBlock == 0) {
                 trace->push_back(blockAdm);
                 blockAdm = 0;

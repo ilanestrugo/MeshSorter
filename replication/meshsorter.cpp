@@ -20,6 +20,19 @@ static std::vector<long long> parseList(const std::string &s) {
     return v;
 }
 
+template<class T> static void printJsonValue(T value) {
+    std::printf("%lld", static_cast<long long>(value));
+}
+
+template<class T> static void printJsonValue(const std::vector<T> &values) {
+    std::printf("[");
+    for (size_t i = 0; i < values.size(); i++) {
+        if (i) std::printf(",");
+        printJsonValue(values[i]);
+    }
+    std::printf("]");
+}
+
 static void usage() {
     std::printf(R"(meshsorter - replication-based simulator of the MeshSorter
 
@@ -76,6 +89,20 @@ EXPERIMENT
                          starts at its own position in the cycle, so the
                          replications differ in phase rather than in the
                          labels they see
+      --feeder-sequence FILE
+                         uniform warm-up, then a separate cursor per
+                         feeder at an independent random record position.
+                         A cursor advances only on admission. Measurement
+                         steps may not exceed record length; default to
+                         that length when -T is omitted
+      --shuffle-sequence randomly permute the feeder record independently
+                         for each replication (requires --feeder-sequence).
+                         All feeders use the same permutation; offsets
+                         and warm-up seeds match the unshuffled run
+      --checkpoints a,b,...
+                         record cumulative admissions after these numbers
+                         of measurement steps, for transient sensitivity
+                         calculations in JSON output
   -t, --threads K        worker threads; the result does not depend on
                          this, only the wall clock does
                          (default: two fewer than the hardware
@@ -104,7 +131,10 @@ EXAMPLES
 int main(int argc, char **argv) {
     Config cfg;
     std::string seqFile;
+    std::string feederSeqFile;
     std::string bufSpec;
+    bool shuffleSequence = false, stepsExplicit = false;
+    std::vector<long long> checkpoints;
     try {
         for (int a = 1; a < argc; a++) {
             std::string k = argv[a];
@@ -133,11 +163,14 @@ int main(int argc, char **argv) {
             else if (k == "--df")                        cfg.df = std::stoi(need());
             else if (k == "--width")                     cfg.width = std::stoi(need());
             else if (k == "-b" || k == "--buffers")      bufSpec = need();
-            else if (k == "-T" || k == "--steps")        cfg.steps = std::stoll(need());
+            else if (k == "-T" || k == "--steps")        { cfg.steps = std::stoll(need()); stepsExplicit = true; }
             else if (k == "-R" || k == "--reps")         cfg.reps = std::stoi(need());
             else if (k == "-w" || k == "--warmup")       cfg.warmup = std::stoll(need());
             else if (k == "--seed")                      cfg.seed = std::stoull(need());
             else if (k == "--sequence")                  seqFile = need();
+            else if (k == "--feeder-sequence")           feederSeqFile = need();
+            else if (k == "--shuffle-sequence")          shuffleSequence = true;
+            else if (k == "--checkpoints")               checkpoints = parseList(need());
             else if (k == "-t" || k == "--threads")      cfg.threads = std::stoi(need());
             else if (k == "--json")                      cfg.json = true;
             else if (k == "--per-feeder")                cfg.perFeeder = true;
@@ -146,6 +179,12 @@ int main(int argc, char **argv) {
         if (cfg.n < 1 || cfg.m < 1) { usage(); return 2; }
         if (cfg.reps < 2) throw std::runtime_error("--reps must be at least 2");
         if (cfg.steps < 1) throw std::runtime_error("--steps must be positive");
+        if (!seqFile.empty() && !feederSeqFile.empty())
+            throw std::runtime_error("use either --sequence or --feeder-sequence");
+        if (shuffleSequence && feederSeqFile.empty())
+            throw std::runtime_error("--shuffle-sequence requires --feeder-sequence");
+        const bool separateFeeders = !feederSeqFile.empty();
+        if (separateFeeders) seqFile = feederSeqFile;
         if (cfg.width > cfg.df)
             throw std::runtime_error("--width may not exceed --df, or feeders would overlap");
 
@@ -194,6 +233,19 @@ int main(int argc, char **argv) {
             if (seq.empty()) throw std::runtime_error("no labels in " + seqFile);
         }
 
+        if (separateFeeders) {
+            if (seq.size() > UINT32_MAX)
+                throw std::runtime_error("feeder sequence exceeds UINT32_MAX labels");
+            if (!stepsExplicit) cfg.steps = static_cast<long long>(seq.size());
+            if (static_cast<unsigned long long>(cfg.steps) > seq.size())
+                throw std::runtime_error("--steps may not exceed feeder sequence length: positions must not be reused");
+        }
+        std::sort(checkpoints.begin(), checkpoints.end());
+        checkpoints.erase(std::unique(checkpoints.begin(), checkpoints.end()), checkpoints.end());
+        for (long long point : checkpoints)
+            if (point < 0 || point >= cfg.steps)
+                throw std::runtime_error("checkpoints must be between 0 and steps-1");
+
         if (cfg.warmup < 0)
             cfg.warmup = std::max(20000LL, 10LL * (ly.cmax + 1) * ly.Lmax);
         if (cfg.threads <= 0) {
@@ -212,6 +264,11 @@ int main(int argc, char **argv) {
         // the result does not depend on how many workers there are.
         std::vector<double> Y((size_t)cfg.reps, 0.0);
         std::vector<std::vector<long long>> perFeeder((size_t)cfg.reps);
+        std::vector<std::vector<size_t>> starts((size_t)cfg.reps);
+        std::vector<std::vector<long long>> consumed((size_t)cfg.reps), wraps((size_t)cfg.reps);
+        std::vector<std::vector<std::vector<long long>>> snapshots((size_t)cfg.reps);
+        std::vector<std::vector<std::vector<long long>>> beltCounts((size_t)cfg.reps);
+        std::vector<uint64_t> initialHashes((size_t)cfg.reps);
         std::atomic<int> nextRep{0};
         {
             std::vector<std::thread> pool;
@@ -223,9 +280,25 @@ int main(int argc, char **argv) {
                         if (r >= cfg.reps) return;
                         uint64_t s = cfg.seed + 0x1000193ULL * (uint64_t)(r + 1);
                         Replication rep(ly, cfg.warmup, cfg.steps, splitmix64(s));
-                        if (!seq.empty()) rep.seq = &seq;
+                        std::vector<int> shuffled;
+                        if (shuffleSequence) {
+                            shuffled = seq;
+                            Rng perm(rep.seed ^ 0xD6E8FEB86659FD93ULL);
+                            for (size_t i = shuffled.size(); i > 1; --i)
+                                std::swap(shuffled[i - 1], shuffled[perm.below(static_cast<uint32_t>(i))]);
+                            rep.seq = &shuffled;
+                        } else if (!seq.empty()) rep.seq = &seq;
+                        rep.sequencePerFeeder = separateFeeders;
+                        rep.checkpoints = checkpoints;
+                        rep.auditInitialState = separateFeeders || !checkpoints.empty();
                         Y[(size_t)r] = rep.run();
                         perFeeder[(size_t)r] = rep.admissions;
+                        starts[(size_t)r] = rep.sequenceStarts;
+                        consumed[(size_t)r] = rep.sequenceConsumed;
+                        wraps[(size_t)r] = rep.sequenceWraps;
+                        snapshots[(size_t)r] = rep.checkpointAdmissions;
+                        beltCounts[(size_t)r] = rep.sequenceBeltCounts;
+                        initialHashes[(size_t)r] = rep.initialStateHash;
                     }
                 });
             }
@@ -260,6 +333,30 @@ int main(int argc, char **argv) {
                         (unsigned long long)cfg.seed, cfg.threads, mean, hw, sd);
             for (int r = 0; r < R; r++) std::printf("%s%.9f", r ? "," : "", Y[(size_t)r]);
             std::printf("]");
+            if (separateFeeders || !checkpoints.empty()) {
+                std::printf(",\"input_mode\":\"%s\",\"warmup_input\":\"%s\","
+                            "\"sequence_length\":%zu,\"sequence_shuffled\":%s,"
+                            "\"critical_value\":%.12f,\"admissions_by_replication\":",
+                            separateFeeders ? "separate_feeders" : (seq.empty() ? "uniform" : "shared_sequence"),
+                            separateFeeders || seq.empty() ? "uniform" : "shared_sequence",
+                            seq.size(), shuffleSequence ? "true" : "false", tquantile975(R - 1));
+                printJsonValue(perFeeder);
+                std::printf(",\"checkpoints\":");
+                printJsonValue(checkpoints);
+                std::printf(",\"checkpoint_admissions\":");
+                printJsonValue(snapshots);
+                std::printf(",\"warmup_state_hashes\":[");
+                for (int r = 0; r < R; r++) {
+                    std::printf("%s\"%016llx\"", r ? "," : "", (unsigned long long)initialHashes[r]);
+                }
+                std::printf("]");
+            }
+            if (separateFeeders) {
+                std::printf(",\"feeder_start_positions\":"); printJsonValue(starts);
+                std::printf(",\"sequence_consumed\":"); printJsonValue(consumed);
+                std::printf(",\"sequence_wraps\":"); printJsonValue(wraps);
+                std::printf(",\"sequence_belt_counts\":"); printJsonValue(beltCounts);
+            }
             if (cfg.perFeeder) {
                 std::printf(",\"loader_utilization\":[");
                 for (int j = 0; j < cfg.m; j++) std::printf("%s%.6f", j ? "," : "", util[(size_t)j]);

@@ -10,11 +10,7 @@ reports:
      of an order and the label of the order `lag` places later, with Cramer's V,
      so that a small dependence at lag one is not taken for weak dependence at
      every lag;
-  3. what each feeder sees when the sequence is consumed by m feeders in index
-     order, which is how the simulator uses it: feeder j reads positions
-     j, j+m, j+2m, ... so each feeder's stream is a fixed subsequence of
-     N/m labels, repeated cyclically;
-  4. the same lag statistics for random permutations of the sequence, which have
+  3. the same lag statistics for random permutations of the sequence, which have
      the same counts and no chronology, so that the values above can be read
      against what chance alone produces.
 
@@ -28,7 +24,7 @@ from scipy import stats
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, "results")
 SEQ = os.path.join(OUT, "order_derived_sequence.txt")
-BELTS, FEEDERS, MAXLAG = 4, 4, 20
+BELTS, MAXLAG = 4, 20
 PERMS = 200
 
 x = np.array([int(l) for l in open(SEQ) if l.strip() and not l.startswith("#")]) - 1
@@ -113,23 +109,6 @@ print(f"  chi-square = {c:.1f} on {dof} df, p = {pv:.3f}; "
       f"random permutations give mean {np.mean(null):.1f}, 95th percentile {np.percentile(null, 95):.1f}")
 res["blocks"] = dict(blocks=BLOCKS, size=int(size), chi2=float(c), dof=int(dof), p=float(pv),
                      perm_mean=float(np.mean(null)), perm_p95=float(np.percentile(null, 95)))
-
-# feeder view
-print(f"\nthe sequence as {FEEDERS} feeders consume it (feeder j reads positions j, j+{FEEDERS}, ...)")
-print(f"N = {N} = {FEEDERS} x {N // FEEDERS}" + ("" if N % FEEDERS == 0 else f" + {N % FEEDERS}"))
-feeder = []
-for j in range(FEEDERS):
-    sub = x[j::FEEDERS]
-    sh = np.bincount(sub, minlength=BELTS) / len(sub)
-    feeder.append(dict(feeder=j + 1, length=int(len(sub)), shares=sh.tolist()))
-    print(f"  feeder {j + 1}: {len(sub)} labels, shares " + ", ".join(f"{s:.4f}" for s in sh))
-tab = np.array([np.bincount(x[j::FEEDERS], minlength=BELTS) for j in range(FEEDERS)], dtype=float)
-c, pv, _, _ = stats.chi2_contingency(tab, correction=False)
-print(f"  chi-square, feeder against belt: chi2 = {c:.2f}, df = 9, p = {pv:.3f}")
-res["feeder_view"] = dict(feeders=feeder, chi2=float(c), p=float(pv),
-                          divisible=bool(N % FEEDERS == 0), period_per_feeder=int(N // FEEDERS))
-print(f"  each feeder's own stream is periodic with period {N // FEEDERS} labels "
-      f"when every feeder admits at every step")
 
 with open(os.path.join(OUT, "sequence_dependence.json"), "w") as f:
     json.dump(res, f, indent=1)

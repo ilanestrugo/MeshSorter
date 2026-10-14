@@ -46,20 +46,23 @@ reasoning.
 
 **Random numbers and reproducibility.** Replication seeds come from the base seed 20260901, and
 the destination stream of feeder `j` is derived from the replication seed and `j` by SplitMix64.
-When the order-derived sequence is used, a replication enters it at a position fixed by its seed.
+When the order-derived record replaces the draws (Table S13), the starting position of each
+feeder in it is drawn from a further stream of the replication, and the permutation of the
+shuffled control from another.
 In the certification every allocation also has streams of its own, with seed
 `s0 + 1,000,003 a + 16,777,619 (r + 1)` for allocation `a` and replication `r`, and Phase 3 uses
 a disjoint family. The results do not depend on the number of threads or on the platform: the
 large experiments were run on a Linux server and the small ones on a Windows computer with Microsoft Visual C++, and the two builds give
 identical replication values on the unbuffered 4 x 4 dual-drop system (all 30, to eight
-decimals), reproduce the 49 cells of Table 4, and regenerate Table S13 to the last digit, except
-for the one row whose allocation was corrected in this release (see `order_derived.py`).
+decimals) and reproduce the 49 cells of Table 4.
 
 **Numbering.** Tables, figures and sections are cited by the numbers of the submitted manuscript
 (Tables 1 to 5, Sections 1 to 7) and of its Supplemental Online Material (Tables, Figures and
 Sections S1 and onwards). The output files keep the names they had under earlier numbering, so
 that nothing downstream breaks: `results/table1.*` is Table 2(b), `results/table2.*` is Tables S5
-and S6, `results/loops_buffered*` is Table S12 and `results/table6.*` is Table S13.
+and S6, and `results/loops_buffered*` is Table S12. `results/table6.*` and
+`results/order_shuffled.*` hold the earlier version of the order-derived check, which the paper
+no longer reports; Table S13 is in `results/feeder_sequence/<run>/`.
 
 **Every number has a script.** Everything that is simulated or computed has a script in the
 Contents table below. The resource counts of Table 1 and Table S1 are arithmetic on the layouts of
@@ -84,21 +87,22 @@ the stated dimensions and compares it with the printed value.
 | `certify_rep.cpp` | replication-based certification of a structured buffer-allocation class | |
 | `certify_all.py` | runs the certification over the grid and writes the per-allocation dumps | Table 3, Table S8, Figure 6 |
 | `sweep_rep.cpp` | evaluates a stated set of allocations by replications | |
-| `sweep_structured.py` | simulates the structured class: the four-belt grid and the fifteen-belt systems | the simulated side of Tables 5 and S15 to S17 and Figure 9 |
+| `sweep_structured.py` | simulates the structured class: the four-belt grid and the fifteen-belt systems | the simulated side of Tables 5 and S14 to S16 and Figure 9 |
 | `approx_model.py` | the analytical approximation model, with its self-checks | |
-| `approx_eval.py` | the accuracy of the approximation against the simulated classes | Table 5, Tables S15 to S17, Figure 9 |
+| `approx_eval.py` | the accuracy of the approximation against the simulated classes | Table 5, Tables S14 to S16, Figure 9 |
 | `sec7_numbers.py` | every number quoted in the prose of Section 6.5, taken from the data | |
 | `three_way_comparison.py` | exact, simulated and approximate throughput on the common-loop single-drop family | Table 4 |
 | `approximation_gap.py` | the approximation against the exact throughput over 240 pairs (n up to 16, m up to 16), and against the staggered simulation of Table S5(a) | the figures quoted in Section 6.5 |
 | `load_balance.py` | throughput against load balancing over the structured class | Tables S10 and S11 |
 | `frontier.py` | the efficient frontier of throughput against load balancing | Figure 8 |
 | `feeder_returns.py` | the diminishing return of additional feeder loops | Figure S2 |
-| `order_derived.py` | the order-derived destination-sequence check | Table S13 |
-| `order_shuffled.py` | the same check on 30 random permutations of the labels | Table S14 |
+| `feeder_sequence.py` | the order-derived check: each feeder reads the record from a position of its own, under chronological, shuffled and uniform input after a uniform warm-up | Table S13, the figures quoted in Sections 6.4 and S9 |
+| `test_feeder_sequence.py` | protocol, reproducibility and runner checks for the separate-feeder experiment | |
 | `sequence_dependence.py` | shares, dependence at lags 1 to 20 and drift of the order-derived sequence | the statistics quoted in Section S9 |
 | `asymmetry_check.py` | what the symmetry restriction costs, with 100 replications per allocation | Table S9 |
 | `transient_pilot.cpp`, `transient_pilot.py` | the transient pilot: 48 configurations (loops of one, two and four times the layout's own), 300 empty-start runs each, the settling point and the cumulative excess | the transient figures of Section S2.2 |
 | `buffer_relaxation.py` | how long the number of items held in buffers takes to settle, on the most heavily loaded pilot configuration | the buffer-content figures of Section S2.2 |
+| `order_derived.py`, `order_shuffled.py` | the earlier version of the order-derived check, which read one record cyclically with the feeders in index order; superseded by `feeder_sequence.py` and not reported in the paper | `results/table6.*`, `results/order_shuffled.*` |
 | `warmup_sensitivity.py` | the estimate re-computed after deleting 0 to 10^6 steps of seven 40-replication runs | Table S3 |
 | `layout_comparison.py` | the resource comparison: every cell of Table 1 and Table S1, and the figures of Section S1, derived from the stated dimensions and checked against the printed values | Table 1, Table S1 |
 | `gcd_verification.py` | brute-force enumeration of the families, against the gcd formula | the check of Proposition 5 |
@@ -320,7 +324,7 @@ python3 stagger_grid.py
 python3 loops_buffered.py
 python3 load_balance.py
 python3 frontier.py
-python3 order_derived.py
+python3 feeder_sequence.py --build
 python3 feeder_returns.py
 ```
 
@@ -431,12 +435,99 @@ nine-column bodies, and `results/load_balance.csv` carries the per-feeder loader
 utilizations behind every reported row. Results are cached per cell under
 `results/loadbalance/`, so an interrupted run resumes and a rerun is free.
 
-## The order-derived destination sequence
+## The order-derived destination record (Table S13)
 
 Every other experiment in this package draws each item's destination uniformly
-and independently. Table S13 asks what happens when those draws are replaced by a
-single chronological sequence taken from a real order stream, and whether the
-buffering trends survive it.
+and independently. Table S13 asks what happens when those draws are replaced by
+labels read in chronological order from a real order stream, and whether the
+buffering trends survive it. `olist_orders_ForRun.csv`, at the top of the
+repository, is the prepared order stream: one row per usable order, in
+chronological order, with the primary belt its destination is assigned to.
+Section S9 describes how the raw Brazilian e-commerce dataset was reduced to it.
+There are 98,816 labels, between 0.2494 and 0.2506 of the stream on each belt.
+
+`feeder_sequence.py` produces Table S13 and the figures quoted in Sections 6.4
+and S9. Run these commands from this directory:
+
+```bash
+python3 feeder_sequence.py --build            # compile and run the full experiment
+python3 feeder_sequence.py --quick            # short wiring check
+python3 feeder_sequence.py --budgets 0,5,10    # selected budgets, full record horizon
+python3 -m unittest -v test_feeder_sequence.py # protocol checks, with a temporary build
+```
+
+The default experiment uses the paper's four-by-four dual-drop geometry and the
+certified allocations in `results/table6_allocations.txt`, for budgets 0 through
+10. Each budget has 30 replications of three paired conditions:
+
+1. **Chronological:** read the prepared order file in arrival order. Each feeder
+   has its own cursor, starting at an independently sampled record position.
+2. **Shuffled:** draw one new random permutation for each replication. All four
+   feeders use that permutation, at the same four offsets as in the corresponding
+   chronological run.
+3. **Uniform:** continue using independent, uniform destination draws at each feeder.
+
+All three conditions first run 20,000 steps under independent uniform input, then
+measure the next 98,816 time steps. The physical state is retained at the switch:
+the belts, recirculating items, buffers, conveyor offsets and uniform RNGs are
+not reset. Matching hashes of this initial measurement state are checked across
+conditions. Warm-up and offset seeds are reused across budgets too.
+
+A feeder's cursor advances only when that feeder admits a new item. Since a
+feeder admits at most one item per step, the first feeder reads the complete
+record exactly once and the others read contiguous, possibly wrapped portions
+of it. No feeder revisits a record position during measurement. The simulator
+rejects a separate-feeder horizon longer than the record. Wrapping can introduce
+one artificial end-to-start transition; it does not start a second traversal.
+
+The runner uses the same trajectories to report estimates after excluding 0,
+2,000 and 5,000 measurement steps, as a switching-transient sensitivity check.
+It reports replication standard deviations, 95% half-widths and paired
+chronological-minus-shuffled and chronological-minus-uniform differences. These
+intervals are conditional on this record and randomized initial states and
+offsets; the shuffled control additionally varies the permutation. They do not
+measure uncertainty across independent empirical datasets.
+
+Output goes to `results/feeder_sequence/<run>/` (or
+`results/feeder_sequence_quick/<run>/` for a quick check). A run directory is
+identified by its protocol, input and code hashes. Completed raw cells are
+reused when a run is resumed. Existing manuscript table outputs are separate.
+
+| Output | Content |
+| --- | --- |
+| `manifest.json` | parameters, allocations, provenance and input/code hashes |
+| `inputs/chronological.txt` | the extracted chronological destination record |
+| `raw/Bxx_<condition>.json` | commands, replication values, cursor audits and cumulative admissions |
+| `summary.csv`, `summary.json` | condition means, uncertainty and paired differences, including exclusions |
+| `replications.csv` | one observation per budget, condition, replication and exclusion |
+| `feeders.csv` | each feeder's admissions, offset, record consumption, destination counts and wrap transitions |
+
+`--orders FILE` selects another prepared order CSV; `--sequence FILE` uses an
+existing label file instead. `--allocs FILE`, `--reps`, `--seed`, `--threads`,
+`--out` and `--binary` customize the run. `--steps` can shorten measurement but
+cannot exceed the record length. `--discard-steps 0,2000,5000` selects the
+measurement exclusions. The quick check uses four replications, 10,000 measured
+steps and budgets 0, 5 and 10; it does not consume the complete record.
+
+The underlying simulator can also be called directly:
+
+```bash
+./meshsorter -n 4 -m 4 --dual --feeder-sequence results/order_derived_sequence.txt \
+    -w 20000 -R 30 --checkpoints 0,2000,5000 --json
+```
+
+Omitting `-T` in this mode sets the measured horizon to the record length.
+Add `--shuffle-sequence` for the shuffled control. The original shared-stream
+`--sequence` option keeps its existing behavior and output.
+
+## The earlier order-derived check (superseded)
+
+This section documents `order_derived.py` and `order_shuffled.py`, the earlier
+version of the check, kept for the record. It read the record cyclically, with
+the feeders consuming it in index order, and compared it with 30 fixed
+permutations. The paper no longer reports it: Table S13 comes from
+`feeder_sequence.py` (above). References below to "the table" are to the
+earlier one, `results/table6.*`.
 
 ```bash
 python3 order_derived.py            # about two minutes
@@ -455,8 +546,7 @@ belts, between 0.2494 and 0.2506 of the stream each.
 **How the simulator consumes it.** `meshsorter --sequence FILE` replaces the
 uniform draw at the loading step. The feeders consume the sequence in index
 order, so when several admit an item in the same time step they take consecutive
-labels, and the sequence repeats cyclically. That is the rule stated in
-Section S9.
+labels, and the sequence repeats cyclically.
 
 **What a replication means here.** The sequence is deterministic, so replications
 cannot differ in their draws. They differ in phase: each begins reading the cycle
@@ -465,9 +555,9 @@ consumes the 98,816 labels some fifty times over, so the spread across
 replications measures how much the answer depends on where in the order stream
 the day begins. It runs about a third of the spread of the corresponding uniform
 run. That is a property of the check rather than a weakness of the estimate:
-this is one sequence, and the manuscript says so.
+this is one sequence.
 
-**One protocol for both columns.** The two columns of Table S13 use the same run
+**One protocol for both columns.** The two columns of the earlier table use the same run
 length, warm-up rule, geometry, seed and replication count, the ones of
 Section S2 that the certification and Section 6.5 also use. An earlier version
 of the table compared a long uniform run with a shorter order-derived one and
@@ -726,6 +816,13 @@ EXPERIMENT
   -w, --warmup W         steps discarded per replication
                                        (default max(20000, 10*(c+1)*L))
       --seed S           base seed                             (default 20260901)
+      --feeder-sequence FILE
+                         uniform warm-up, then one random cursor per feeder;
+                         measured steps must not exceed record length
+      --shuffle-sequence one new permutation per replication, shared by
+                         the feeders (requires --feeder-sequence)
+      --checkpoints a,b,...
+                         cumulative admissions at measurement steps a,b,...
   -t, --threads K        worker threads      (default: hardware threads - 2,
                                              capped at R)
 

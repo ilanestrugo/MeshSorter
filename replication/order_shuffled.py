@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""Shuffled-sequence control for the order-derived check (Section S9.1).
+"""Shuffled-sequence control for the earlier order-derived check.
+
+Superseded: the paper no longer reports this control.  The shuffled condition
+of Table S13 now comes from feeder_sequence.py.  This script is kept for the
+record; see the README.
 
 The order-derived check replaces independent uniform destination draws by one
 chronological sequence of 98,816 labels, read cyclically and consumed by the
