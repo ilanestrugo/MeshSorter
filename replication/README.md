@@ -84,6 +84,7 @@ the stated dimensions and compares it with the printed value.
 | `stagger_gains.py` | the gain of staggering over the whole grid, read from `table2.csv` | Figure 5 |
 | `loops_buffered.py` | loop length and staggering once buffers are installed | Table S12 |
 | `lever_gains.py` | what staggering and the second drop point are worth against the budget, read from `loops_buffered.json` | Figure 7 |
+| `geometry_checks.py` | the loop-length variants, the spacing and width invariance checks and the offset sweep, 4 x 4 at L = 104; prints each quoted figure beside the value it reproduces | the variants of Section S4.2, the checks of Sections 3.4 and 6.2 |
 | `certify_rep.cpp` | replication-based certification of a structured buffer-allocation class | |
 | `certify_all.py` | runs the certification over the grid and writes the per-allocation dumps | Table 3, Table S8, Figure 6 |
 | `sweep_rep.cpp` | evaluates a stated set of allocations by replications | |
@@ -322,6 +323,7 @@ or, one table at a time,
 python3 unbuffered_grid.py
 python3 stagger_grid.py
 python3 loops_buffered.py
+python3 geometry_checks.py
 python3 load_balance.py
 python3 frontier.py
 python3 feeder_sequence.py --build

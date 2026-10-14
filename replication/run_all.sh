@@ -8,7 +8,7 @@
 #
 # A --quick pass overwrites some of the tables in results/ with low-precision
 # values (those of the scripts that write table1.*, table2.*, loops_buffered.*,
-# load_balance.*, table6.* and the structured sweeps).  Run it in a scratch copy
+# geometry_checks.json, load_balance.* and the structured sweeps).  Run it in a scratch copy
 # of this directory, or restore results/ from git afterwards.
 #
 # Not run here, because they take hours: the certification of Table 3 and
@@ -46,6 +46,7 @@ python3 stagger_grid.py "$@"              # Tables S5 and S6
 python3 stagger_gains.py                  # Figure 5, from the cells of Table S5
 python3 loops_buffered.py "$@"            # Table S12
 python3 lever_gains.py                    # Figure 7, from the cells of Table S12
+python3 geometry_checks.py "$@"           # the variants of Section S4.2, the checks of Sections 3.4 and 6.2
 python3 load_balance.py "$@"              # Tables S10 and S11
 python3 frontier.py "$@"                  # Figure 8
 python3 feeder_returns.py "$@"            # Figure S2
@@ -54,14 +55,13 @@ python3 approximation_gap.py              # the 240 exact pairs and the staggere
 
 python3 approx_model.py
 python3 sweep_structured.py "$@"
-python3 approx_eval.py                    # Table 5, Tables S15 and S16, Figure 9
+python3 approx_eval.py                    # Table 5, Tables S14 and S15, Figure 9
 
-# Table S13 reads the certified allocation at each budget from results/certify if
-# that grid has been run, then from results/table6_allocations.txt, and from
-# results/structured only as a last resort.  It comes after sweep_structured.py.
-python3 order_derived.py "$@"             # Table S13
+# Table S13 reads the certified allocation at each budget from the committed
+# results/table6_allocations.txt.  order_derived.py and order_shuffled.py, the
+# earlier version of this check, are superseded and not run here.
+python3 feeder_sequence.py "$@"           # Table S13
 python3 sequence_dependence.py            # statistics quoted in Section S9
-python3 order_shuffled.py "$@"            # Table S14, about an hour
 python3 asymmetry_check.py "$@"           # Table S9
 
 python3 transient_pilot.py "$@"            # transient figures of Section S2.2, about half an hour
