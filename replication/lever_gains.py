@@ -3,7 +3,7 @@
 
 Figure 7 of the manuscript (Section 6.2).  The 4 x 4 MeshSorter at the shortest
 buildable loop length (104 slots), at the three per-primary-belt budgets of
-Table S12, B = 0, 5 and 10.  Three gains, each in percent of the throughput of
+Table S10, B = 0, 5 and 10.  Three gains, each in percent of the throughput of
 the same system without the device in question:
 
     second drop point     dual-drop over single-drop, both with common loop lengths
@@ -11,7 +11,7 @@ the same system without the device in question:
     staggering, dual      staggered over common loop lengths, dual-drop
 
 Nothing is simulated here.  The inputs are the cells that loops_buffered.py
-writes to results/loops_buffered.json (Table S12), so this script reads what
+writes to results/loops_buffered.json (Table S10), so this script reads what
 that table prints and cannot disagree with it.
 
 Output

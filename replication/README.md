@@ -60,7 +60,7 @@ decimals) and reproduce the 49 cells of Table 4.
 (Tables 1 to 5, Sections 1 to 7) and of its Supplemental Online Material (Tables, Figures and
 Sections S1 and onwards). The output files keep the names they had under earlier numbering, so
 that nothing downstream breaks: `results/table1.*` is Table 2(b), `results/table2.*` is Tables S5
-and S6, and `results/loops_buffered*` is Table S12. `results/table6.*` and
+and S6, and `results/loops_buffered*` is Table S10. `results/table6.*` and
 `results/order_shuffled.*` hold the earlier version of the order-derived check, which the paper
 no longer reports; Table S13 is in `results/feeder_sequence/<run>/`.
 
@@ -82,7 +82,7 @@ the stated dimensions and compares it with the printed value.
 | `unbuffered_grid.py` | the unbuffered grid with identical loop lengths | Table 2(b) |
 | `stagger_grid.py` | the staggered configuration, and the placement on the return run | Tables S5 and S6 (S7 is computed from S5) |
 | `stagger_gains.py` | the gain of staggering over the whole grid, read from `table2.csv` | Figure 5 |
-| `loops_buffered.py` | loop length and staggering once buffers are installed | Table S12 |
+| `loops_buffered.py` | loop length and staggering once buffers are installed | Table S10 |
 | `lever_gains.py` | what staggering and the second drop point are worth against the budget, read from `loops_buffered.json` | Figure 7 |
 | `geometry_checks.py` | the loop-length variants, the spacing and width invariance checks and the offset sweep, 4 x 4 at L = 104; prints each quoted figure beside the value it reproduces | the variants of Section S4.2, the checks of Sections 3.4 and 6.2 |
 | `certify_rep.cpp` | replication-based certification of a structured buffer-allocation class | |
@@ -94,7 +94,7 @@ the stated dimensions and compares it with the printed value.
 | `sec7_numbers.py` | every number quoted in the prose of Section 6.5, taken from the data | |
 | `three_way_comparison.py` | exact, simulated and approximate throughput on the common-loop single-drop family | Table 4 |
 | `approximation_gap.py` | the approximation against the exact throughput over 240 pairs (n up to 16, m up to 16), and against the staggered simulation of Table S5(a) | the figures quoted in Section 6.5 |
-| `load_balance.py` | throughput against load balancing over the structured class | Tables S10 and S11 |
+| `load_balance.py` | throughput against load balancing over the structured class | Tables S11 and S12 |
 | `frontier.py` | the efficient frontier of throughput against load balancing | Figure 8 |
 | `feeder_returns.py` | the diminishing return of additional feeder loops | Figure S2 |
 | `feeder_sequence.py` | the order-derived check: each feeder reads the record from a position of its own, under chronological, shuffled and uniform input after a uniform warm-up | Table S13, the figures quoted in Sections 6.4 and S9 |
@@ -338,7 +338,7 @@ Three kinds of output are written:
 
 * `results/table1.tex`, `results/table2.tex`, `results/loops_buffered.tex`, the
   LaTeX bodies of the panels, ready to paste into the manuscript, and
-  `results/loops_buffered_table.tex`, the whole of Table S12 with its caption, the
+  `results/loops_buffered_table.tex`, the whole of Table S10 with its caption, the
   allocations named and the largest half-width filled in, and
   `results/lever_gains.tex`, the plot coordinates of Figure 7, and `results/stagger_gains.tex`, those of Figure 5;
 * `results/table1.csv`, `results/table2.csv`, one row per cell with the
@@ -387,7 +387,7 @@ beside the scripts.
 
 ## Throughput against load balancing
 
-Tables S10 and S11 ask what a designer gives up by balancing the loaders instead
+Tables S11 and S12 ask what a designer gives up by balancing the loaders instead
 of maximizing throughput. At each per-primary-belt budget two allocations are
 reported: `c`, the one with the largest minimum loader utilization, and `c'`,
 the one with the largest throughput, together with both objectives for each and
@@ -428,7 +428,7 @@ allocation that is better on the other.
 **One protocol.** Every allocation is evaluated under the design of
 Section S2, the same geometry, run length, warm-up rule and thirty
 replications the certification and Section 6.5 use, so these tables are directly
-comparable with Table 3. The earlier version of Tables S10 and S11 was produced at
+comparable with Table 3. The earlier version of Tables S11 and S12 was produced at
 the shorter loop length and is not comparable with it: its throughputs run up to
 0.034 items per time step low, and the gap widens with the budget.
 

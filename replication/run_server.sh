@@ -56,7 +56,7 @@ time python3 sweep_structured.py "$@"
 echo
 
 echo "=============================================================="
-echo " 3/4  structured sweep, fifteen belts  Section S11"
+echo " 3/4  structured sweep, fifteen belts  Section S12"
 echo "      664 allocations in four designs"
 echo "=============================================================="
 time python3 sweep_structured.py --grid large "$@"
@@ -83,5 +83,5 @@ echo
 echo "Send back that archive.  The files that carry the numbers are:"
 echo "  results/certify/*.json          the certification grid, Table 3 and S8"
 echo "  results/structured/*.json       the four-belt structured sweep"
-echo "  results/large/*.json            the fifteen-belt sweep, Section S11"
+echo "  results/large/*.json            the fifteen-belt sweep, Section S12"
 echo "  results/approx_eval*.csv|.tex   Table 5, Tables S14 and S15, Figure 9"

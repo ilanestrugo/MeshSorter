@@ -13,11 +13,11 @@
 #
 # Not run here, because they take hours: the certification of Table 3 and
 # Table S8 (certify_all.py enumerates 54,114 allocations), and the fifteen-belt
-# systems of Section S11.  Split the certification across machines with
+# systems of Section S12.  Split the certification across machines with
 # --feeders and a separate CERTIFY_OUT per machine if you have more than one.
 #
 #   python3 certify_all.py                       Table 3 and Table S8, several hours
-#   python3 sweep_structured.py --grid large      Section S11, about an hour
+#   python3 sweep_structured.py --grid large      Section S12, about an hour
 #   python3 approx_eval.py --dir results/large --tag large --scatter 15
 #
 # The geometry of the paper, loops of 20n + 24 slots with consecutive primary
@@ -44,10 +44,10 @@ python3 exact_single_drop.py              # Table 2(a)
 python3 unbuffered_grid.py "$@"           # Table 2(b)
 python3 stagger_grid.py "$@"              # Tables S5 and S6
 python3 stagger_gains.py                  # Figure 5, from the cells of Table S5
-python3 loops_buffered.py "$@"            # Table S12
-python3 lever_gains.py                    # Figure 7, from the cells of Table S12
+python3 loops_buffered.py "$@"            # Table S10
+python3 lever_gains.py                    # Figure 7, from the cells of Table S10
 python3 geometry_checks.py "$@"           # the variants of Section S4.2, the checks of Sections 3.4 and 6.2
-python3 load_balance.py "$@"              # Tables S10 and S11
+python3 load_balance.py "$@"              # Tables S11 and S12
 python3 frontier.py "$@"                  # Figure 8
 python3 feeder_returns.py "$@"            # Figure S2
 python3 three_way_comparison.py           # Table 4
