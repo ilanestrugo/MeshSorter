@@ -1,16 +1,19 @@
 #!/usr/bin/env python3
 """Tables S5 and S6 of the Supplemental Online Material: steady-state throughput of the unbuffered
-MeshSorter under the staggered configuration, with the gain over identical
-loop lengths in parentheses.
+MeshSorter under the staggered configuration.
 
     panel (a)  single-drop, staggered                              Table S5(a)
     panel (b)  dual-drop, staggered, added slots on the return run   Table S6
     panel (c)  dual-drop, staggered, added slots at the turnaround   Table S5(b)
 
-The gains of panel (a) are measured against the exact single-drop values of
-Table 2(a); those of panels (b) and (c) against the simulated dual-drop values
-of Table 2(b), which this script recomputes so that the two tables are always
-consistent with each other.
+In Table S5 the parentheses give the gain over identical loop lengths: for
+panel (a) against the exact single-drop values of Table 2(a), for panel (c)
+against the simulated dual-drop values of Table 2(b), which this script
+recomputes so that the tables are always consistent with each other.  In
+Table S6 they give the shortfall of the return-run placement from the
+turnaround placement of the same cell, in percent with two decimals, since
+the smallest is a few hundredths of a percent.  results/table2.csv keeps the
+gain over identical loop lengths for all three panels.
 
     python3 stagger_grid.py            full run, several hours on two cores
     python3 stagger_grid.py --quick    low precision, minutes
@@ -75,12 +78,19 @@ body.append("%% panel (a), single-drop, gain over the exact identical-length val
             + common.latex_rows(BELTS, FEEDERS,
                                 lambda n, m: A[(n, m)]["throughput"],
                                 lambda n, m: EXACT[(n, m)]))
-for name, G in (("(b), added slots on the return run", B),
-                ("(c), added slots at the turnaround", C)):
-    body.append(f"%% panel {name}, gain over Table 2(b)\n"
-                + common.latex_rows(BELTS, FEEDERS,
-                                    lambda n, m, G=G: G[(n, m)]["throughput"],
-                                    lambda n, m: REF[(n, m)]["throughput"]))
+rows_b = []
+for n in BELTS:
+    cells = []
+    for m in FEEDERS:
+        b, c = B[(n, m)]["throughput"], C[(n, m)]["throughput"]
+        cells.append(f"{b:.4f} ({100 * (1 - b / c):.2f})")
+    rows_b.append(f"{n} & " + " & ".join(cells) + r"\\")
+body.append("%% panel (b), added slots on the return run (Table S6), "
+            "shortfall from panel (c) in percent\n" + "\n".join(rows_b))
+body.append("%% panel (c), added slots at the turnaround, gain over Table 2(b)\n"
+            + common.latex_rows(BELTS, FEEDERS,
+                                lambda n, m: C[(n, m)]["throughput"],
+                                lambda n, m: REF[(n, m)]["throughput"]))
 common.write("results/table2.tex", "\n".join(body) + "\n")
 
 hw = common.max_halfwidth(A, B, C)
