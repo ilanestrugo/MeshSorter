@@ -55,7 +55,7 @@ python3 approximation_gap.py              # the 240 exact pairs and the staggere
 
 python3 approx_model.py
 python3 sweep_structured.py "$@"
-python3 approx_eval.py                    # Table 5, Tables S14 and S15, Figure 9
+python3 approx_eval.py                    # Table 5, Table S14, Figure 9
 
 # Table S13 reads the certified allocation at each budget from the committed
 # results/table6_allocations.txt.  order_derived.py and order_shuffled.py, the

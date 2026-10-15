@@ -88,9 +88,9 @@ the stated dimensions and compares it with the printed value.
 | `certify_rep.cpp` | replication-based certification of a structured buffer-allocation class | |
 | `certify_all.py` | runs the certification over the grid and writes the per-allocation dumps | Table 3, Table S8, Figure 6 |
 | `sweep_rep.cpp` | evaluates a stated set of allocations by replications | |
-| `sweep_structured.py` | simulates the structured class: the four-belt grid and the fifteen-belt systems | the simulated side of Tables 5 and S14 to S16 and Figure 9 |
+| `sweep_structured.py` | simulates the structured class: the four-belt grid and the fifteen-belt systems | the simulated side of Table 5, Tables S14 and S15 and Figure 9 |
 | `approx_model.py` | the analytical approximation model, with its self-checks | |
-| `approx_eval.py` | the accuracy of the approximation against the simulated classes | Table 5, Tables S14 to S16, Figure 9 |
+| `approx_eval.py` | the accuracy of the approximation against the simulated classes | Table 5, Tables S14 and S15, Figure 9 |
 | `sec7_numbers.py` | every number quoted in the prose of Section 6.5, taken from the data | |
 | `three_way_comparison.py` | exact, simulated and approximate throughput on the common-loop single-drop family | Table 4 |
 | `approximation_gap.py` | the approximation against the exact throughput over 240 pairs (n up to 16, m up to 16), and against the staggered simulation of Table S5(a) | the figures quoted in Section 6.5 |
