@@ -8,7 +8,7 @@ an allocation optimal up to the indifference zone.  A designer therefore
 searches the class rather than the whole allocation space, and Section 6.5 asks
 how well the approximation model of Section 5 carries out that search.  Only the
 class has to be simulated, which is a few hundred allocations rather than the
-54,120 the certification enumerates.
+54,114 the certification enumerates.
 
     python3 sweep_structured.py                 the four-belt grid of Table 5
     python3 sweep_structured.py --grid large    the fifteen-belt grid of Section S12

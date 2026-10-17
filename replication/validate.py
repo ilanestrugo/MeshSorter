@@ -8,7 +8,7 @@ value falls inside the confidence interval, and by how many standard errors it
 misses if it does not.
 
     python3 validate.py             a handful of cells, a few minutes
-    python3 validate.py --full      the whole 6 by 6 grid
+    python3 validate.py --full      the whole 7 by 7 grid of Table 2(a)
 """
 import sys, math
 import common
@@ -16,7 +16,7 @@ from exact_single_drop import exact
 
 CELLS = [(4, 4), (4, 9), (6, 6), (9, 4), (9, 9)]
 if "--full" in sys.argv:
-    CELLS = [(n, m) for n in range(4, 10) for m in range(4, 10)]
+    CELLS = [(n, m) for n in range(3, 10) for m in range(3, 10)]
 
 STEPS, REPS, SEED = 1_330_000, 30, 20260901
 TCRIT = 2.045                      # t_{29, 0.975}

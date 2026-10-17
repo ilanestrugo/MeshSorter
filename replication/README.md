@@ -54,7 +54,7 @@ In the certification every allocation also has streams of its own, with seed
 a disjoint family. The results do not depend on the number of threads or on the platform: the
 large experiments were run on a Linux server and the small ones on a Windows computer with Microsoft Visual C++, and the two builds give
 identical replication values on the unbuffered 4 x 4 dual-drop system (all 30, to eight
-decimals) and reproduce the 49 cells of Table 4.
+decimals) and reproduce the 49 cells that Table 4 summarizes.
 
 **Numbering.** Tables, figures and sections are cited by the numbers of the submitted manuscript
 (Tables 1 to 5, Sections 1 to 7) and of its Supplemental Online Material (Tables, Figures and
@@ -208,12 +208,13 @@ and the crossings sit at
 
 ```
 q^f_i = 1 + (i-1) * D/2                    (= 10i - 9)
-q^b_i = L - E + 1 - (i-1) * D/2            (= 20n + 13 - 10i)
+q^b_i = L - E + 1 - (i-1) * D/2            (= 20n + 23 - 10i)
 ```
 
 With the defaults, the last forward crossing and the first backward crossing of
-a feeder are `D + E = 32` slots apart, and the last backward crossing is `E = 12`
-slots from the loading station going forward around the loop.
+a feeder are `D + E = 32` slots apart, and the last backward crossing is
+`E - 1 = 11` slots from the loading station and `E = 12` from the first forward
+crossing, going forward around the loop.
 
 Along a primary belt, consecutive feeders are `--df F` slots apart (default 14)
 and the two crossings of one feeder are `--width W` slots apart (default 10):
@@ -222,7 +223,9 @@ and the two crossings of one feeder are `--width W` slots apart (default 10):
 s^f_j = (j-1) * F ,     s^b_j = s^f_j + W
 ```
 
-`--width` may not exceed `--df`, or consecutive feeders would overlap.
+`--width` may not exceed `--df`, or consecutive feeders would overlap. The
+manuscript's order condition (4) is strict, so its layouts keep `--width` below
+`--df`; the simulator also accepts the two equal, which no reported run uses.
 
 `-L` sets the base loop length directly, overriding `n * D + 2 * E`; `--loops`
 gives the `m` lengths explicitly.
@@ -296,11 +299,13 @@ W = max( 20000 , 10 * (c + 1) * L )
 ```
 
 where `L` is the longest feeder loop and `c` the largest buffer capacity
-anywhere in the configuration. The reasoning is that a feeder reaches each of
-its crossings once per revolution, so a buffer of capacity `c` cannot fill from
-empty in fewer than `c * L` steps; `(c+1) * L` is therefore the natural fill
-time of the system, and the rule deletes ten of them, subject to a floor of
-20,000 steps. A pilot study reported in Section S2.2 timed the transient in 48
+anywhere in the configuration. The reasoning is that a blocked item
+returns to the same drop point `L` steps later, and a drop point with a buffer of
+capacity `c` has `c+1` places to settle, so `(c+1) * L`, which Section S2.2 calls
+a fill time, is the natural time scale of the transient; the rule deletes ten of
+them, subject to a floor of 20,000 steps. The unit is a scale and not a lower
+bound: a fresh loop slot reaches a drop point at every time step, so `c`
+suitable consecutive arrivals can fill a buffer in `c` steps. A pilot study reported in Section S2.2 timed the transient in 48
 configurations, with loops from the layout's own length up to four times as
 long: the median settled within 580 time steps and the slowest within 2,480.
 The estimates are insensitive to the choice (Table S3): deleting nothing at all
@@ -580,8 +585,10 @@ The first two agree by construction: the committed file is the cumulative sum of
 the addition order Table S8 prints. The third agrees at every budget but `B = 7`,
 where it prefers `0,1,2,4` to the certification's `0,1,1,5`. Those two are
 separated by 0.0004 items per time step, inside the half-width of either
-estimate, and they agree to three decimals in both columns of the table, so the
-choice does not move a printed figure. Whichever source was used is printed and
+estimate. They agree to three decimals in the uniform column, but the
+order-derived column and the gap of that row each change by one in the last
+digit (3.797 and 0.003 for `0,1,1,5`, 3.796 and 0.002 for `0,1,2,4`), and the
+certification is what the manuscript names. Whichever source was used is printed and
 recorded in `results/table6.log`, so the table always says where its allocations
 came from. Passing `--allocs FILE` overrides all three, one allocation per line,
 lowest budget first.
@@ -657,9 +664,10 @@ allocation, holding the capacities, whether the allocation belongs to the
 structured class, and the mean and standard deviation of both passes over it.
 Phases 1 and 3 draw from disjoint streams, so each row carries two independent
 estimates of the same throughput and their difference measures the simulation
-noise at no extra cost. These files are what the approximation-model evaluation
-below consumes, which is why that evaluation and the certification cannot drift
-apart: they are the same run. A cell is reused from cache only when both its
+noise at no extra cost. The approximation-model evaluation below can read
+these files (`approx_eval.py --dir results/certify`), but the reported
+evaluation uses the separate sweep of the structured class that
+`sweep_structured.py` runs, so it does not require the certification grid. A cell is reused from cache only when both its
 JSON and its CSV are present, so a grid certified before the dump existed is
 recomputed once.
 
@@ -698,8 +706,9 @@ budget, it reports
 * where the allocation the model prefers stands in the simulated ordering, and
   the throughput given up by building it;
 * the Spearman correlation of the two orderings, reported only where a class
-  holds at least ten allocations, since a rank correlation over fewer says
-  nothing.
+  holds at least three allocations, since over two it can only be 1 or -1;
+  over a handful it is still too coarse to carry weight, which is why the
+  manuscript's summary draws only on the classes that hold at least ten.
 
 At four primary belts the structured class is small, between one and 23
 allocations per class, so the ranking evidence comes from the fifteen-belt grid
@@ -736,8 +745,8 @@ point `CERTIFY_BIN` and `SWEEP_BIN` at them.
 ### Systems too large to enumerate
 
 The comparison above is exhaustive, which confines it to a four-belt system:
-fifteen feeder loops with a budget of twenty admit about 1.1 billion
-allocations. `sweep_rep` evaluates a stated set of allocations instead, by
+fifteen feeder loops with a budget of fifteen, the largest design of Section S12,
+admit 37,442,160 single-drop allocations. `sweep_rep` evaluates a stated set of allocations instead, by
 default the structured class, which is what a designer following the design
 rules would search. It writes the same CSV as `certify_rep --dump`, so the same
 analysis reads either.
@@ -762,7 +771,7 @@ against three things: the closed form
 loader utilizations sum to `n * u_m`, which is flow conservation and must hold
 exactly in every one of the four buffer placements; and the monotonicity the
 design rules assert. One correction to the equations of the manuscript is
-applied, in a case the manuscript keeps commented out and the paper never uses.
+applied, in a case the paper never uses.
 Where a feeder carries buffers at both of its drop points, the drop probability
 of the backward point must carry the same factor `pi_c` of the forward buffer
 that its own birth probability carries, since an item reaches the backward point
@@ -783,7 +792,7 @@ arithmetic and solves for the stationary distribution, so its output carries no
 numerical error.
 
 ```bash
-python3 exact_single_drop.py            # the 6x6 grid of Table 2(a)
+python3 exact_single_drop.py            # the 7x7 grid of Table 2(a)
 python3 exact_single_drop.py 4 4        # one cell: 325/124 = 2.620967742
 python3 exact_single_drop.py --verify   # check small cases against the raw chain
 ```
@@ -836,19 +845,13 @@ OUTPUT
 
 ## Validation
 
-The simulator reproduces the two independent references available for this
-model:
-
-* the exact single-drop values of `exact_single_drop.py`, for every cell of the
-  6 by 6 grid, and
-* the published dual-drop figures of Tables 2(b), S5 and S6, which were produced by a
-  separate implementation.
-
-`validate.py` performs the first comparison:
+The simulator reproduces the independent reference available for this model,
+the exact single-drop values of `exact_single_drop.py`, for every cell of the
+7 by 7 grid of Table 2(a). `validate.py` performs the comparison:
 
 ```bash
 python3 validate.py          # five representative cells
-python3 validate.py --full   # the whole 6 by 6 grid
+python3 validate.py --full   # the whole 7 by 7 grid
 ```
 
 It prints, for each cell, the exact value, the simulated value, the half-width

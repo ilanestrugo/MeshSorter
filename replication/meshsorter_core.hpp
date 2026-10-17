@@ -86,11 +86,12 @@
 //  and the crossing positions
 //
 //        q^f_i = 1 + (i-1) * dp/2                     ( = 10i - 9 )
-//        q^b_i = L - turn + 1 - (i-1) * dp/2          ( = 20n + 13 - 10i )
+//        q^b_i = L - turn + 1 - (i-1) * dp/2          ( = 20n + 23 - 10i )
 //
 //  With the defaults the last forward crossing and the first backward crossing
 //  of a feeder are dp + turn = 32 slots apart, and the last backward crossing is
-//  turn = 12 slots from the loading station, going forward around the loop.
+//  turn - 1 = 11 slots from the loading station and turn = 12 slots from the
+//  first forward crossing, going forward around the loop.
 //
 //  Along a primary belt, consecutive feeders are df slots apart and the two
 //  crossings of one feeder are width slots apart:
@@ -118,7 +119,7 @@
 //    return                 the added slots extend the return run between the
 //                           last backward crossing and the loading station, so
 //                           q^b_i keeps the value computed from the base
-//                           length L.  This is the layout of panel (b).
+//                           length L.  This is the layout of Table S6.
 //
 //  In a single-drop system the two placements coincide.
 //

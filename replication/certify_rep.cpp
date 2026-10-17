@@ -26,14 +26,15 @@
 //      H0: some c in C has mu_c >= (1+eps) mu_{x_S*}
 //      H1: every c in C has mu_c <  (1+eps) mu_{x_S*}
 //
-//  and report the smallest eps for which no competitor is supported by the data.
+//  and report eps_hat, the smallest eps at which every competitor is shown, at
+//  level alpha, to fall below (1+eps) times the reference.
 //
 //  THE THREE PHASES
 //  ----------------
-//  Phase 1 (pilot).  Every allocation, in S and in C alike, is run for R0
-//    independent replications.  Each yields a mean and a variance across those
-//    replications.  The allocation of S with the largest mean is the reference
-//    x_hat_S.
+//  Phase 1 (pilot).  Every competitor in C is run for R0 independent
+//    replications and every member of S for RS (--reps-structured, default
+//    30).  Each yields a mean and a variance across those replications.  The
+//    allocation of S with the largest mean is the reference x_hat_S.
 //
 //  Phase 2 (plan).  For each competitor c, the number of replications R(c) is
 //    the smallest that makes the one-sided comparison against x_hat_S
@@ -42,16 +43,18 @@
 //      t * sqrt( (1+eps)^2 s2_S / R_S  +  s2_c / R(c) )  <=  mu_S (1+eps) - mu_c
 //
 //    solved for R(c), rounded up, multiplied by a safety factor kappa that
-//    guards against a pilot underestimate of s2_c, and floored at R0.  A
-//    competitor whose planned effort exceeds that of the reference triggers an
-//    extension of the reference by R0 further replications, after which every
-//    R(c) is recomputed; the loop ends when no competitor needs more effort than
-//    the reference.  Effort here is a count of replications, where the earlier
-//    procedure counted batches.
+//    guards against a pilot underestimate of s2_c, floored at R0 and capped at
+//    --max-reps.  Before that the reference is sized: it is first brought to
+//    at least RREF replications (--reps-reference, default 500), and then, for
+//    up to five rounds, extended to the largest size any competitor needs from
+//    it, ignoring competitors that would need more than --max-reps.  Effort here
+//    is a count of replications, where the earlier procedure counted batches.
 //
 //  Phase 3 (validate).  Everything is simulated again on a disjoint set of
-//    random number streams, the reference for R_S replications and each
-//    competitor for its planned R(c).  For each competitor the smallest eps
+//    random number streams, the reference for the size Phase 2 gave it and each
+//    competitor for its planned R(c); the other members of S are not
+//    revalidated, since a competitor that falls short of the reference falls
+//    short of the best member of S.  For each competitor the smallest eps
 //    satisfying the inequality above is found by bisection, and the largest of
 //    those is reported.  Running the validation on fresh streams is what keeps
 //    the selection of x_hat_S in Phase 1 from biasing the conclusion.
@@ -397,17 +400,17 @@ DESIGN
                          stream ranges derived from it            (default 20260901)
   -t, --threads K        worker threads                    (default hardware - 2)
       --max-reps R       refuse to plan more than this many replications
+                         for one allocation, as a guard                (default 4000)
       --plan-only        stop after planning; report the cost of phase 3 and exit
       --reps-structured N  replications for the structured class in phase 1,
                          which is where the reference is chosen        (default 30)
       --reps-reference N   floor on the reference, which enters every
                          comparison and so is the cheapest precision   (default 500)
-                         for one allocation, as a guard                (default 4000)
 
 OUTPUT
       --dump FILE        write every allocation, with its Phase 1 and Phase 3
-                         estimates, to FILE as CSV; this is the raw material
-                         for the approximation-model evaluation of Section 6.5
+                         estimates, to FILE as CSV, so that a cell can be
+                         re-analysed without rerunning it
       --json             machine-readable summary
       --verbose          report progress as the phases run
   -h, --help             this text

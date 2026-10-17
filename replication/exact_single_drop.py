@@ -16,7 +16,7 @@ Fraction, so the result carries no numerical error at all.
 See Section 4 of the manuscript.
 
 Usage
-    python3 exact_single_drop.py            print the 6x6 grid used in Table 2(a)
+    python3 exact_single_drop.py            print the 7x7 grid of Table 2(a)
     python3 exact_single_drop.py N M        print the exact value for one cell
     python3 exact_single_drop.py --verify   check small cases against a brute
                                             force chain on all n^m states
@@ -145,6 +145,6 @@ if __name__ == "__main__":
     else:
         print("Exact throughput of the unbuffered single-drop MeshSorter")
         print("rows: primary belts n,  columns: feeder loops m\n")
-        print("     " + "".join(f"{m:>10}" for m in range(4, 10)))
-        for n in range(4, 10):
-            print(f"n={n} " + "".join(f"{float(exact(n, m)):>10.4f}" for m in range(4, 10)))
+        print("     " + "".join(f"{m:>10}" for m in range(3, 10)))
+        for n in range(3, 10):
+            print(f"n={n} " + "".join(f"{float(exact(n, m)):>10.4f}" for m in range(3, 10)))

@@ -5,8 +5,10 @@ Exact Q(n,m): stationary law of the lumped partition chain of Section 4.3.
 Approximation A(n,m) = n(1-(1-1/n)^m), which is also the expected number of
 occupied bins when m balls are thrown independently into n bins.
 
-Also checks the per-feeder reduction:  Q <= A  for all m  <=>  w_j <= (1-1/n)^(j-1)
-for all j, where w_j = Q(n,j) - Q(n,j-1) is the loader utilization of feeder j.
+Also prints the per-feeder condition  w_j <= (1-1/n)^(j-1),  where
+w_j = Q(n,j) - Q(n,j-1) is the loader utilization of feeder j.  Q and A are the
+partial sums of the two sides, so the condition for all j implies Q <= A for
+all m; the converse does not follow.
 """
 import sys
 from functools import lru_cache

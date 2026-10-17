@@ -20,7 +20,7 @@ The last two select which cells to run; they do not change how a cell is
 computed, so a cell produced under them is interchangeable with the same cell
 from a full grid.
 
-The full grid is 54,120 allocations, each piloted for R0 replications and
+The full grid is 54,114 allocations, each piloted for R0 replications and
 validated again on fresh streams, so expect several hours on a machine with
 thirty usable threads.  Results are cached per cell, so an interrupted run
 resumes where it stopped.

@@ -26,10 +26,12 @@ carries:
      decimals and with the same half-width.
 
   4. Offset sweep (Section 6.2).  Dual-drop, unbuffered, L = 104, turn 12, the
-     width gamma swept over 1, ..., 14, so d_1 - gamma runs from 91 down to 78.
-     The width cannot exceed the feeder spacing df = 14, or consecutive feeders
-     would overlap on a primary belt, and width 0 would put both crossings of a
-     feeder at the same point of the belt, which is not a feeder at all.
+     width gamma swept over 1, ..., 13, so d_1 - gamma runs from 91 down to 79.
+     The width must stay below the feeder spacing df = 14, by the strict order
+     (4) of the manuscript, or the backward crossing of one feeder would meet the
+     forward crossing of the next on a primary belt; width 0 would put both
+     crossings of a feeder at the same point of the belt, which is not a feeder
+     at all.  The family count across the sweep is gcd(4, gamma).
      Quoted: the throughput ranges from 3.0282 to 3.0354, and the baseline
      width 10 gives the lowest value.
 
@@ -41,7 +43,7 @@ reproduces and exits non-zero if a check fails.
 Output
     results/geometry_checks.json   one record per case
 
-    python3 geometry_checks.py            # 34 cases, about 6 minutes on 8 cores
+    python3 geometry_checks.py            # 33 cases, about 6 minutes on 8 cores
     python3 geometry_checks.py --quick    # low precision, to check the wiring
 """
 import sys, json
@@ -65,7 +67,7 @@ SPACINGS  = [2, 4, 10, 16]
 STAGGERED = (L, L, L + 1, L + 2)
 ALLOC     = [0, 1, 2, 7]                          # c at B = 10, along each belt
 WIDTHS    = [(8, 10), (10, 8), (12, 6), (16, 2)]  # (turn, width), d_i - gamma = 86,...
-SWEEP     = range(1, DF + 1)                      # widths 1..14 at turn 12
+SWEEP     = range(1, DF)                          # widths 1..13 at turn 12
 # ---------------------------------------------------------------------------
 
 if "--quick" in sys.argv:
