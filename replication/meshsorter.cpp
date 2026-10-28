@@ -99,6 +99,14 @@ EXPERIMENT
                          for each replication (requires --feeder-sequence).
                          All feeders use the same permutation; offsets
                          and warm-up seeds match the unshuffled run
+      --rho R            dependent destinations: an admitted item goes to
+                         the belt of the previous admission at its feeder
+                         with probability R, and otherwise to one of the
+                         other N-1 belts with equal probability.  R = 1/N
+                         is the independent case.  Applies from step 0
+      --rho-shared       with --rho, the previous admission is the last
+                         one anywhere in the system (by time step, then
+                         by feeder index) rather than at the same feeder
       --checkpoints a,b,...
                          record cumulative admissions after these numbers
                          of measurement steps, for transient sensitivity
@@ -134,6 +142,8 @@ int main(int argc, char **argv) {
     std::string feederSeqFile;
     std::string bufSpec;
     bool shuffleSequence = false, stepsExplicit = false;
+    double rho = -1.0;
+    bool rhoShared = false;
     std::vector<long long> checkpoints;
     try {
         for (int a = 1; a < argc; a++) {
@@ -171,6 +181,8 @@ int main(int argc, char **argv) {
             else if (k == "--feeder-sequence")           feederSeqFile = need();
             else if (k == "--shuffle-sequence")          shuffleSequence = true;
             else if (k == "--checkpoints")               checkpoints = parseList(need());
+            else if (k == "--rho")                       rho = std::stod(need());
+            else if (k == "--rho-shared")                rhoShared = true;
             else if (k == "-t" || k == "--threads")      cfg.threads = std::stoi(need());
             else if (k == "--json")                      cfg.json = true;
             else if (k == "--per-feeder")                cfg.perFeeder = true;
@@ -184,6 +196,12 @@ int main(int argc, char **argv) {
         if (shuffleSequence && feederSeqFile.empty())
             throw std::runtime_error("--shuffle-sequence requires --feeder-sequence");
         const bool separateFeeders = !feederSeqFile.empty();
+        if (rhoShared && rho < 0.0)
+            throw std::runtime_error("--rho-shared requires --rho");
+        if (rho >= 0.0 && (!seqFile.empty() || separateFeeders))
+            throw std::runtime_error("--rho cannot be combined with a destination sequence");
+        if (rho >= 0.0 && (rho > 1.0 || cfg.n < 2))
+            throw std::runtime_error("--rho needs 0 <= R <= 1 and at least two belts");
         if (separateFeeders) seqFile = feederSeqFile;
         if (cfg.width > cfg.df)
             throw std::runtime_error("--width may not exceed --df, or feeders would overlap");
@@ -289,6 +307,8 @@ int main(int argc, char **argv) {
                             rep.seq = &shuffled;
                         } else if (!seq.empty()) rep.seq = &seq;
                         rep.sequencePerFeeder = separateFeeders;
+                        rep.rho = rho;
+                        rep.rhoShared = rhoShared;
                         rep.checkpoints = checkpoints;
                         rep.auditInitialState = separateFeeders || !checkpoints.empty();
                         Y[(size_t)r] = rep.run();
@@ -357,6 +377,8 @@ int main(int argc, char **argv) {
                 std::printf(",\"sequence_wraps\":"); printJsonValue(wraps);
                 std::printf(",\"sequence_belt_counts\":"); printJsonValue(beltCounts);
             }
+            if (rho >= 0.0)
+                std::printf(",\"rho\":%.6f,\"rho_shared\":%s", rho, rhoShared ? "true" : "false");
             if (cfg.perFeeder) {
                 std::printf(",\"loader_utilization\":[");
                 for (int j = 0; j < cfg.m; j++) std::printf("%s%.6f", j ? "," : "", util[(size_t)j]);

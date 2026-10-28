@@ -361,6 +361,35 @@ struct Replication {
     bool auditInitialState = false;
     uint64_t initialStateHash = 0;
 
+    //  Optional dependent destinations (Section 6.4).  When rho >= 0, an
+    //  admitted item is bound for the primary belt of the previous admission
+    //  with probability rho, and otherwise for one of the other n-1 belts with
+    //  equal probability.  The previous admission is that of the same feeder,
+    //  or, when rhoShared is set, the previous one anywhere in the system,
+    //  admissions taken in order of time step and then of feeder index.  The
+    //  belt marginals stay uniform for every rho, and rho = 1/n is exactly the
+    //  independent case.  The draws come from the feeder's own stream and run
+    //  from step 0, warm-up included.
+    double rho = -1.0;
+    bool rhoShared = false;
+    std::vector<int> lastDest;
+    int lastShared = 0;
+
+    inline int dependentDraw(int j, int n) {
+        int &last = rhoShared ? lastShared : lastDest[j];
+        int d;
+        if (last == 0) {
+            d = (int)rng[j].below((uint32_t)n) + 1;
+        } else if ((double)(rng[j].next() >> 11) * 0x1.0p-53 < rho) {
+            d = last;
+        } else {
+            const int y = (int)rng[j].below((uint32_t)(n - 1)) + 1;
+            d = (y < last) ? y : y + 1;
+        }
+        last = d;
+        return d;
+    }
+
     // Cumulative admissions after selected numbers of measurement steps.
     // These allow switching-transient checks on the same simulated trajectory.
     std::vector<long long> checkpoints;
@@ -443,6 +472,8 @@ struct Replication {
             uint64_t s = seed ^ (0x9E3779B97F4A7C15ULL * (uint64_t)(j + 1));
             rng.emplace_back(splitmix64(s));
         }
+        lastDest.assign(m, 0);
+        lastShared = 0;
         sequenceStarts.clear(); sequencePositions.clear();
         sequenceConsumed.clear(); sequenceWraps.clear();
         sequenceBeltCounts.clear();
@@ -499,6 +530,8 @@ struct Replication {
                     } else if (seq && !sequencePerFeeder) {
                         feeder[j][fa] = (*seq)[spos];
                         if (++spos == seq->size()) spos = 0;
+                    } else if (rho >= 0.0) {
+                        feeder[j][fa] = dependentDraw(j, n);
                     } else {
                         feeder[j][fa] = (int)rng[j].below((uint32_t)n) + 1;
                     }

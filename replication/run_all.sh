@@ -57,11 +57,9 @@ python3 approx_model.py
 python3 sweep_structured.py "$@"
 python3 approx_eval.py                    # Table 5, Table S14, Figure 9
 
-# Table S13 reads the certified allocation at each budget from the committed
-# results/table6_allocations.txt.  order_derived.py and order_shuffled.py, the
-# earlier version of this check, are superseded and not run here.
-python3 feeder_sequence.py "$@"           # Table S13
-python3 sequence_dependence.py            # statistics quoted in Section S9
+# The order-derived checks (feeder_sequence.py, sequence_dependence.py,
+# order_derived.py, order_shuffled.py) are no longer reported and not run here.
+python3 destination_dependence.py         # Table S13, Sections 6.4 and S9
 python3 asymmetry_check.py "$@"           # Table S9
 
 python3 transient_pilot.py "$@"            # transient figures of Section S2.2, about half an hour
@@ -79,9 +77,7 @@ echo "raw results    : results/raw/"
 echo "approximation  : results/approx_eval.tex results/approx_eval.csv"
 echo "load balancing : results/load_balance_single.tex results/load_balance_dual.tex results/load_balance.csv"
 echo "frontier data  : results/m4_n4_B10_*_efficiency_front*.dat"
-echo "order-derived  : results/table6.tex results/table6.csv"
-echo "shuffled       : results/order_shuffled.tex results/order_shuffled.csv"
+echo "dependence     : results/destination_dependence.tex results/destination_dependence.json"
 echo "asymmetry      : results/asymmetry.tex results/asymmetry.csv"
-echo "sequence       : results/sequence_dependence.json"
 echo "warm-up         : results/transient_pilot/pilot_summary.json results/warmup_sensitivity.tex"
 echo "scatter data   : results/approx_scatter_*.dat"

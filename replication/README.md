@@ -46,9 +46,10 @@ reasoning.
 
 **Random numbers and reproducibility.** Replication seeds come from the base seed 20260901, and
 the destination stream of feeder `j` is derived from the replication seed and `j` by SplitMix64.
-When the order-derived record replaces the draws (Table S13), the starting position of each
-feeder in it is drawn from a further stream of the replication, and the permutation of the
-shuffled control from another.
+Under dependent destinations (`--rho`, Table S13), each draw still comes from the stream of
+the feeder that admits the item. In the order-derived checks, no longer reported, the starting
+position of each feeder in the record was drawn from a further stream of the replication, and
+the permutation of the shuffled control from another.
 In the certification every allocation also has streams of its own, with seed
 `s0 + 1,000,003 a + 16,777,619 (r + 1)` for allocation `a` and replication `r`, and Phase 3 uses
 a disjoint family. The results do not depend on the number of threads or on the platform: the
@@ -60,9 +61,9 @@ decimals) and reproduce the 49 cells that Table 4 summarizes.
 (Tables 1 to 5, Sections 1 to 7) and of its Supplemental Online Material (Tables, Figures and
 Sections S1 and onwards). The output files keep the names they had under earlier numbering, so
 that nothing downstream breaks: `results/table1.*` is Table 2(b), `results/table2.*` is Tables S5
-and S6, and `results/loops_buffered*` is Table S10. `results/table6.*` and
-`results/order_shuffled.*` hold the earlier version of the order-derived check, which the paper
-no longer reports; Table S13 is in `results/feeder_sequence/<run>/`.
+and S6, and `results/loops_buffered*` is Table S10. `results/table6.*`,
+`results/order_shuffled.*` and `results/feeder_sequence/` hold the order-derived checks, which
+the paper no longer reports; Table S13 is `results/destination_dependence.*`.
 
 **Every number has a script.** Everything that is simulated or computed has a script in the
 Contents table below. The resource counts of Table 1 and Table S1 are arithmetic on the layouts of
@@ -97,9 +98,8 @@ the stated dimensions and compares it with the printed value.
 | `load_balance.py` | throughput against load balancing over the structured class | Tables S11 and S12 |
 | `frontier.py` | the efficient frontier of throughput against load balancing | Figure 8 |
 | `feeder_returns.py` | the diminishing return of additional feeder loops | Figure S2 |
-| `feeder_sequence.py` | the order-derived check: each feeder reads the record from a position of its own, under chronological, shuffled and uniform input after a uniform warm-up | Table S13, the figures quoted in Sections 6.4 and S9 |
-| `test_feeder_sequence.py` | protocol, reproducibility and runner checks for the separate-feeder experiment | |
-| `sequence_dependence.py` | shares, dependence at lags 1 to 20 and drift of the order-derived sequence | the statistics quoted in Section S9 |
+| `destination_dependence.py` | dependent destinations (`meshsorter --rho`, `--rho-shared`): the unbuffered 4x4 dual-drop system with each admission bound for the belt of the previous one with probability rho, separate and shared runs, rho from 0 to 0.99 | Table S13, the figures quoted in Sections 6.4 and S9 |
+| `feeder_sequence.py`, `test_feeder_sequence.py`, `sequence_dependence.py` | the order-derived check on the Olist record, each feeder reading it from a position of its own; no longer reported in the paper | `results/feeder_sequence/` |
 | `asymmetry_check.py` | what the symmetry restriction costs, with 100 replications per allocation | Table S9 |
 | `transient_pilot.cpp`, `transient_pilot.py` | the transient pilot: 48 configurations (loops of one, two and four times the layout's own), 300 empty-start runs each, the settling point and the cumulative excess | the transient figures of Section S2.2 |
 | `buffer_relaxation.py` | how long the number of items held in buffers takes to settle, on the most heavily loaded pilot configuration | the buffer-content figures of Section S2.2 |
@@ -442,7 +442,27 @@ nine-column bodies, and `results/load_balance.csv` carries the per-feeder loader
 utilizations behind every reported row. Results are cached per cell under
 `results/loadbalance/`, so an interrupted run resumes and a rerun is free.
 
-## The order-derived destination record (Table S13)
+## Dependent destinations (Table S13)
+
+Every other experiment in this package draws each item's destination uniformly and
+independently. Table S13 asks how much the throughput of the unbuffered 4x4 dual-drop system
+depends on that. With `--rho R`, an admitted item is bound for the primary belt of the previous
+admission with probability R, and otherwise for one of the other N-1 belts with equal
+probability; the belt marginals stay uniform, and R = 1/N is the independent case. The previous
+admission is the previous one at the same feeder (separate runs), or with `--rho-shared` the
+previous one anywhere in the system, by time step and then feeder index (shared runs). The
+chain runs from step 0, warm-up included.
+
+```bash
+python3 destination_dependence.py           # the full grid, a few minutes on 26 threads
+python3 destination_dependence.py --quick   # a short wiring check
+```
+
+The grid is R = 0, 0.05, ..., 0.95, 0.98, 0.99 under both forms, 30 replications of 1,330,000
+steps each, plus the uniform reference on the same seeds. Output: `results/destination_dependence.tex`
+(the body of Table S13) and `results/destination_dependence.json` (every replication value).
+
+## The order-derived destination record (no longer reported)
 
 Every other experiment in this package draws each item's destination uniformly
 and independently. Table S13 asks what happens when those draws are replaced by
@@ -453,8 +473,9 @@ chronological order, with the primary belt its destination is assigned to.
 Section S9 describes how the raw Brazilian e-commerce dataset was reduced to it.
 There are 98,816 labels, between 0.2494 and 0.2506 of the stream on each belt.
 
-`feeder_sequence.py` produces Table S13 and the figures quoted in Sections 6.4
-and S9. Run these commands from this directory:
+`feeder_sequence.py` produced the earlier Table S13 and the figures quoted in
+Sections 6.4 and S9 before the manuscript replaced this check with the
+dependent-destination experiment above. Run these commands from this directory:
 
 ```bash
 python3 feeder_sequence.py --build            # compile and run the full experiment
@@ -532,8 +553,7 @@ Add `--shuffle-sequence` for the shuffled control. The original shared-stream
 This section documents `order_derived.py` and `order_shuffled.py`, the earlier
 version of the check, kept for the record. It read the record cyclically, with
 the feeders consuming it in index order, and compared it with 30 fixed
-permutations. The paper no longer reports it: Table S13 comes from
-`feeder_sequence.py` (above). References below to "the table" are to the
+permutations. The paper no longer reports it. References below to "the table" are to the
 earlier one, `results/table6.*`.
 
 ```bash
